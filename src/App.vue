@@ -1,11 +1,10 @@
 <script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import Greet from "./components/Greet.vue";
+import Header from "components/Header.vue";
 </script>
 
 <template>
   <div class="container">
+    <Header />
     <h1>Welcome to Tauri!</h1>
 
     <div class="row">
@@ -36,8 +35,6 @@ import Greet from "./components/Greet.vue";
         >rust-analyzer</a
       >
     </p>
-
-    <Greet />
   </div>
 </template>
 

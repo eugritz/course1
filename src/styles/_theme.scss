@@ -1,0 +1,7 @@
+@import "light";
+$theme: light;
+
+@media (prefers-color-scheme: dark) {
+  @import "dark";
+  $theme: dark !global;
+}
