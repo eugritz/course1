@@ -3,19 +3,19 @@ import HomeButton from "./HomeButton.vue";
 </script>
 
 <template>
-  <header>
-    <main>
+  <header class="header">
+    <div class="header__container">
       <home-button>Главная</home-button>
       <home-button>Словарь</home-button>
       <home-button>Статистика</home-button>
-    </main>
+    </div>
   </header>
 </template>
 
 <style scoped lang="scss">
 @import "../styles/theme";
 
-header {
+.header {
   display: flex;
   justify-content: center;
   position: absolute;
@@ -24,13 +24,13 @@ header {
   width: 100%;
 }
 
-main {
+.header__container {
   border-radius: 0% 0% 10px 10px;
   box-shadow: 0 5px 50px rgba(0, 0, 0, 0.2);
 }
 
 @if $theme == dark {
-  main {
+  .header__container {
     box-shadow: 0 5px 100px rgba(255, 255, 255, 0.05);
   }
 }

@@ -8,12 +8,13 @@
 button {
   border-radius: 0;
   border: 1px solid rgba(0, 0, 0, 0.03);
-  padding: 0.6em 1.2em;
   font-size: 1.1em;
-  font-weight: 500;
-  font-family: inherit;
   box-shadow: none;
-  transition: border-color 0.25s;
+}
+
+button:focus {
+  position: relative;
+  z-index: 1000;
 }
 
 button:first-child {
