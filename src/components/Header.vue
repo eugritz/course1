@@ -9,11 +9,11 @@ function open_stats() {
 
 <template>
   <header class="header">
-    <div class="header__container">
+    <ul class="header__button-list">
       <home-button>Главная</home-button>
       <home-button>Словарь</home-button>
       <home-button @click="open_stats">Статистика</home-button>
-    </div>
+    </ul>
   </header>
 </template>
 
@@ -27,15 +27,16 @@ function open_stats() {
   top: 0;
   left: 0;
   width: 100%;
+  --header-height: 45px;
 }
 
-.header__container {
+.header__button-list {
   border-radius: 0% 0% 10px 10px;
-  box-shadow: 0 5px 50px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 50px rgba(0, 0, 0, 0.1);
 }
 
 @if $theme == dark {
-  .header__container {
+  .header__button-list {
     box-shadow: 0 5px 100px rgba(255, 255, 255, 0.05);
   }
 }

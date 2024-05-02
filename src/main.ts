@@ -1,5 +1,12 @@
 import { createApp } from "vue";
-import "styles/_global.scss";
-import App from "App.vue";
+import Unicon from "vue-unicons";
+// @ts-ignore 6133
+import { uniEllipsisH } from "vue-unicons/dist/icons";
 
-createApp(App).mount("#app");
+import App from "App.vue";
+import "styles/_global.scss";
+
+Unicon.add([uniEllipsisH])
+
+// @ts-ignore 2374
+createApp(App).use(Unicon).mount("#app");

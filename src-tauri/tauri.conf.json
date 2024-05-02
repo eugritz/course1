@@ -22,6 +22,11 @@
         "title": "course1",
         "width": 800,
         "height": 600,
+        "maxWidth": 900,
+        "maxHeight": 675,
+        "minWidth": 700,
+        "minHeight": 525,
+        "maximizable": false,
         "url": "src/index.html"
       }
     ],
