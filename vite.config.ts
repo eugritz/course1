@@ -1,4 +1,6 @@
 import { defineConfig } from "vite";
+import { glob } from "glob";
+
 import vue from "@vitejs/plugin-vue";
 import tsconfigPaths from "vite-tsconfig-paths";
 
@@ -17,6 +19,12 @@ export default defineConfig(async () => ({
     watch: {
       // 3. tell vite to ignore watching `src-tauri`
       ignored: ["**/src-tauri/**"],
+    },
+  },
+
+  build: {
+    rollupOptions: {
+      input: glob.sync(__dirname + "/src/**/*.html"),
     },
   },
 }));
