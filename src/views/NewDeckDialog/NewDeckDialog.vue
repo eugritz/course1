@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted,
+ref } from "vue";
 import { appWindow } from "@tauri-apps/api/window";
-import { listen, TauriEvent, UnlistenFn } from "@tauri-apps/api/event";
+import { emit, TauriEvent } from "@tauri-apps/api/event";
+import { useTauriEvent } from "utils/tauriEvent";
 
 const deckTitle = ref("");
 const deckTitleRef = ref<HTMLInputElement | null>(null);
@@ -11,23 +13,18 @@ function reset() {
   deckTitle.value = "";
 }
 
-let unlistenOnWindowClosed: UnlistenFn | undefined;
-onMounted(async () => {
-  unlistenOnWindowClosed = await listen(
-    TauriEvent.WINDOW_CLOSE_REQUESTED,
-    (_) => {
-      reset();
-    }
-  );
-});
+useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
 
-onUnmounted(() => {
-  if (unlistenOnWindowClosed) {
-    unlistenOnWindowClosed();
-  }
+onMounted(() => {
+  deckTitleRef.value?.focus();
 });
 
 function createNewDeck() {
+  emit("dialog_result", {
+    deckTitle: deckTitle.value,
+  });
+  reset();
+  appWindow.hide();
 }
 
 function handleCancel() {
@@ -37,7 +34,11 @@ function handleCancel() {
 </script>
 
 <template>
-  <form class="dialog" @submit.prevent="createNewDeck">
+  <form
+    class="dialog"
+    @submit.prevent="createNewDeck"
+    @keydown.esc="handleCancel"
+  >
     <label>Название колоды</label>
     <input
       class="deck-title"

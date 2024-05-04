@@ -9,12 +9,6 @@ import DeckListItem from 'components/DeckListItem.vue';
   <div class="content--center">
     <div class="content--focus">
       <DeckList class="full-width">
-        <DeckListItem>
-          По умолчанию
-        </DeckListItem>
-        <DeckListItem>
-          По умолчанию 2
-        </DeckListItem>
       </DeckList>
     </div>
   </div>

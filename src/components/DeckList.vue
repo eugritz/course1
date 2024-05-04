@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { computed, useSlots } from 'vue';
 import { invoke } from "@tauri-apps/api";
+import { Event, listen } from "@tauri-apps/api/event";
+
+import { useTauriEvent } from 'utils/tauriEvent';
+
 import Badge from './Badge.vue';
+import LinkButton from './LinkButton.vue';
 
 const slots = useSlots();
 const deckCount = computed(() => slots.default ? slots.default().length : 0);
@@ -9,6 +14,16 @@ const deckCount = computed(() => slots.default ? slots.default().length : 0);
 function openNewDeckDialog() {
   invoke("open_new_deck_dialog");
 }
+
+function handleDialogResult(event: Event<unknown>) {
+  if (event.windowLabel !== "NewDeckDialog") {
+    return;
+  }
+
+  // update
+}
+
+useTauriEvent("dialog_result", handleDialogResult);
 </script>
 
 <template>
@@ -19,9 +34,9 @@ function openNewDeckDialog() {
     </div>
     <ul class="deck-list__list">
       <slot>
-        <a @click="openNewDeckDialog" class="deck-list__list__new" tabindex="0">
+        <LinkButton @click="openNewDeckDialog">
           Создать новую колоду
-        </a>
+        </LinkButton>
       </slot>
     </ul>
   </div>
@@ -54,12 +69,6 @@ function openNewDeckDialog() {
   flex-direction: column;
   gap: 10px;
   text-align: left;
-}
-
-.deck-list__list__new {
-  text-align: center;
-  @include user-select-none;
-  cursor: pointer;
 }
 
 @if $theme == dark {
