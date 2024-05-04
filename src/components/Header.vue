@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import HomeButton from "./HomeButton.vue";
 import { invoke } from "@tauri-apps/api";
+import HomeButton from "./HomeButton.vue";
 
-function open_stats() {
+function openStats() {
   invoke("open_stats");
 }
 </script>
@@ -12,7 +12,7 @@ function open_stats() {
     <ul class="header__button-list">
       <home-button>Главная</home-button>
       <home-button>Словарь</home-button>
-      <home-button @click="open_stats">Статистика</home-button>
+      <home-button @click="openStats">Статистика</home-button>
     </ul>
   </header>
 </template>

@@ -1,19 +1,28 @@
 <script setup lang="ts">
 import { computed, useSlots } from 'vue';
+import { invoke } from "@tauri-apps/api";
 import Badge from './Badge.vue';
 
 const slots = useSlots();
 const deckCount = computed(() => slots.default ? slots.default().length : 0);
+
+function openNewDeckDialog() {
+  invoke("open_new_deck_dialog");
+}
 </script>
 
 <template>
   <div class="deck-list">
     <div class="deck-list__title">
       <h1>Колоды</h1>
-      <Badge class="deck-list__title__badge">{{ deckCount }}</Badge>
+      <Badge>{{ deckCount }}</Badge>
     </div>
     <ul class="deck-list__list">
-      <slot></slot>
+      <slot>
+        <a @click="openNewDeckDialog" class="deck-list__list__new" tabindex="0">
+          Создать новую колоду
+        </a>
+      </slot>
     </ul>
   </div>
 </template>
@@ -40,15 +49,17 @@ const deckCount = computed(() => slots.default ? slots.default().length : 0);
   }
 }
 
-.deck-list__title__badge {
-  min-width: 1em;
-}
-
 .deck-list__list {
   display: flex;
   flex-direction: column;
   gap: 10px;
   text-align: left;
+}
+
+.deck-list__list__new {
+  text-align: center;
+  @include user-select-none;
+  cursor: pointer;
 }
 
 @if $theme == dark {

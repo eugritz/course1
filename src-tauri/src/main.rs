@@ -4,11 +4,15 @@
 use tauri::Manager;
 
 mod windows;
+use windows::open_new_deck_dialog;
 use windows::open_stats;
 
 fn main() {
     let app = tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![open_stats])
+        .invoke_handler(tauri::generate_handler![
+            open_stats,
+            open_new_deck_dialog
+        ])
         .on_window_event(|event| match event.event() {
             tauri::WindowEvent::CloseRequested { api, .. } => {
                 if event.window().url().path() == "/src/index.html" {
@@ -27,10 +31,28 @@ fn main() {
     tauri::WindowBuilder::new(
         &app,
         "Statistics",
-        tauri::WindowUrl::App("src/views/Statistics/index.html".parse().unwrap()),
+        tauri::WindowUrl::App(
+            "src/views/Statistics/index.html".parse().unwrap(),
+        ),
     )
     .title("course1 - Статистика")
     .visible(false)
+    .build()
+    .unwrap();
+
+    tauri::WindowBuilder::new(
+        &app,
+        "NewDeckDialog",
+        tauri::WindowUrl::App(
+            "src/views/NewDeckDialog/index.html".parse().unwrap(),
+        ),
+    )
+    .title("Создать новую колоду")
+    .visible(false)
+    .resizable(false)
+    .minimizable(false)
+    .maximizable(false)
+    .inner_size(400.0, 140.0)
     .build()
     .unwrap();
 

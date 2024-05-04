@@ -9,6 +9,7 @@
 
 .badge {
   width: fit-content;
+  min-width: 1em;
   background-color: #cae0fc;
   padding: 2px 5px;
   margin: 0 10px;

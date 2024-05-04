@@ -6,6 +6,7 @@
 @import "../styles/theme";
 
 button {
+  margin: 0;
   border-radius: 0;
   border: 1px solid rgba(0, 0, 0, 0.03);
   font-size: 1.1em;
