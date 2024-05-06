@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { onMounted,
-ref } from "vue";
+import { onMounted, ref } from "vue";
 import { appWindow } from "@tauri-apps/api/window";
 import { emit, TauriEvent } from "@tauri-apps/api/event";
 import { useTauriEvent } from "utils/tauriEvent";
+
+import { deckStore } from "stores/deckStore";
 
 const deckTitle = ref("");
 const deckTitleRef = ref<HTMLInputElement | null>(null);
@@ -20,11 +21,13 @@ onMounted(() => {
 });
 
 function createNewDeck() {
-  emit("dialog_result", {
-    deckTitle: deckTitle.value,
+  deckStore.create(deckTitle.value).then(() => {
+    emit("dialog_result", {
+      deckTitle: deckTitle.value,
+    });
+    reset();
+    appWindow.hide();
   });
-  reset();
-  appWindow.hide();
 }
 
 function handleCancel() {

@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { computed, useSlots } from 'vue';
 import { invoke } from "@tauri-apps/api";
-import { Event, listen } from "@tauri-apps/api/event";
-
-import { useTauriEvent } from 'utils/tauriEvent';
 
 import Badge from './Badge.vue';
 import LinkButton from './LinkButton.vue';
@@ -14,16 +11,6 @@ const deckCount = computed(() => slots.default ? slots.default().length : 0);
 function openNewDeckDialog() {
   invoke("open_new_deck_dialog");
 }
-
-function handleDialogResult(event: Event<unknown>) {
-  if (event.windowLabel !== "NewDeckDialog") {
-    return;
-  }
-
-  // update
-}
-
-useTauriEvent("dialog_result", handleDialogResult);
 </script>
 
 <template>
