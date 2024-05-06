@@ -1,15 +1,12 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use migration::{Migrator, MigratorTrait};
 use tauri::Manager;
 
 mod windows;
 use windows::open_new_deck_dialog;
 use windows::open_stats;
-
-mod api;
-mod entities;
-mod services;
 
 fn main() {
     let app = tauri::Builder::default()
@@ -43,7 +40,9 @@ fn main() {
         .to_owned();
     let db = tauri::async_runtime::block_on(async move {
         let conn_str = format!("sqlite://{}/db.sqlite?mode=rwc", app_data_dir);
-        sea_orm::Database::connect(conn_str).await.unwrap()
+        let db = sea_orm::Database::connect(conn_str).await.unwrap();
+        Migrator::up(&db, None).await.unwrap();
+        db
     });
     app.manage(sea_orm::DbConn::from(db));
 
