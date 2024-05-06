@@ -37,6 +37,7 @@ const title = computed(() => slots.default ? slots.default()[0].children : "");
   border: none;
   text-align: left;
   box-shadow: none;
+  justify-content: start;
 
   span {
     padding: 5px 6px;

@@ -2,14 +2,18 @@
 import { onMounted, ref } from "vue";
 import { appWindow } from "@tauri-apps/api/window";
 import { emit, TauriEvent } from "@tauri-apps/api/event";
-import { useTauriEvent } from "utils/tauriEvent";
 
 import { deckStore } from "stores/deckStore";
+import { useTauriEvent } from "utils/tauriEvent";
 
+import Loader from "components/Loader.vue";
+
+const loading = ref(false);
 const deckTitle = ref("");
 const deckTitleRef = ref<HTMLInputElement | null>(null);
 
 function reset() {
+  loading.value = false;
   deckTitleRef.value?.focus();
   deckTitle.value = "";
 }
@@ -21,7 +25,8 @@ onMounted(() => {
 });
 
 function createNewDeck() {
-  deckStore.create(deckTitle.value).then(() => {
+  loading.value = true;
+  deckStore.create(deckTitle.value).finally(() => {
     emit("dialog_result", {
       deckTitle: deckTitle.value,
     });
@@ -51,7 +56,10 @@ function handleCancel() {
     />
     <div class="dialog__controls">
       <button type="button" @click="handleCancel">Отменить</button>
-      <button type="submit">Создать</button>
+      <button type="submit" :disabled="loading">
+        <Loader v-show="loading" />
+        <span :class="{ hidden: loading }">Создать</span>
+      </button>
     </div>
   </form>
 </template>
@@ -74,5 +82,9 @@ function handleCancel() {
 
 .deck-title {
   width: 100%;
+}
+
+.hidden {
+  opacity: 0;
 }
 </style>
