@@ -5,10 +5,15 @@ description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
 
+[workspace]
+members = [".", "api", "entity", "migration", "service"]
+
 [build-dependencies]
 tauri-build = { version = "1", features = [] }
 
 [dependencies]
+api = { path = "api" }
+migration = { path = "migration" }
 sea-orm = { version = "0.12", features = [ "sqlx-sqlite", "runtime-tokio-rustls", "macros" ] }
 tauri = { version = "1", features = [ "shell-open", "window-hide" ] }
 serde = { version = "1", features = ["derive"] }

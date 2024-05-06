@@ -1,14 +1,16 @@
-use crate::{entities, services::DeckService};
 use sea_orm::DbConn;
+
+use entity;
+use service::DeckService;
 
 #[tauri::command]
 pub async fn create_deck(
     state: tauri::State<'_, DbConn>,
     deck_title: String,
-) -> Result<entities::decks::Model, ()> {
+) -> Result<entity::decks::Model, ()> {
     DeckService::create_deck(
         &state,
-        entities::decks::Model {
+        entity::decks::Model {
             id: 0,
             name: deck_title,
         },
@@ -21,6 +23,6 @@ pub async fn create_deck(
 #[tauri::command]
 pub async fn get_all_decks(
     state: tauri::State<'_, DbConn>,
-) -> Result<Vec<entities::decks::Model>, ()> {
+) -> Result<Vec<entity::decks::Model>, ()> {
     DeckService::find_all_decks(&state).await.or(Ok(vec![]))
 }
