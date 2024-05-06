@@ -6,7 +6,9 @@ import Badge from './Badge.vue';
 import LinkButton from './LinkButton.vue';
 
 const slots = useSlots();
-const deckCount = computed(() => slots.default ? slots.default().length : 0);
+const deckCount = computed(
+  () => slots.default ? (slots.default()[0].children?.length ?? 0) : 0
+);
 
 function openNewDeckDialog() {
   invoke("open_new_deck_dialog");
