@@ -7,6 +7,7 @@ mod windows;
 use windows::open_new_deck_dialog;
 use windows::open_stats;
 
+mod api;
 mod entities;
 mod services;
 
@@ -14,7 +15,9 @@ fn main() {
     let app = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             open_stats,
-            open_new_deck_dialog
+            open_new_deck_dialog,
+            api::decks::get_all_decks,
+            api::decks::create_deck,
         ])
         .on_window_event(|event| match event.event() {
             tauri::WindowEvent::CloseRequested { api, .. } => {
@@ -30,6 +33,19 @@ fn main() {
         })
         .build(tauri::generate_context!())
         .expect("error while running tauri application");
+
+    let app_data_dir = app
+        .path_resolver()
+        .app_data_dir()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_owned();
+    let db = tauri::async_runtime::block_on(async move {
+        let conn_str = format!("sqlite://{}/db.sqlite?mode=rwc", app_data_dir);
+        sea_orm::Database::connect(conn_str).await.unwrap()
+    });
+    app.manage(sea_orm::DbConn::from(db));
 
     tauri::WindowBuilder::new(
         &app,
