@@ -7,6 +7,9 @@ mod windows;
 use windows::open_new_deck_dialog;
 use windows::open_stats;
 
+mod entities;
+mod services;
+
 fn main() {
     let app = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
