@@ -102,12 +102,6 @@ function handleOpenDeleteDeckDialog() {
   background-color: #ebf0f7;
 }
 
-@if $theme == dark {
-  .options__button:hover {
-    background-color: #21262e;
-  }
-}
-
 .danger {
   color: #d20000;
 }
