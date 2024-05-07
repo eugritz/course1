@@ -10,7 +10,7 @@ const deckCount = computed(
   () => slots.default ? (slots.default()[0].children?.length ?? 0) : 0
 );
 
-function openNewDeckDialog() {
+function handleOpenNewDeckDialog() {
   invoke("open_new_deck_dialog");
 }
 </script>
@@ -23,7 +23,7 @@ function openNewDeckDialog() {
     </div>
     <ul class="deck-list__list">
       <slot>
-        <LinkButton @click="openNewDeckDialog">
+        <LinkButton @click="handleOpenNewDeckDialog">
           Создать новую колоду
         </LinkButton>
       </slot>

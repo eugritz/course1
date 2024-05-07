@@ -1,6 +1,7 @@
 <script lang="ts">
 export interface PopupExposed {
   toggle: (event: Event) => void,
+  close: () => void,
 }
 </script>
 
@@ -8,20 +9,24 @@ export interface PopupExposed {
 import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
 import { useWindowSize } from 'utils/windowSize';
 
-const state = ref(false);
+const props = defineProps<{
+  arrow?: boolean,
+}>();
+
 const classes = ref({
   "popup": true,
-  "popup--left": true,
-  "popup--right": false,
+  "popup--right": true,
+  "popup--left": false,
 });
+const styles = ref({
+  "--arrow-height": props.arrow ? "8px" : "4px",
+});
+
+const state = ref(false);
 const popup = shallowRef<HTMLElement | null>(null);
 const target = shallowRef<HTMLElement | null>(null);
 
 const { width, height } = useWindowSize();
-
-watch([width, height], () => {
-  state.value = false;
-});
 
 const position = computed(() => {
   width.value;
@@ -43,15 +48,15 @@ const position = computed(() => {
 
     if (left + rect2.width + 20 > width.value) {
       left = rect1.right - rect2.width + padding;
-      popup.value?.classList.remove("popup--left");
-      popup.value?.classList.add("popup--right");
-      classes.value['popup--left'] = false;
-      classes.value['popup--right'] = true;
-    } else {
-      popup.value?.classList.add("popup--left");
       popup.value?.classList.remove("popup--right");
-      classes.value['popup--left'] = true;
-      classes.value['popup--right'] = false;
+      popup.value?.classList.add("popup--left");
+    } else {
+      if (!props.arrow) {
+        left += padding
+      }
+
+      popup.value?.classList.add("popup--right");
+      popup.value?.classList.remove("popup--left");
     }
 
     left = left + "px";
@@ -62,6 +67,20 @@ const position = computed(() => {
     left,
     top,
   };
+});
+
+watch([width, height], () => {
+  state.value = false;
+});
+
+onMounted(() => {
+  document.addEventListener("keydown", handleKeyDown);
+  document.addEventListener("click", handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("keydown", handleKeyDown);
+  document.removeEventListener("click", handleClickOutside);
 });
 
 function handleClickOutside(e: MouseEvent) {
@@ -78,24 +97,19 @@ function handleKeyDown(e: KeyboardEvent) {
   }
 }
 
-onMounted(() => {
-  document.addEventListener("keydown", handleKeyDown);
-  document.addEventListener("click", handleClickOutside);
-});
-
-onUnmounted(() => {
-  document.removeEventListener("keydown", handleKeyDown);
-  document.removeEventListener("click", handleClickOutside);
-});
-
 function toggle(event: Event) {
   const eventTarget = event.currentTarget as HTMLElement;
   state.value = !state.value;
   target.value = eventTarget;
 }
 
+function close() {
+  state.value = !state.value;
+}
+
 defineExpose({
   toggle,
+  close,
 });
 </script>
 
@@ -103,9 +117,11 @@ defineExpose({
   <Teleport to="body" v-if="state">
     <div
       ref="popup"
+      v-bind="$attrs"
       :class="{ ...classes }"
-      :style="{ ...position }"
+      :style="{ ...styles, ...position }"
     >
+      <span v-if="$props.arrow" class="arrow"></span>
       <slot />
     </div>
   </Teleport>
@@ -125,10 +141,9 @@ $popup-border-color: #e2e2e2;
 }
 
 .popup,
-.popup--left,
-.popup--right {
-  --arrow-height: 8px;
-  --arrow-left: 6px;
+.popup--right,
+.popup--left {
+  --arrow-left: 8px;
 
   z-index: 999;
   position: absolute;
@@ -158,31 +173,35 @@ $popup-border-color: #e2e2e2;
   pointer-events: none;
 }
 
-.popup--left::before {
-  @include down-arrow;
-  left: var(--arrow-left);
-  border-width: calc(var(--arrow-height) + $popup-border-width + 1px);
-  border-bottom-color: $popup-border-color;
+.popup--left {
+  .arrow::before {
+    @include down-arrow;
+    right: var(--arrow-left);
+    border-width: calc(var(--arrow-height) + $popup-border-width + 1px);
+    border-bottom-color: $popup-border-color;
+  }
+  
+  .arrow::after {
+    @include down-arrow;
+    right: calc(var(--arrow-left) + $popup-border-width + 1px);
+    border-width: var(--arrow-height);
+    border-bottom-color: $popup-background-color;
+  }
 }
 
-.popup--left::after {
-  @include down-arrow;
-  left: calc(var(--arrow-left) + $popup-border-width + 1px);
-  border-width: var(--arrow-height);
-  border-bottom-color: $popup-background-color;
-}
-
-.popup--right::before {
-  @include down-arrow;
-  right: calc(var(--arrow-left));
-  border-width: calc(var(--arrow-height) + $popup-border-width + 1px);
-  border-bottom-color: $popup-border-color;
-}
-
-.popup--right::after {
-  @include down-arrow;
-  right: calc(var(--arrow-left) + $popup-border-width + 1px);
-  border-width: var(--arrow-height);
-  border-bottom-color: $popup-background-color;
+.popup--right {
+  .arrow::before {
+    @include down-arrow;
+    left: var(--arrow-left);
+    border-width: calc(var(--arrow-height) + $popup-border-width + 1px);
+    border-bottom-color: $popup-border-color;
+  }
+  
+  .arrow::after {
+    @include down-arrow;
+    left: calc(var(--arrow-left) + $popup-border-width + 1px);
+    border-width: var(--arrow-height);
+    border-bottom-color: $popup-background-color;
+  }
 }
 </style>
