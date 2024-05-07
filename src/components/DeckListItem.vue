@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import { computed, useSlots } from 'vue';
+
+defineEmits<{
+  (e: "options:toggle", event: MouseEvent): void,
+}>();
+
 const slots = useSlots();
 const title = computed(() => slots.default ? slots.default()[0].children : "");
 </script>
@@ -14,7 +19,11 @@ const title = computed(() => slots.default ? slots.default()[0].children : "");
         <slot></slot>
       </span>
     </button>
-    <button class="deck-list__item__options highlight" title="Настройки колоды">
+    <button
+      class="deck-list__item__options highlight"
+      title="Настройки колоды"
+      @click="(e) => $emit('options:toggle', e)"
+    >
       <unicon class="icon" name="ellipsis-h"></unicon>
     </button>
   </li>
