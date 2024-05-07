@@ -2,7 +2,7 @@ use tauri::Manager;
 
 #[tauri::command]
 pub async fn open_stats(handle: tauri::AppHandle) {
-    if let Some(window) = handle.get_window("Statistics") {
+    if let Some(window) = handle.get_window("StatisticsWindow") {
         window.show().unwrap();
         window.set_focus().unwrap();
     }

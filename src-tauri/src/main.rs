@@ -48,9 +48,9 @@ fn main() {
 
     tauri::WindowBuilder::new(
         &app,
-        "Statistics",
+        "StatisticsWindow",
         tauri::WindowUrl::App(
-            "src/views/Statistics/index.html".parse().unwrap(),
+            "src/views/StatisticsWindow/index.html".parse().unwrap(),
         ),
     )
     .title("course1 - Статистика")
