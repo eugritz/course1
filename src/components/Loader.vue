@@ -10,7 +10,15 @@
   width: 24px;
   height: 24px;
   display: inline-block;
-  border: 1px solid #000000;
+
+
+  @if $theme == light {
+    border: 2px solid #000000;
+  }
+  @if $theme == dark {
+    border: 2px solid #ffffff;
+  }
+
   border-bottom-color: transparent;
   border-radius: 50%;
   box-sizing: border-box;
@@ -25,11 +33,4 @@
     transform: rotate(360deg);
   }
 } 
-
-@if $theme == dark {
-  .loader {
-    border-width: 2px;
-    border-color: #ffffff;
-  }
-}
 </style>
