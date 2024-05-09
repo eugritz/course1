@@ -1,6 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::fs;
+
 use migration::{Migrator, MigratorTrait};
 use tauri::Manager;
 
@@ -38,6 +40,10 @@ fn main() {
         .to_str()
         .unwrap()
         .to_owned();
+    fs::create_dir_all(app_data_dir.clone()).expect(
+        "failed to create dir in app_data_dir"
+    );
+
     let db = tauri::async_runtime::block_on(async move {
         let conn_str = format!("sqlite://{}/db.sqlite?mode=rwc", app_data_dir);
         let db = sea_orm::Database::connect(conn_str)
