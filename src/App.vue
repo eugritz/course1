@@ -17,8 +17,8 @@ const decks = computed(() => deckStore.cached);
 const optionsPopup = ref<PopupExposed | null>(null);
 const selectedDeck = shallowRef<Deck | null>(null);
 
-useTauriEvent(events.NewDeckDialog.onResult, handleDialogResult);
-useTauriEvent(events.RenameDeckDialog.onResult, handleDialogResult);
+useTauriEvent(events.NewDeckModal.onResult, handleDialogResult);
+useTauriEvent(events.RenameDeckModal.onResult, handleDialogResult);
 
 watchEffect(() => {
   reset();
@@ -42,10 +42,10 @@ function handleOpenRenameDeckDialog() {
     return;
   }
 
-  emit(events.RenameDeckDialog.setData, {
+  emit(events.RenameDeckModal.setData, {
     deck: selectedDeck.value,
   }).then(() => {
-    invoke(events.RenameDeckDialog.open);
+    invoke(events.RenameDeckModal.open);
   });
 
   optionsPopup.value?.close();

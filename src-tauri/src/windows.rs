@@ -1,6 +1,9 @@
 use tauri::Manager;
+use gtk::prelude::*;
 
 pub fn build_windows(app: &tauri::App) {
+    let main_window = app.get_window("App").unwrap().gtk_window().unwrap();
+
     tauri::WindowBuilder::new(
         app,
         "StatisticsWindow",
@@ -13,11 +16,11 @@ pub fn build_windows(app: &tauri::App) {
     .build()
     .unwrap();
 
-    tauri::WindowBuilder::new(
+    let window = tauri::WindowBuilder::new(
         app,
-        "NewDeckDialog",
+        "NewDeckModal",
         tauri::WindowUrl::App(
-            "src/views/NewDeckDialog/index.html".parse().unwrap(),
+            "src/views/NewDeckModal/index.html".parse().unwrap(),
         ),
     )
     .title("Создать новую колоду")
@@ -27,13 +30,18 @@ pub fn build_windows(app: &tauri::App) {
     .maximizable(false)
     .inner_size(400.0, 140.0)
     .build()
+    .unwrap()
+    .gtk_window()
     .unwrap();
+    window.set_icon(None);
+    window.set_transient_for(Some(&main_window));
+    window.set_modal(true);
 
-    tauri::WindowBuilder::new(
+    let window = tauri::WindowBuilder::new(
         app,
-        "RenameDeckDialog",
+        "RenameDeckModal",
         tauri::WindowUrl::App(
-            "src/views/RenameDeckDialog/index.html".parse().unwrap(),
+            "src/views/RenameDeckModal/index.html".parse().unwrap(),
         ),
     )
     .title("Переименовать колоду")
@@ -43,7 +51,12 @@ pub fn build_windows(app: &tauri::App) {
     .maximizable(false)
     .inner_size(400.0, 140.0)
     .build()
+    .unwrap()
+    .gtk_window()
     .unwrap();
+    window.set_icon(None);
+    window.set_transient_for(Some(&main_window));
+    window.set_modal(true);
 }
 
 #[tauri::command]
@@ -55,16 +68,16 @@ pub async fn open_stats_window(handle: tauri::AppHandle) {
 }
 
 #[tauri::command]
-pub async fn open_new_deck_dialog(handle: tauri::AppHandle) {
-    if let Some(window) = handle.get_window("NewDeckDialog") {
+pub async fn open_new_deck_modal(handle: tauri::AppHandle) {
+    if let Some(window) = handle.get_window("NewDeckModal") {
         window.show().unwrap();
         window.set_focus().unwrap();
     }
 }
 
 #[tauri::command]
-pub async fn open_rename_deck_dialog(handle: tauri::AppHandle) {
-    if let Some(window) = handle.get_window("RenameDeckDialog") {
+pub async fn open_rename_deck_modal(handle: tauri::AppHandle) {
+    if let Some(window) = handle.get_window("RenameDeckModal") {
         window.show().unwrap();
         window.set_focus().unwrap();
     }

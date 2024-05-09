@@ -863,6 +863,7 @@ name = "course1"
 version = "0.0.0"
 dependencies = [
  "api",
+ "gtk",
  "migration",
  "sea-orm",
  "serde",

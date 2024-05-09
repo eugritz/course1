@@ -1,11 +1,11 @@
 export default {
-  NewDeckDialog: {
-    open: "open_new_deck_dialog",
-    onResult: "NewDeckDialog:onResult",
+  NewDeckModal: {
+    open: "open_new_deck_modal",
+    onResult: "NewDeckModal:onResult",
   },
-  RenameDeckDialog: {
-    open: "open_rename_deck_dialog",
-    setData: "RenameDeckDialog:setData",
-    onResult: "RenameDeckDialog:onResult",
+  RenameDeckModal: {
+    open: "open_rename_deck_modal",
+    setData: "RenameDeckModal:setData",
+    onResult: "RenameDeckModal:onResult",
   },
 };

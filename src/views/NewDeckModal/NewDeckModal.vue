@@ -1,22 +1,19 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import { emit, TauriEvent } from "@tauri-apps/api/event";
 import { appWindow } from "@tauri-apps/api/window";
-import { emit, Event, TauriEvent } from "@tauri-apps/api/event";
 
-import { Deck } from "entities/Deck";
 import { deckStore } from "stores/deckStore";
 import { useTauriEvent } from "utils/tauriEvent";
-import events from "constants/events";
 
 import Loader from "components/Loader.vue";
+import events from "constants/events";
 
 const loading = ref(false);
-const deck = ref<Deck | null>(null);
 const deckTitle = ref("");
 const deckTitleRef = ref<HTMLInputElement | null>(null);
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
-useTauriEvent(events.RenameDeckDialog.setData, handleSetData);
 
 onMounted(() => {
   deckTitleRef.value?.focus();
@@ -24,32 +21,19 @@ onMounted(() => {
 
 function reset() {
   loading.value = false;
-  deckTitle.value = "";
   deckTitleRef.value?.focus();
+  deckTitle.value = "";
 }
 
-function renameDeck() {
-  if (!deck.value) {
-    return;
-  }
-
+function createNewDeck() {
   loading.value = true;
-  deckStore.rename(deck.value.id, deckTitle.value).finally(() => {
-    emit(events.RenameDeckDialog.onResult);
+  deckStore.create(deckTitle.value).finally(() => {
+    emit(events.NewDeckModal.onResult, {
+      deckTitle: deckTitle.value,
+    });
     reset();
     appWindow.hide();
   });
-}
-
-function handleSetData(event: Event<unknown>) {
-  const payload = event.payload as {
-    deck?: Deck,
-  };
-
-  if (payload.deck !== undefined) {
-    deck.value = payload.deck;
-    deckTitle.value = payload.deck.name;
-  }
 }
 
 function handleCancel() {
@@ -61,14 +45,13 @@ function handleCancel() {
 <template>
   <form
     class="dialog"
-    @submit.prevent="renameDeck"
+    @submit.prevent="createNewDeck"
     @keydown.esc="handleCancel"
   >
-    <label>Новое название колоды</label>
+    <label>Название колоды</label>
     <input
       class="deck-title"
       type="text"
-      :placeholder="deck?.name"
       v-model="deckTitle"
       ref="deckTitleRef"
     />
@@ -76,7 +59,7 @@ function handleCancel() {
       <button type="button" @click="handleCancel">Отменить</button>
       <button type="submit" :disabled="loading">
         <Loader v-show="loading" />
-        <span :class="{ hidden: loading }">Изменить</span>
+        <span :class="{ hidden: loading }">Создать</span>
       </button>
     </div>
   </form>

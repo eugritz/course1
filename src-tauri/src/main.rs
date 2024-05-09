@@ -13,8 +13,8 @@ fn main() {
     let app = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             windows::open_stats_window,
-            windows::open_new_deck_dialog,
-            windows::open_rename_deck_dialog,
+            windows::open_new_deck_modal,
+            windows::open_rename_deck_modal,
             api::decks::get_all_decks,
             api::decks::create_deck,
             api::decks::rename_deck,
