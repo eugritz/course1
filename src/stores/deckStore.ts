@@ -18,4 +18,11 @@ export const deckStore = shallowReactive({
       deckTitle: title,
     });
   },
+
+  async rename(id: number, new_title: string): Promise<Deck> {
+    return invoke("rename_deck", {
+      deckId: id,
+      newDeckTitle: new_title,
+    });
+  }
 });

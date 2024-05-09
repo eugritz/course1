@@ -28,12 +28,14 @@ function reset() {
   deckTitleRef.value?.focus();
 }
 
-function createNewDeck() {
+function renameDeck() {
+  if (!deck.value) {
+    return;
+  }
+
   loading.value = true;
-  deckStore.create(deckTitle.value).finally(() => {
-    emit("dialog_result", {
-      deckTitle: deckTitle.value,
-    });
+  deckStore.rename(deck.value.id, deckTitle.value).finally(() => {
+    emit(events.RenameDeckDialog.onResult);
     reset();
     appWindow.hide();
   });
@@ -46,6 +48,7 @@ function handleSetData(event: Event<unknown>) {
 
   if (payload.deck !== undefined) {
     deck.value = payload.deck;
+    deckTitle.value = payload.deck.name;
   }
 }
 
@@ -58,7 +61,7 @@ function handleCancel() {
 <template>
   <form
     class="dialog"
-    @submit.prevent="createNewDeck"
+    @submit.prevent="renameDeck"
     @keydown.esc="handleCancel"
   >
     <label>Новое название колоды</label>
@@ -73,7 +76,7 @@ function handleCancel() {
       <button type="button" @click="handleCancel">Отменить</button>
       <button type="submit" :disabled="loading">
         <Loader v-show="loading" />
-        <span :class="{ hidden: loading }">Создать</span>
+        <span :class="{ hidden: loading }">Изменить</span>
       </button>
     </div>
   </form>

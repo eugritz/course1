@@ -17,6 +17,7 @@ fn main() {
             windows::open_rename_deck_dialog,
             api::decks::get_all_decks,
             api::decks::create_deck,
+            api::decks::rename_deck,
         ])
         .on_window_event(|event| match event.event() {
             tauri::WindowEvent::CloseRequested { api, .. } => {

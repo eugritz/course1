@@ -18,6 +18,7 @@ const optionsPopup = ref<PopupExposed | null>(null);
 const selectedDeck = shallowRef<Deck | null>(null);
 
 useTauriEvent(events.NewDeckDialog.onResult, handleDialogResult);
+useTauriEvent(events.RenameDeckDialog.onResult, handleDialogResult);
 
 watchEffect(() => {
   reset();
