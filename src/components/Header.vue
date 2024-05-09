@@ -3,7 +3,7 @@ import { invoke } from "@tauri-apps/api";
 import HomeButton from "./HomeButton.vue";
 
 function openStats() {
-  invoke("open_stats");
+  invoke("open_stats_window");
 }
 </script>
 

@@ -5,14 +5,14 @@ use migration::{Migrator, MigratorTrait};
 use tauri::Manager;
 
 mod windows;
-use windows::open_new_deck_dialog;
-use windows::open_stats;
+use windows::build_windows;
 
 fn main() {
     let app = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            open_stats,
-            open_new_deck_dialog,
+            windows::open_stats_window,
+            windows::open_new_deck_dialog,
+            windows::open_rename_deck_dialog,
             api::decks::get_all_decks,
             api::decks::create_deck,
         ])
@@ -40,39 +40,15 @@ fn main() {
         .to_owned();
     let db = tauri::async_runtime::block_on(async move {
         let conn_str = format!("sqlite://{}/db.sqlite?mode=rwc", app_data_dir);
-        let db = sea_orm::Database::connect(conn_str).await.unwrap();
+        let db = sea_orm::Database::connect(conn_str)
+            .await
+            .expect("error while connecting to database");
         Migrator::up(&db, None).await.unwrap();
         db
     });
     app.manage(sea_orm::DbConn::from(db));
 
-    tauri::WindowBuilder::new(
-        &app,
-        "StatisticsWindow",
-        tauri::WindowUrl::App(
-            "src/views/StatisticsWindow/index.html".parse().unwrap(),
-        ),
-    )
-    .title("course1 - Статистика")
-    .visible(false)
-    .build()
-    .unwrap();
-
-    tauri::WindowBuilder::new(
-        &app,
-        "NewDeckDialog",
-        tauri::WindowUrl::App(
-            "src/views/NewDeckDialog/index.html".parse().unwrap(),
-        ),
-    )
-    .title("Создать новую колоду")
-    .visible(false)
-    .resizable(false)
-    .minimizable(false)
-    .maximizable(false)
-    .inner_size(400.0, 140.0)
-    .build()
-    .unwrap();
+    build_windows(&app);
 
     app.run(|_, _| {});
 }
