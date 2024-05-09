@@ -9,15 +9,20 @@ use tauri::Manager;
 mod windows;
 use windows::build_windows;
 
+mod dto;
+
 fn main() {
     let app = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            windows::open_stats_window,
+            windows::open_confirmation_modal,
+            windows::confirmation_modal_on_result,
             windows::open_new_deck_modal,
             windows::open_rename_deck_modal,
+            windows::open_stats_window,
             api::decks::get_all_decks,
             api::decks::create_deck,
             api::decks::rename_deck,
+            api::decks::delete_deck,
         ])
         .on_window_event(|event| match event.event() {
             tauri::WindowEvent::CloseRequested { api, .. } => {
@@ -41,9 +46,8 @@ fn main() {
         .to_str()
         .unwrap()
         .to_owned();
-    fs::create_dir_all(app_data_dir.clone()).expect(
-        "failed to create dir in app_data_dir"
-    );
+    fs::create_dir_all(app_data_dir.clone())
+        .expect("failed to create dir in app_data_dir");
 
     let db = tauri::async_runtime::block_on(async move {
         let conn_str = format!("sqlite://{}/db.sqlite?mode=rwc", app_data_dir);

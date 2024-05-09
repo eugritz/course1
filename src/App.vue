@@ -17,8 +17,9 @@ const decks = computed(() => deckStore.cached);
 const optionsPopup = ref<PopupExposed | null>(null);
 const selectedDeck = shallowRef<Deck | null>(null);
 
-useTauriEvent(events.NewDeckModal.onResult, handleDialogResult);
-useTauriEvent(events.RenameDeckModal.onResult, handleDialogResult);
+useTauriEvent(events.NewDeckModal.onResult, handleDeckDialogResult);
+useTauriEvent(events.RenameDeckModal.onResult, handleDeckDialogResult);
+useTauriEvent(events.ConfirmationModal.onResult, handleDeckDeleteDialogResult);
 
 watchEffect(() => {
   reset();
@@ -28,8 +29,24 @@ function reset() {
   deckStore.all();
 }
 
-function handleDialogResult(event: Event<unknown>) {
+function handleDeckDialogResult() {
   reset();
+}
+
+function handleDeckDeleteDialogResult(event: Event<unknown>) {
+  const payload = event.payload as {
+    button: number,
+  };
+
+  if (payload.button !== 1 || !selectedDeck.value) {
+    emit(events.ConfirmationModal.onReady);
+    return;
+  }
+
+  deckStore.delete(selectedDeck.value.id).then(() => {
+    emit(events.ConfirmationModal.onReady);
+    reset();
+  });
 }
 
 function handleOptionsToggle(event: MouseEvent, deck: Deck) {
@@ -52,7 +69,16 @@ function handleOpenRenameDeckDialog() {
 }
 
 function handleOpenDeleteDeckDialog() {
-  // TODO
+  if (!selectedDeck.value) {
+    return;
+  }
+
+  invoke(events.ConfirmationModal.open, {
+    title: "Удалить колоду",
+    message: "Вы уверены, что хотите удалить колоду?",
+    loading: true,
+  });
+
   optionsPopup.value?.close();
 }
 </script>

@@ -41,4 +41,18 @@ impl DeckService {
         .update(db)
         .await
     }
+
+    pub async fn delete_deck(
+        db: &DbConn,
+        id: i32,
+    ) -> Result<DeleteResult, DbErr> {
+        let deck: entity::decks::ActiveModel =
+            entity::decks::Entity::find_by_id(id)
+                .one(db)
+                .await?
+                .ok_or(DbErr::Custom("Cannot find deck".to_owned()))
+                .map(Into::into)?;
+
+        deck.delete(db).await
+    }
 }

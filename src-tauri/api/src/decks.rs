@@ -33,11 +33,26 @@ pub async fn rename_deck(
     deck_id: i32,
     new_deck_title: String,
 ) -> Result<entity::decks::Model, ()> {
-    DeckService::update_deck_by_id(&state, deck_id, entity::decks::Model {
-        id: 0,
-        name: new_deck_title,
-    })
+    DeckService::update_deck_by_id(
+        &state,
+        deck_id,
+        entity::decks::Model {
+            id: 0,
+            name: new_deck_title,
+        },
+    )
     .await
     .map(|x| x.try_into().unwrap())
     .map_err(|_| ())
+}
+
+#[tauri::command]
+pub async fn delete_deck(
+    state: tauri::State<'_, DbConn>,
+    deck_id: i32,
+) -> Result<(), ()> {
+    DeckService::delete_deck(&state, deck_id)
+        .await
+        .map_err(|_| ())?;
+    Ok(())
 }
