@@ -1,22 +1,17 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { appWindow } from "@tauri-apps/api/window";
 import { emit, TauriEvent } from "@tauri-apps/api/event";
+import { appWindow } from "@tauri-apps/api/window";
 
 import { deckStore } from "stores/deckStore";
 import { useTauriEvent } from "utils/tauriEvent";
 
 import Loader from "components/Loader.vue";
+import events from "constants/events";
 
 const loading = ref(false);
 const deckTitle = ref("");
 const deckTitleRef = ref<HTMLInputElement | null>(null);
-
-function reset() {
-  loading.value = false;
-  deckTitleRef.value?.focus();
-  deckTitle.value = "";
-}
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
 
@@ -24,10 +19,16 @@ onMounted(() => {
   deckTitleRef.value?.focus();
 });
 
+function reset() {
+  loading.value = false;
+  deckTitleRef.value?.focus();
+  deckTitle.value = "";
+}
+
 function createNewDeck() {
   loading.value = true;
   deckStore.create(deckTitle.value).finally(() => {
-    emit("dialog_result", {
+    emit(events.NewDeckDialog.onResult, {
       deckTitle: deckTitle.value,
     });
     reset();

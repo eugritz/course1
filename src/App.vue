@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from "vue";
-import { Event } from "@tauri-apps/api/event";
+import { computed, ref, shallowRef, watchEffect } from "vue";
+import { invoke } from "@tauri-apps/api";
+import { Event, emit } from "@tauri-apps/api/event";
 
+import { Deck } from "entities/Deck";
 import { deckStore } from "stores/deckStore";
 import { useTauriEvent } from "utils/tauriEvent";
+import events from "constants/events";
 
 import Header from "components/Header.vue";
 import DeckList from "components/DeckList.vue";
@@ -12,31 +15,38 @@ import Popup, { PopupExposed } from "components/Popup.vue";
 
 const decks = computed(() => deckStore.cached);
 const optionsPopup = ref<PopupExposed | null>(null);
+const selectedDeck = shallowRef<Deck | null>(null);
 
-function reset() {
-  deckStore.all();
-}
-
-useTauriEvent("dialog_result", handleDialogResult);
+useTauriEvent(events.NewDeckDialog.onResult, handleDialogResult);
 
 watchEffect(() => {
   reset();
 });
 
-function handleDialogResult(event: Event<unknown>) {
-  if (event.windowLabel !== "NewDeckDialog") {
-    return;
-  }
+function reset() {
+  deckStore.all();
+}
 
+function handleDialogResult(event: Event<unknown>) {
   reset();
 }
 
-function handleOptionsToggle(event: MouseEvent) {
+function handleOptionsToggle(event: MouseEvent, deck: Deck) {
+  selectedDeck.value = deck;
   optionsPopup.value?.toggle(event);
 }
 
 function handleOpenRenameDeckDialog() {
-  // TODO
+  if (!selectedDeck.value) {
+    return;
+  }
+
+  emit(events.RenameDeckDialog.setData, {
+    deck: selectedDeck.value,
+  }).then(() => {
+    invoke(events.RenameDeckDialog.open);
+  });
+
   optionsPopup.value?.close();
 }
 
@@ -54,7 +64,7 @@ function handleOpenDeleteDeckDialog() {
         <DeckListItem
           v-for="item in decks"
           :key="item.id"
-          @options:toggle="handleOptionsToggle"
+          @options:toggle="(e) => handleOptionsToggle(e, item)"
         >
           {{ item.name }}
         </DeckListItem>
