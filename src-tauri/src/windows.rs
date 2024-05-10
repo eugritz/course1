@@ -29,12 +29,12 @@ pub fn build_windows(app: &tauri::App) {
 
     tauri::WindowBuilder::new(
         app,
-        "StatisticsWindow",
+        "CardsWindow",
         tauri::WindowUrl::App(
-            "src/views/StatisticsWindow/index.html".parse().unwrap(),
+            "src/views/CardsWindow/index.html".parse().unwrap(),
         ),
     )
-    .title("course1 - Статистика")
+    .title("course1 - Карты")
     .visible(false)
     .build()
     .unwrap();
@@ -147,14 +147,6 @@ pub async fn confirmation_modal_on_result(
 }
 
 #[tauri::command]
-pub async fn open_stats_window(handle: tauri::AppHandle) {
-    if let Some(window) = handle.get_window("StatisticsWindow") {
-        window.show().unwrap();
-        window.set_focus().unwrap();
-    }
-}
-
-#[tauri::command]
 pub async fn open_new_deck_modal(handle: tauri::AppHandle) {
     if let Some(window) = handle.get_window("NewDeckModal") {
         window.show().unwrap();
@@ -165,6 +157,14 @@ pub async fn open_new_deck_modal(handle: tauri::AppHandle) {
 #[tauri::command]
 pub async fn open_rename_deck_modal(handle: tauri::AppHandle) {
     if let Some(window) = handle.get_window("RenameDeckModal") {
+        window.show().unwrap();
+        window.set_focus().unwrap();
+    }
+}
+
+#[tauri::command]
+pub async fn open_cards_window(handle: tauri::AppHandle) {
+    if let Some(window) = handle.get_window("CardsWindow") {
         window.show().unwrap();
         window.set_focus().unwrap();
     }

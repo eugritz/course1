@@ -18,7 +18,7 @@ fn main() {
             windows::confirmation_modal_on_result,
             windows::open_new_deck_modal,
             windows::open_rename_deck_modal,
-            windows::open_stats_window,
+            windows::open_cards_window,
             api::decks::get_all_decks,
             api::decks::create_deck,
             api::decks::rename_deck,

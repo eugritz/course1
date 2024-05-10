@@ -14,4 +14,7 @@ export default {
     setData: "RenameDeckModal:setData",
     onResult: "RenameDeckModal:onResult",
   },
+  CardsWindow: {
+    open: "open_cards_window",
+  },
 };

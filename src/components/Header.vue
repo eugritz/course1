@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { invoke } from "@tauri-apps/api";
+import events from "constants/events";
 import HomeButton from "./HomeButton.vue";
 
-function openStats() {
-  invoke("open_stats_window");
+function openCardsWindow() {
+  invoke(events.CardsWindow.open);
 }
 </script>
 
@@ -11,8 +12,8 @@ function openStats() {
   <header class="header">
     <ul class="header__button-list">
       <home-button>Главная</home-button>
-      <home-button>Словарь</home-button>
-      <home-button @click="openStats">Статистика</home-button>
+      <home-button @click="openCardsWindow">Карты</home-button>
+      <home-button>Статистика</home-button>
     </ul>
   </header>
 </template>
