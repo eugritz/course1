@@ -19,9 +19,20 @@ function handleOpenNewDeckDialog() {
 
 <template>
   <div class="deck-list">
-    <div class="deck-list__title">
-      <h1>Колоды</h1>
-      <Badge>{{ deckCount }}</Badge>
+    <div class="deck-list__header">
+      <div class="deck-list__header__title">
+        <h1>Колоды</h1>
+        <Badge>{{ deckCount }}</Badge>
+      </div>
+      <div>
+        <button
+          class="deck-list__header__new-deck"
+          title="Создать новую колоду"
+          @click="handleOpenNewDeckDialog"
+        >
+          <unicon class="icon" name="plus"></unicon>
+        </button>
+      </div>
     </div>
     <ul class="deck-list__list">
       <slot>
@@ -46,13 +57,19 @@ function handleOpenNewDeckDialog() {
   background-color: #ffffff;
 }
 
-.deck-list__title {
+.deck-list__header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   
   h1 {
     @include user-select-none;
   }
+}
+
+.deck-list__header__title {
+  display: flex;
+  align-items: center;
 }
 
 .deck-list__list {
@@ -60,6 +77,20 @@ function handleOpenNewDeckDialog() {
   flex-direction: column;
   gap: 10px;
   text-align: left;
+}
+
+.deck-list__header__new-deck {
+  padding: 0;
+  background-color: #ebf0f7;
+  box-shadow: none;
+
+  @if $theme == dark {
+    background-color: #21262e;
+  }
+
+  > .unicon {
+    height: 24px;
+  }
 }
 
 @if $theme == dark {
