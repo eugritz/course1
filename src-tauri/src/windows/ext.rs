@@ -21,9 +21,7 @@ impl<R: tauri::Runtime> SetAncestor<R> for tauri::WindowBuilder<'_> {
 #[cfg(unix)]
 impl<R: tauri::Runtime> SetAncestor<R> for tauri::WindowBuilder<'_> {
     fn ancestor(self, window: &tauri::Window<R>) -> Self {
-        self.gtk_window()
-            .unwrap()
-            .set_parent_window(window.gtk_window().unwrap());
+        self
     }
 }
 
@@ -59,11 +57,14 @@ impl<R: tauri::Runtime> SetModal for tauri::Window<R> {
     fn set_modal(&self, is_modal: bool) {
         if is_modal {
             let gtk_window = self.gtk_window().unwrap();
-            let gtk_parent = gtk_window.parent_window();
-            if let Ok(gtk_parent) = gtk_parent {
+            if let Some(parent_window) = self.get_focused_window() {
+                let gtk_parent = parent_window.gtk_window().unwrap();
                 gtk_window.set_modal(true);
                 gtk_window.set_transient_for(Some(&gtk_parent));
             }
+        } else {
+            let gtk_window = self.gtk_window().unwrap();
+            gtk_window.set_modal(false);
         }
     }
 }
@@ -84,10 +85,10 @@ pub fn get_parent_window(window: &tauri::Window) -> Option<tauri::Window> {
 
 #[cfg(unix)]
 pub fn get_parent_window(window: &tauri::Window) -> Option<tauri::Window> {
-    let gtk_parent = confirmation_window
+    let gtk_parent = window
         .gtk_window()
         .unwrap()
-        .parent_window()
+        .transient_for()
         .unwrap();
 
     for (_, window) in window.app_handle().windows() {
