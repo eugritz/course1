@@ -1,3 +1,7 @@
+<script setup lang="ts">
+import FilterSidebar from 'components/FilterSidebar.vue';
+</script>
+
 <template>
-  <h1>Hello World!</h1>
+  <FilterSidebar />
 </template>

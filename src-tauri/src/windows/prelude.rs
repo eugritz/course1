@@ -23,19 +23,6 @@ pub fn build_windows(app: &tauri::App) {
 
     tauri::WindowBuilder::new(
         app,
-        "CardsWindow",
-        tauri::WindowUrl::App(
-            "src/views/CardsWindow/index.html".parse().unwrap(),
-        ),
-    )
-    .ancestor(&main_window)
-    .title("course1 - Карты")
-    .visible(false)
-    .build()
-    .unwrap();
-
-    tauri::WindowBuilder::new(
-        app,
         "NewDeckModal",
         tauri::WindowUrl::App(
             "src/views/NewDeckModal/index.html".parse().unwrap(),
@@ -65,6 +52,20 @@ pub fn build_windows(app: &tauri::App) {
     .minimizable(false)
     .maximizable(false)
     .inner_size(400.0, 140.0)
+    .build()
+    .unwrap();
+
+    tauri::WindowBuilder::new(
+        app,
+        "CardsWindow",
+        tauri::WindowUrl::App(
+            "src/views/CardsWindow/index.html".parse().unwrap(),
+        ),
+    )
+    .ancestor(&main_window)
+    .title("course1 - Карты")
+    .visible(false)
+    .inner_size(1000.0, 600.0)
     .build()
     .unwrap();
 }
