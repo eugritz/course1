@@ -84,6 +84,19 @@ pub fn get_parent_window(window: &tauri::Window) -> Option<tauri::Window> {
     None
 }
 
+pub trait ShowModal {
+    fn show_modal(&self);
+}
+
+impl<R: tauri::Runtime> ShowModal for tauri::Window<R> {
+    fn show_modal(&self) {
+        self.center().unwrap();
+        self.show().unwrap();
+        self.set_focus().unwrap();
+        self.set_modal(true);
+    }
+}
+
 #[cfg(unix)]
 pub fn get_parent_window(window: &tauri::Window) -> Option<tauri::Window> {
     let gtk_parent = window
