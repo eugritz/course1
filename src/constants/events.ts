@@ -17,4 +17,5 @@ export default {
   CardsWindow: {
     open: "open_cards_window",
   },
+  window_close: "window_close",
 };

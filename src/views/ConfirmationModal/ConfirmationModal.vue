@@ -2,7 +2,6 @@
 import { ref } from "vue";
 import { invoke } from "@tauri-apps/api";
 import { Event, TauriEvent } from "@tauri-apps/api/event";
-import { appWindow } from "@tauri-apps/api/window";
 
 import { useTauriEvent } from "utils/tauriEvent";
 import events from "constants/events";
@@ -45,7 +44,7 @@ function handleConfirm() {
   }
 
   reset();
-  appWindow.hide();
+  invoke(events.window_close);
 }
 
 function handleCancel() {
@@ -59,7 +58,7 @@ function handleCancel() {
   }
 
   reset();
-  appWindow.hide();
+  invoke(events.window_close);
 }
 
 function handleReady() {
@@ -68,7 +67,7 @@ function handleReady() {
   }
 
   reset();
-  appWindow.hide();
+  invoke(events.window_close);
 }
 </script>
 

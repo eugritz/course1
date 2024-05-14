@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { appWindow } from "@tauri-apps/api/window";
 import { emit, Event, TauriEvent } from "@tauri-apps/api/event";
+import { appWindow } from "@tauri-apps/api/window";
 
 import { Deck } from "entities/Deck";
 import { deckStore } from "stores/deckStore";
@@ -9,6 +9,7 @@ import { useTauriEvent } from "utils/tauriEvent";
 import events from "constants/events";
 
 import Loader from "components/Loader.vue";
+import {invoke} from "@tauri-apps/api";
 
 const loading = ref(false);
 const deck = ref<Deck | null>(null);
@@ -37,11 +38,12 @@ function renameDeck() {
   deckStore.rename(deck.value.id, deckTitle.value).finally(() => {
     emit(events.RenameDeckModal.onResult);
     reset();
-    appWindow.hide();
+    invoke(events.window_close);
   });
 }
 
 function handleSetData(event: Event<unknown>) {
+  console.log("set data");
   const payload = event.payload as {
     deck?: Deck,
   };
@@ -54,7 +56,7 @@ function handleSetData(event: Event<unknown>) {
 
 function handleCancel() {
   reset();
-  appWindow.hide();
+  invoke(events.window_close);
 }
 </script>
 

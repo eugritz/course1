@@ -6,19 +6,21 @@ use std::fs;
 use migration::{Migrator, MigratorTrait};
 use tauri::Manager;
 
-mod windows;
-use windows::build_windows;
-
 mod dto;
+mod windows;
+
+use windows::build_windows;
+use windows::ext::*;
 
 fn main() {
     let app = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            windows::open_confirmation_modal,
-            windows::confirmation_modal_on_result,
-            windows::open_new_deck_modal,
-            windows::open_rename_deck_modal,
-            windows::open_cards_window,
+            windows::api::window_close,
+            windows::api::open_confirmation_modal,
+            windows::api::confirmation_modal_on_result,
+            windows::api::open_new_deck_modal,
+            windows::api::open_rename_deck_modal,
+            windows::api::open_cards_window,
             api::decks::get_all_decks,
             api::decks::create_deck,
             api::decks::rename_deck,
@@ -31,6 +33,7 @@ fn main() {
                     return;
                 }
 
+                event.window().set_modal(false);
                 event.window().hide().unwrap();
                 api.prevent_close();
             }

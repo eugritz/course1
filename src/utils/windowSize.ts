@@ -20,7 +20,7 @@ export function useWindowSize({
     ? debounceFunc(updateValues, debounce)
     : updateValues;
 
-  function handleResize(this: Window, event: UIEvent) {
+  function handleResize(this: Window, _event: UIEvent) {
     update(this.innerWidth, this.innerHeight);
   }
 

@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import { invoke } from "@tauri-apps/api";
 import { emit, TauriEvent } from "@tauri-apps/api/event";
 import { appWindow } from "@tauri-apps/api/window";
 
 import { deckStore } from "stores/deckStore";
 import { useTauriEvent } from "utils/tauriEvent";
+import events from "constants/events";
 
 import Loader from "components/Loader.vue";
-import events from "constants/events";
 
 const loading = ref(false);
 const deckTitle = ref("");
@@ -32,13 +33,13 @@ function createNewDeck() {
       deckTitle: deckTitle.value,
     });
     reset();
-    appWindow.hide();
+    invoke(events.window_close);
   });
 }
 
 function handleCancel() {
   reset();
-  appWindow.hide();
+  invoke(events.window_close);
 }
 </script>
 
