@@ -1,4 +1,4 @@
-#[cfg(unix)]
+#[cfg(target_os = "linux")]
 use gtk::prelude::*;
 use tauri::Manager;
 #[cfg(windows)]
@@ -18,7 +18,7 @@ impl<R: tauri::Runtime> SetAncestor<R> for tauri::WindowBuilder<'_> {
     }
 }
 
-#[cfg(unix)]
+#[cfg(target_os = "linux")]
 impl<R: tauri::Runtime> SetAncestor<R> for tauri::WindowBuilder<'_> {
     fn ancestor(self, window: &tauri::Window<R>) -> Self {
         self
@@ -53,7 +53,7 @@ impl<R: tauri::Runtime> SetModal for tauri::Window<R> {
     }
 }
 
-#[cfg(unix)]
+#[cfg(target_os = "linux")]
 impl<R: tauri::Runtime> SetModal for tauri::Window<R> {
     fn set_modal(&self, is_modal: bool) {
         if is_modal {
@@ -67,6 +67,19 @@ impl<R: tauri::Runtime> SetModal for tauri::Window<R> {
             let gtk_window = self.gtk_window().unwrap();
             gtk_window.set_modal(false);
         }
+    }
+}
+
+pub trait ShowModal {
+    fn show_modal(&self);
+}
+
+impl<R: tauri::Runtime> ShowModal for tauri::Window<R> {
+    fn show_modal(&self) {
+        self.center().unwrap();
+        self.show().unwrap();
+        self.set_focus().unwrap();
+        self.set_modal(true);
     }
 }
 
@@ -84,20 +97,7 @@ pub fn get_parent_window(window: &tauri::Window) -> Option<tauri::Window> {
     None
 }
 
-pub trait ShowModal {
-    fn show_modal(&self);
-}
-
-impl<R: tauri::Runtime> ShowModal for tauri::Window<R> {
-    fn show_modal(&self) {
-        self.center().unwrap();
-        self.show().unwrap();
-        self.set_focus().unwrap();
-        self.set_modal(true);
-    }
-}
-
-#[cfg(unix)]
+#[cfg(target_os = "linux")]
 pub fn get_parent_window(window: &tauri::Window) -> Option<tauri::Window> {
     let gtk_parent = window
         .gtk_window()
