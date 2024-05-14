@@ -26,7 +26,6 @@ export const deckStore = shallowReactive({
     });
   },
 
-
   async delete(id: number): Promise<Deck> {
     return invoke("delete_deck", { deckId: id });
   }
