@@ -36,6 +36,7 @@ pub async fn open_confirmation_modal(
             )
             .unwrap();
 
+        window.center().unwrap();
         window.show().unwrap();
         window.set_focus().unwrap();
         window.set_modal(true);
@@ -66,6 +67,7 @@ pub async fn confirmation_modal_on_result(
 #[tauri::command]
 pub async fn open_new_deck_modal(handle: tauri::AppHandle) {
     if let Some(window) = handle.get_window("NewDeckModal") {
+        window.center().unwrap();
         window.show().unwrap();
         window.set_focus().unwrap();
         window.set_modal(true);
@@ -75,6 +77,7 @@ pub async fn open_new_deck_modal(handle: tauri::AppHandle) {
 #[tauri::command]
 pub async fn open_rename_deck_modal(handle: tauri::AppHandle) {
     if let Some(window) = handle.get_window("RenameDeckModal") {
+        window.center().unwrap();
         window.show().unwrap();
         window.set_focus().unwrap();
         window.set_modal(true);

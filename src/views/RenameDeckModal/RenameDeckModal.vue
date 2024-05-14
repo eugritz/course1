@@ -37,8 +37,9 @@ function renameDeck() {
   loading.value = true;
   deckStore.rename(deck.value.id, deckTitle.value).finally(() => {
     emit(events.RenameDeckModal.onResult);
-    reset();
-    invoke(events.window_close);
+    invoke(events.window_close).then(() => {
+      reset();
+    });
   });
 }
 
@@ -55,8 +56,9 @@ function handleSetData(event: Event<unknown>) {
 }
 
 function handleCancel() {
-  reset();
-  invoke(events.window_close);
+  invoke(events.window_close).then(() => {
+    reset();
+  });
 }
 </script>
 

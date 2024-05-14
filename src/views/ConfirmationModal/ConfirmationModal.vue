@@ -43,8 +43,9 @@ function handleConfirm() {
     return;
   }
 
-  reset();
-  invoke(events.window_close);
+  invoke(events.window_close).then(() => {
+    reset();
+  });
 }
 
 function handleCancel() {
@@ -57,8 +58,9 @@ function handleCancel() {
     return;
   }
 
-  reset();
-  invoke(events.window_close);
+  invoke(events.window_close).then(() => {
+    reset();
+  });
 }
 
 function handleReady() {
@@ -66,8 +68,9 @@ function handleReady() {
     return;
   }
 
-  reset();
-  invoke(events.window_close);
+  invoke(events.window_close).then(() => {
+    reset();
+  });
 }
 </script>
 

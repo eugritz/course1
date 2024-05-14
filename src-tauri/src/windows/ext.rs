@@ -42,6 +42,7 @@ impl<R: tauri::Runtime> SetModal for tauri::Window<R> {
 
                 EnableWindow(parent, false);
             }
+
         } else {
             let hwnd = self.hwnd().unwrap();
             unsafe {

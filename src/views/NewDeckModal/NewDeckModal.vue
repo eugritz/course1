@@ -32,14 +32,16 @@ function createNewDeck() {
     emit(events.NewDeckModal.onResult, {
       deckTitle: deckTitle.value,
     });
-    reset();
-    invoke(events.window_close);
+    invoke(events.window_close).then(() => {
+      reset();
+    });
   });
 }
 
 function handleCancel() {
-  reset();
-  invoke(events.window_close);
+  invoke(events.window_close).then(() => {
+    reset();
+  });
 }
 </script>
 
