@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
 
-const width = defineModel<number>();
+const emit = defineEmits<{
+  (e: "resizestart", event: MouseEvent): void;
+  (e: "resize", event: MouseEvent): void;
+  (e: "resizeend", event: MouseEvent): void;
+}>();
+
 const isDragging = ref(false);
 
 onMounted(() => {
@@ -18,6 +23,7 @@ function handleDraggableDragStart(event: MouseEvent) {
   if (event.button !== 0)
     return;
 
+  emit("resizestart", event);
   isDragging.value = true;
   document.body.style.cursor = "col-resize";
 }
@@ -26,12 +32,16 @@ function handleDraggableDragUpdate(event: MouseEvent) {
   if (!isDragging.value)
     return;
 
-  width.value = event.clientX;
+  emit("resize", event);
   event.preventDefault();
   event.stopPropagation();
 }
 
-function handleDraggableDragStop() {
+function handleDraggableDragStop(event: MouseEvent) {
+  if (!isDragging.value)
+    return;
+
+  emit("resizeend", event);
   isDragging.value = false;
   document.body.removeAttribute("style");
 }
@@ -40,13 +50,13 @@ function handleDraggableDragStop() {
 <template>
   <div
     v-bind="$attrs"
-    class="draggable"
+    class="resizer"
     @mousedown="handleDraggableDragStart"
   >
     <unicon class="icon" width="12" height="12" name="draggabledots"></unicon>
   </div>
   <Teleport to="body" v-if="isDragging">
-    <div class="draggable-wrapper">
+    <div class="resizer-wrapper">
     </div>
   </Teleport>
 </template>
@@ -54,7 +64,7 @@ function handleDraggableDragStop() {
 <style lang="scss">
 @import "../styles/theme";
 
-.draggable {
+.resizer {
   flex: 0;
   display: flex;
   align-items: center;
@@ -71,7 +81,7 @@ function handleDraggableDragStop() {
   }
 }
 
-.draggable-wrapper {
+.resizer-wrapper {
   z-index: 9999;
   position: absolute;
   top: 0;

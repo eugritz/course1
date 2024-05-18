@@ -64,15 +64,11 @@ import { computed, onMounted, ref, shallowRef, watch } from 'vue';
 
 import { deckStore } from 'stores/deckStore';
 
-import Draggable from './Draggable.vue';
 import FilterSidebarItem, { ItemIcons } from './FilterSidebarItem.vue';
 import NativeListbox, { NativeListboxExposed } from './NativeListbox.vue';
 
 const decks = computed(() => deckStore.cached);
-
 const searchQuery = ref("");
-const sidebarWidth = ref(300);
-
 const selectedItem = shallowRef<any | null>(null);
 const items = ref<FilterSidebarItem[]>([
   {
@@ -158,7 +154,7 @@ watch(decks, () => {
 </script>
 
 <template>
-  <div class="filter-sidebar" :style="{ width: sidebarWidth + 'px' }">
+  <div class="filter-sidebar">
     <div class="filter-sidebar__content">
       <input
         v-model="searchQuery"
@@ -177,7 +173,6 @@ watch(decks, () => {
         </template>
       </NativeListbox>
     </div>
-    <Draggable v-model="sidebarWidth" />
   </div>
 </template>
 
@@ -185,7 +180,7 @@ watch(decks, () => {
 @import "../styles/theme";
 
 .filter-sidebar {
-  position: absolute;
+  min-width: 200px;
   height: calc(100% - 16px);
   display: flex;
   flex-direction: row;
