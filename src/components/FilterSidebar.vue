@@ -60,18 +60,18 @@ function flattenFind(
 </script>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
+import { computed, onMounted, ref, shallowRef, watch } from 'vue';
 
 import { deckStore } from 'stores/deckStore';
 
-import NativeListbox from './NativeListbox.vue';
+import Draggable from './Draggable.vue';
 import FilterSidebarItem, { ItemIcons } from './FilterSidebarItem.vue';
+import NativeListbox from './NativeListbox.vue';
 
 const decks = computed(() => deckStore.cached);
 
 const searchQuery = ref("");
 const sidebarWidth = ref(300);
-const isDraggableDragging = ref(false);
 
 const selectedItem = shallowRef<any | null>(null);
 const items = ref<FilterSidebarItem[]>([
@@ -138,14 +138,6 @@ const mapIdToItemIdx = {
 
 onMounted(() => {
   deckStore.all();
-
-  window.addEventListener("mousemove", handleDraggableDragUpdate);
-  window.addEventListener("mouseup", handleDraggableDragStop);
-});
-
-onUnmounted(() => {
-  window.removeEventListener("mousemove", handleDraggableDragUpdate);
-  window.removeEventListener("mouseup", handleDraggableDragStop);
 });
 
 watch(decks, () => {
@@ -157,23 +149,6 @@ watch(decks, () => {
     });
   }
 });
-
-function handleDraggableDragStart() {
-  isDraggableDragging.value = true;
-  document.body.style.cursor = "col-resize";
-}
-
-function handleDraggableDragUpdate(event: MouseEvent) {
-  if (!isDraggableDragging.value)
-    return;
-
-  sidebarWidth.value = event.clientX;
-}
-
-function handleDraggableDragStop() {
-  isDraggableDragging.value = false;
-  document.body.removeAttribute("style");
-}
 </script>
 
 <template>
@@ -191,19 +166,12 @@ function handleDraggableDragStop() {
         </template>
       </NativeListbox>
     </div>
-    <div
-      class="filter-sidebar__draggable"
-      @mousedown="handleDraggableDragStart"
-    >
-      <unicon class="icon" width="12" height="12" name="draggabledots"></unicon>
-    </div>
+    <Draggable v-model="sidebarWidth" />
   </div>
 </template>
 
 <style scoped lang="scss">
 @import "../styles/theme";
-
-$draggable-width: 12px;
 
 .filter-sidebar {
   position: absolute;
@@ -232,22 +200,5 @@ $draggable-width: 12px;
 .filter-sidebar__list {
   height: 100%;
   overflow: auto;
-}
-
-.filter-sidebar__draggable {
-  flex: 0;
-  display: flex;
-  align-items: center;
-  cursor: col-resize;
-
-  .icon {
-    fill: #848484;
-  }
-
-  @if $theme == dark {
-    .icon {
-      fill: #7f7f7f;
-    }
-  }
 }
 </style>
