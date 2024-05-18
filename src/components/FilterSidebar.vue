@@ -66,7 +66,7 @@ import { deckStore } from 'stores/deckStore';
 
 import Draggable from './Draggable.vue';
 import FilterSidebarItem, { ItemIcons } from './FilterSidebarItem.vue';
-import NativeListbox from './NativeListbox.vue';
+import NativeListbox, { NativeListboxExposed } from './NativeListbox.vue';
 
 const decks = computed(() => deckStore.cached);
 
@@ -132,12 +132,18 @@ const flattenItems = computed<FilterSidebarItem[]>(() =>
   ? flatten(items.value)
   : flattenFind(searchQuery.value.trim().toLowerCase(), items.value));
 
+const filterSidebarListbox = ref<NativeListboxExposed | null>(null);
+
 const mapIdToItemIdx = {
   decks: 1,
 };
 
 onMounted(() => {
   deckStore.all();
+});
+
+watch(searchQuery, () => {
+  filterSidebarListbox.value?.deselect();
 });
 
 watch(decks, () => {
@@ -160,7 +166,12 @@ watch(decks, () => {
         type="text"
         placeholder="Фильтрация категорий"
       />
-      <NativeListbox v-model="selectedItem" class="filter-sidebar__list" :items="flattenItems">
+      <NativeListbox
+        v-model="selectedItem"
+        ref="filterSidebarListbox"
+        class="filter-sidebar__list"
+        :items="flattenItems"
+      >
         <template #item="slotProps">
           <FilterSidebarItem v-bind="slotProps" />
         </template>

@@ -1,3 +1,9 @@
+<script lang="ts">
+export interface NativeListboxExposed {
+  deselect: () => void;
+}
+</script>
+
 <script setup lang="ts" generic="T">
 import { onMounted, onUnmounted, ref, shallowRef } from 'vue';
 
@@ -19,7 +25,7 @@ onUnmounted(() => {
 
 const isItemDragging = ref(false);
 const selectedItemIdx = shallowRef<number | null>(null);
-const pickedItem = defineModel<T>();
+const pickedItem = defineModel<T | null>();
 
 function handleItemDragStart(item: number, event: MouseEvent) {
   if (event.button === 0)
@@ -64,6 +70,15 @@ function handleItemPrev(_event: KeyboardEvent) {
     selectedItemIdx.value--;
   }
 }
+
+function deselect() {
+  selectedItemIdx.value = null;
+  pickedItem.value = null;
+}
+
+defineExpose({
+  deselect,
+});
 </script>
 
 <template>

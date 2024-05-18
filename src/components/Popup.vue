@@ -1,7 +1,7 @@
 <script lang="ts">
 export interface PopupExposed {
-  toggle: (event: Event) => void,
-  close: () => void,
+  toggle: (event: Event) => void;
+  close: () => void;
 }
 </script>
 
