@@ -1,48 +1,107 @@
+<script lang="ts">
+interface FilterSidebarItem {
+  level?: number;
+  value: string;
+  icon?: ItemIcons;
+  subitems?: FilterSidebarItem[];
+}
+
+function flatten(
+  items: FilterSidebarItem[], level: number
+): FilterSidebarItem[] {
+  let flat = <FilterSidebarItem[]>[];
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+
+    const clone = JSON.parse(JSON.stringify(item)) as FilterSidebarItem;
+    clone.level = level;
+
+    flat.push(clone);
+    if (item.subitems && item.subitems.length > 0) {
+      flat = flat.concat(flatten(item.subitems, level + 1));
+    }
+  }
+
+  return flat;
+}
+</script>
+
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
+
+import { deckStore } from 'stores/deckStore';
 
 import NativeListbox from './NativeListbox.vue';
 import FilterSidebarItem, { ItemIcons } from './FilterSidebarItem.vue';
 
+const decks = computed(() => deckStore.cached);
 const sidebarWidth = ref(300);
 const isDraggableDragging = ref(false);
 
 const selectedItem = shallowRef<any | null>(null);
-const items = ref<{
-  level?: number,
-  value: string,
-  icon?: ItemIcons,
-}[]>([
-  { value: "Сегодня", icon: "today" },
-  { level: 2, value: "В очереди", icon: "today" },
-  { level: 2, value: "Добавленные", icon: "today" },
-  { level: 2, value: "Измененные", icon: "today" },
-  { level: 2, value: "Изученные", icon: "today" },
-  { value: "Колоды", icon: "decks" },
-  { level: 2, value: "По умолчанию", icon: "deck" },
-  { value: "Флажки", icon: "flag" },
-  { level: 2, value: "Без флажка", icon: "flagUnspecified" },
-  { level: 2, value: "Красный", icon: "flagRed" },
-  { level: 2, value: "Оранжевый", icon: "flagOrange" },
-  { level: 2, value: "Зеленый", icon: "flagGreen" },
-  { level: 2, value: "Синий", icon: "flagBlue" },
-  { level: 2, value: "Розовый", icon: "flagPink" },
-  { level: 2, value: "Бирюзовый", icon: "flagTorquoise" },
-  { level: 2, value: "Фиолетовый", icon: "flagPurple" },
-  { value: "Состояния карт", icon: "cardState" },
-  { level: 2, value: "Новые", icon: "cardStateNew" },
-  { level: 2, value: "Изучаемые", icon: "cardStateLearning" },
-  { level: 2, value: "Отложенные", icon: "cardStateSuspended" },
-  { value: "Виды карт", icon: "cardKind" },
-  { value: "Метки", icon: "tag" },
-  { level: 2, value: "Без меток", icon: "tagUnspecified" },
+const items = ref<FilterSidebarItem[]>([
+  {
+    icon: "today",
+    value: "Сегодня",
+    subitems: [
+      { icon: "today", value: "В очереди" },
+      { icon: "today", value: "Добавленные" },
+      { icon: "today", value: "Измененные" },
+      { icon: "today", value: "Изученные" },
+    ],
+  },
+  {
+    icon: "decks",
+    value: "Колоды",
+    subitems: [],
+  },
+  {
+    icon: "flag",
+    value: "Флажки",
+    subitems: [
+      { icon: "flagUnspecified", value: "Без флажка" },
+      { icon: "flagRed", value: "Красный" },
+      { icon: "flagOrange", value: "Оранжевый" },
+      { icon: "flagGreen", value: "Зеленый" },
+      { icon: "flagBlue", value: "Синий" },
+      { icon: "flagPink", value: "Розовый" },
+      { icon: "flagTorquoise", value: "Бирюзовый" },
+      { icon: "flagPurple", value: "Фиолетовый" },
+    ],
+  },
+  {
+    icon: "cardState",
+    value: "Состояния карт",
+    subitems: [
+      { icon: "cardStateNew", value: "Новые" },
+      { icon: "cardStateLearning", value: "Изучаемые" },
+      { icon: "cardStateSuspended", value: "Отложенные" },
+    ],
+  },
+  {
+    icon: "cardKind",
+    value: "Виды карт",
+    subitems: [],
+  },
+  {
+    icon: "tag",
+    value: "Метки",
+    subitems: [
+      { icon: "tagUnspecified", value: "Без меток" },
+    ],
+  },
 ]);
 
-watch(selectedItem, () => {
-  console.log(selectedItem.value);
-});
+const flattenItems = computed<FilterSidebarItem[]>(() =>
+  flatten(items.value, 1));
+
+const mapIdToItemIdx = {
+  decks: 1,
+};
 
 onMounted(() => {
+  deckStore.all();
+
   window.addEventListener("mousemove", handleDraggableDragUpdate);
   window.addEventListener("mouseup", handleDraggableDragStop);
 });
@@ -50,6 +109,17 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener("mousemove", handleDraggableDragUpdate);
   window.removeEventListener("mouseup", handleDraggableDragStop);
+});
+
+watch(decks, () => {
+  console.log("bruh");
+  for (let i = 0; i < deckStore.cached.length; i++) {
+    const deck = deckStore.cached[i];
+    items.value[mapIdToItemIdx.decks].subitems?.push({
+      icon: "deck",
+      value: deck.name,
+    });
+  }
 });
 
 function handleDraggableDragStart() {
@@ -78,7 +148,7 @@ function handleDraggableDragStop() {
         type="text"
         placeholder="Фильтрация категорий"
       />
-      <NativeListbox v-model="selectedItem" class="filter-sidebar__list" :items="items">
+      <NativeListbox v-model="selectedItem" class="filter-sidebar__list" :items="flattenItems">
         <template #item="slotProps">
           <FilterSidebarItem v-bind="slotProps" />
         </template>
@@ -123,6 +193,7 @@ $draggable-width: 12px;
 }
 
 .filter-sidebar__list {
+  height: 100%;
   overflow: auto;
 }
 

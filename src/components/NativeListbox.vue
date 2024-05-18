@@ -21,8 +21,9 @@ const isItemDragging = ref(false);
 const selectedItemIdx = shallowRef<number | null>(null);
 const pickedItem = defineModel<T>();
 
-function handleItemDragStart(item: number) {
-  isItemDragging.value = true;
+function handleItemDragStart(item: number, event: MouseEvent) {
+  if (event.button === 0)
+    isItemDragging.value = true;
   selectedItemIdx.value = item;
 }
 
@@ -80,7 +81,7 @@ function handleItemPrev(_event: KeyboardEvent) {
           'listbox__item': true,
           'listbox__item--selected': selectedItemIdx == idx
         }"
-        @mousedown="handleItemDragStart(idx)"
+        @mousedown="(e) => handleItemDragStart(idx, e)"
         @mouseenter="handleItemDragUpdate(idx)"
       >
         <slot name="item" v-bind="item" />
@@ -92,7 +93,7 @@ function handleItemPrev(_event: KeyboardEvent) {
         class="item"
         :key="idx"
         :class="{ selected: selectedItemIdx == idx }"
-        @mousedown="handleItemDragStart(idx)"
+        @mousedown="(e) => handleItemDragStart(idx, e)"
         @mouseenter="handleItemDragUpdate(idx)"
       >
         {{item}}
