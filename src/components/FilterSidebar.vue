@@ -7,7 +7,8 @@ interface FilterSidebarItem {
 }
 
 function flatten(
-  items: FilterSidebarItem[], level: number
+  items: FilterSidebarItem[],
+  level: number = 1,
 ): FilterSidebarItem[] {
   let flat = <FilterSidebarItem[]>[];
   for (let i = 0; i < items.length; i++) {
@@ -24,6 +25,38 @@ function flatten(
 
   return flat;
 }
+
+function flattenFind(
+  query: string,
+  items: FilterSidebarItem[],
+  level: number = 1,
+): FilterSidebarItem[] {
+  let flat = <FilterSidebarItem[]>[];
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+
+    if (item.subitems && item.subitems.length > 0) {
+      if (item.subitems && item.subitems.length > 0) {
+        const children = flattenFind(query, item.subitems, level + 1);
+        if (children.length > 0) {
+          const clone = JSON.parse(JSON.stringify(item)) as FilterSidebarItem;
+          clone.level = level;
+
+          flat.push(clone);
+          flat = flat.concat(flattenFind(query, item.subitems, level + 1));
+        }
+      }
+    } else {
+      if (item.value.trim().toLowerCase().indexOf(query) !== -1) {
+        const clone = JSON.parse(JSON.stringify(item)) as FilterSidebarItem;
+        clone.level = level;
+        flat.push(clone);
+      }
+    }
+  }
+
+  return flat;
+}
 </script>
 
 <script setup lang="ts">
@@ -35,6 +68,8 @@ import NativeListbox from './NativeListbox.vue';
 import FilterSidebarItem, { ItemIcons } from './FilterSidebarItem.vue';
 
 const decks = computed(() => deckStore.cached);
+
+const searchQuery = ref("");
 const sidebarWidth = ref(300);
 const isDraggableDragging = ref(false);
 
@@ -93,7 +128,9 @@ const items = ref<FilterSidebarItem[]>([
 ]);
 
 const flattenItems = computed<FilterSidebarItem[]>(() =>
-  flatten(items.value, 1));
+  searchQuery.value === ""
+  ? flatten(items.value)
+  : flattenFind(searchQuery.value.trim().toLowerCase(), items.value));
 
 const mapIdToItemIdx = {
   decks: 1,
@@ -112,7 +149,6 @@ onUnmounted(() => {
 });
 
 watch(decks, () => {
-  console.log("bruh");
   for (let i = 0; i < deckStore.cached.length; i++) {
     const deck = deckStore.cached[i];
     items.value[mapIdToItemIdx.decks].subitems?.push({
@@ -144,6 +180,7 @@ function handleDraggableDragStop() {
   <div class="filter-sidebar" :style="{ width: sidebarWidth + 'px' }">
     <div class="filter-sidebar__content">
       <input
+        v-model="searchQuery"
         class="filter-sidebar__search"
         type="text"
         placeholder="Фильтрация категорий"
