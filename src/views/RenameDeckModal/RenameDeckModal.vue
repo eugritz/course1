@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { emit, Event, TauriEvent } from "@tauri-apps/api/event";
-import { appWindow } from "@tauri-apps/api/window";
 
 import { Deck } from "entities/Deck";
 import { deckStore } from "stores/deckStore";

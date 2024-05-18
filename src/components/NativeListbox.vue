@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T">
-import { computed, onMounted, onUnmounted, ref, shallowRef } from 'vue';
+import { onMounted, onUnmounted, ref, shallowRef } from 'vue';
 
 const props = defineProps<{
   items: T[],

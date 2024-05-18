@@ -2,7 +2,6 @@
 import { onMounted, ref } from "vue";
 import { invoke } from "@tauri-apps/api";
 import { emit, TauriEvent } from "@tauri-apps/api/event";
-import { appWindow } from "@tauri-apps/api/window";
 
 import { deckStore } from "stores/deckStore";
 import { useTauriEvent } from "utils/tauriEvent";
