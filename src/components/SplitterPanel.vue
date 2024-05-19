@@ -6,7 +6,9 @@ defineProps<{
 </script>
 
 <template>
-  <slot />
+  <div class="splitter__splitter-panel">
+    <slot />
+  </div>
 </template>
 
 <style scoped lang="scss">

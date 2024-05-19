@@ -22,14 +22,14 @@ function reset() {
 </script>
 
 <template>
-    <SplitterPanel size="23%" min-size="200px">
   <Splitter class="content" ref="splitter">
+    <SplitterPanel size="20%" min-size="200px">
       <FilterSidebar ref="filterSidebar" />
     </SplitterPanel>
     <SplitterPanel>
       two
     </SplitterPanel>
-    <SplitterPanel size="20%">
+    <SplitterPanel size="30%">
       three
     </SplitterPanel>
   </Splitter>

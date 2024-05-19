@@ -150,10 +150,14 @@ function validateResize(newPrevSize: number, newNextSize: number): boolean {
     return false;
 
   const panelIdx = resizeStartPanelIdx.value;
-  const panel = panels.value[panelIdx];
+  const prevPanel = panels.value[panelIdx];
+  const nextPanel = panels.value[panelIdx + 1];
 
-  if (panel.props && (panel.props.minSize || panel.props["min-size"])) {
-    const minSize = panel.props.minSize || panel.props["min-size"] as string;
+  if (prevPanel.props
+    && (prevPanel.props.minSize || prevPanel.props["min-size"])
+  ) {
+    const minSize =
+      prevPanel.props.minSize || prevPanel.props["min-size"] as string;
 
     if (minSize.endsWith("px")) {
       const absMinSize = parseFloat(minSize);
@@ -162,6 +166,23 @@ function validateResize(newPrevSize: number, newNextSize: number): boolean {
     } else {
       const relMinSize = parseFloat(minSize);
       if (newPrevSize < relMinSize)
+        return false;
+    }
+  }
+
+  if (nextPanel.props
+    && (nextPanel.props.minSize || nextPanel.props["min-size"])
+  ) {
+    const minSize =
+      nextPanel.props.minSize || nextPanel.props["min-size"] as string;
+
+    if (minSize.endsWith("px")) {
+      const absMinSize = parseFloat(minSize);
+      if (newNextSize / 100 * containerWidth.value < absMinSize)
+        return false;
+    } else {
+      const relMinSize = parseFloat(minSize);
+      if (newNextSize < relMinSize)
         return false;
     }
   }
@@ -177,9 +198,7 @@ defineExpose({
 <template>
   <div class="splitter" ref="root">
     <template v-for="(panel, idx) in panels">
-      <div class="splitter__splitter-panel">
-        <component :is="panel" />
-      </div>
+      <component :is="panel" />
       <Resizer
         v-if="idx !== panels.length - 1"
         @resizestart="handleResizeStart(idx, $event)"

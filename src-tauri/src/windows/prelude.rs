@@ -65,7 +65,7 @@ pub fn build_windows(app: &tauri::App) {
     .ancestor(&main_window)
     .title("course1 - Карты")
     .visible(false)
-    .inner_size(1000.0, 600.0)
+    .inner_size(1200.0, 600.0)
     .build()
     .unwrap();
 }
