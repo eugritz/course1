@@ -1,4 +1,8 @@
 <script lang="ts">
+export interface FilterSidebarExposed {
+  reset: () => void;
+}
+
 interface FilterSidebarItem {
   level?: number;
   value: string;
@@ -150,6 +154,15 @@ watch(decks, () => {
       value: deck.name,
     });
   }
+});
+
+function reset() {
+  searchQuery.value = "";
+  filterSidebarListbox.value?.deselect();
+}
+
+defineExpose({
+  reset,
 });
 </script>
 

@@ -1,3 +1,9 @@
+<script lang="ts">
+export interface SplitterExposed {
+  reset: () => void;
+}
+</script>
+
 <script setup lang="ts">
 import { computed, onMounted, ref, useSlots, watchEffect } from 'vue';
 import Resizer from './Resizer.vue';
@@ -162,6 +168,10 @@ function validateResize(newPrevSize: number, newNextSize: number): boolean {
 
   return true;
 }
+
+defineExpose({
+  reset,
+});
 </script>
 
 <template>
