@@ -1,48 +1,58 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
 
+defineProps({
+  icon: {
+    type: Boolean,
+    default: true,
+  },
+});
+
 const emit = defineEmits<{
   (e: "resizestart", event: MouseEvent): void;
-  (e: "resize", event: MouseEvent): void;
-  (e: "resizeend", event: MouseEvent): void;
+  (e: "resize", event: MouseEvent, start: MouseEvent): void;
+  (e: "resizeend", event: MouseEvent, start: MouseEvent): void;
 }>();
 
-const isDragging = ref(false);
+const resizeStartEvent = ref<MouseEvent | null>(null);
+const isResizing = ref(false);
 
 onMounted(() => {
-  window.addEventListener("mousemove", handleDraggableDragUpdate);
-  window.addEventListener("mouseup", handleDraggableDragStop);
+  window.addEventListener("mousemove", handleResize);
+  window.addEventListener("mouseup", handleResizeStop);
 });
 
 onUnmounted(() => {
-  window.removeEventListener("mousemove", handleDraggableDragUpdate);
-  window.removeEventListener("mouseup", handleDraggableDragStop);
+  window.removeEventListener("mousemove", handleResize);
+  window.removeEventListener("mouseup", handleResizeStop);
 });
 
-function handleDraggableDragStart(event: MouseEvent) {
+function handleResizeStart(event: MouseEvent) {
   if (event.button !== 0)
     return;
 
   emit("resizestart", event);
-  isDragging.value = true;
+  isResizing.value = true;
+  resizeStartEvent.value = event;
   document.body.style.cursor = "col-resize";
 }
 
-function handleDraggableDragUpdate(event: MouseEvent) {
-  if (!isDragging.value)
+function handleResize(event: MouseEvent) {
+  if (!isResizing.value || !resizeStartEvent.value)
     return;
 
-  emit("resize", event);
+  emit("resize", event, resizeStartEvent.value);
   event.preventDefault();
   event.stopPropagation();
 }
 
-function handleDraggableDragStop(event: MouseEvent) {
-  if (!isDragging.value)
+function handleResizeStop(event: MouseEvent) {
+  if (!isResizing.value || !resizeStartEvent.value)
     return;
 
-  emit("resizeend", event);
-  isDragging.value = false;
+  emit("resizeend", event, resizeStartEvent.value);
+  isResizing.value = false;
+  resizeStartEvent.value = null;
   document.body.removeAttribute("style");
 }
 </script>
@@ -50,12 +60,18 @@ function handleDraggableDragStop(event: MouseEvent) {
 <template>
   <div
     v-bind="$attrs"
-    class="resizer"
-    @mousedown="handleDraggableDragStart"
+    :class="{ resizer: icon, 'resizer--small': !icon }"
+    @mousedown="handleResizeStart"
   >
-    <unicon class="icon" width="12" height="12" name="draggabledots"></unicon>
+    <unicon
+      v-if="icon"
+      class="icon"
+      width="12"
+      height="12"
+      name="draggabledots"
+    />
   </div>
-  <Teleport to="body" v-if="isDragging">
+  <Teleport to="body" v-if="isResizing">
     <div class="resizer-wrapper">
     </div>
   </Teleport>
@@ -79,6 +95,16 @@ function handleDraggableDragStop(event: MouseEvent) {
       fill: #7f7f7f;
     }
   }
+}
+
+.resizer--small {
+  z-index: 2;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 7px;
+  margin-right: -5px;
+  cursor: col-resize;
 }
 
 .resizer-wrapper {

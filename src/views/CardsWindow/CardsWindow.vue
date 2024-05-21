@@ -5,12 +5,15 @@ import { TauriEvent } from '@tauri-apps/api/event';
 import { useTauriEvent } from 'utils/tauriEvent';
 
 import CardSwitch from 'components/CardSwitch.vue';
+import Column from 'components/Column.vue';
+import DataTable, { DataTableExposed } from 'components/DataTable.vue';
 import FilterSidebar, { FilterSidebarExposed } from 'components/FilterSidebar.vue';
 import Splitter, { SplitterExposed } from 'components/Splitter.vue';
 import SplitterPanel from 'components/SplitterPanel.vue';
 
-const splitter = ref<SplitterExposed | null>(null);
 const filterSidebar = ref<FilterSidebarExposed | null>(null);
+const splitter = ref<SplitterExposed | null>(null);
+const dataTable = ref<DataTableExposed | null>(null);
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
 
 onMounted(() => {
@@ -21,6 +24,16 @@ function reset() {
   splitter.value?.reset();
   filterSidebar.value?.reset();
 }
+
+function handleItemNext() {
+  if (dataTable.value)
+    dataTable.value.next();
+}
+
+function handleItemPrev() {
+  if (dataTable.value)
+    dataTable.value.prev();
+}
 </script>
 
 <template>
@@ -29,12 +42,34 @@ function reset() {
       <FilterSidebar ref="filterSidebar" />
     </SplitterPanel>
     <SplitterPanel class="data-view" min-size="400px">
-      <CardSwitch class="data-view__switch" />
-      <input
-        class="data-view__search"
-        type="text"
-        placeholder="Поиск по картам/записям"
-      />
+      <div class="data-view__controls">
+        <CardSwitch class="data-view__controls__switch" />
+        <input
+          class="data-view__controls__search"
+          type="text"
+          placeholder="Поиск по картам/записям"
+        />
+      </div>
+      <div class="data-view__data">
+        <div
+          class="data-view__data__wrapper"
+          tabindex="0"
+          @keydown.down="handleItemNext"
+          @keydown.up="handleItemPrev"
+        >
+          <DataTable
+            ref="dataTable"
+            tabindex="-1"
+            class="data-view__data__table"
+            :value="[{ test: 'asd' }, { test: 'asd111111111111111111111111' }]"
+          >
+            <Column field="test" header="Основное поле" />
+            <Column field="test" header="Карта" />
+            <Column field="test" header="Появление" />
+            <Column field="test" header="Колода" />
+          </DataTable>
+        </div>
+      </div>
     </SplitterPanel>
     <SplitterPanel size="30%">
       three
@@ -43,6 +78,7 @@ function reset() {
 </template>
 
 <style scoped lang="scss">
+@import "../../styles/mixins";
 @import "../../styles/theme";
 
 .content {
@@ -52,10 +88,17 @@ function reset() {
 
 .data-view {
   display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-.data-view__switch {
+.data-view__controls {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+
+.data-view__controls__switch {
   flex-shrink: 0;
 
   @if $theme == dark {
@@ -63,12 +106,29 @@ function reset() {
   }
 }
 
-.data-view__search {
+.data-view__controls__search {
   width: 100%;
   padding: 0.3em 0.6em;
 
   @if $theme == dark {
     box-shadow: none;
   }
+}
+
+.data-view__data {
+  display: flex;
+  height: 100%;
+}
+
+.data-view__data__wrapper {
+  width: 100%;
+  height: calc(100% - 16px);
+  border-radius: 4px;
+  background-color: #272727;
+  @include user-select-none;
+}
+
+.data-view__data__table {
+  width: 100%;
 }
 </style>
