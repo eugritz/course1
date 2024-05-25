@@ -14,6 +14,7 @@ import {
   VNodeNormalizedChildren,
   computed,
   isVNode,
+  nextTick,
   onMounted,
   onUnmounted,
   ref,
@@ -61,8 +62,6 @@ const oldResizersCount = ref(0);
 
 const resizeCurrentColumn = ref<HTMLElement | null>(null);
 const resizeCurrentColumnWidth = ref<number | null>(null);
-const resizeNextColumn = ref<HTMLElement | null>(null);
-const resizeNextColumnWidth = ref<number | null>(null);
 
 const isItemDragging = ref(false);
 const selectedItemIdx = ref<number | null>(null);
@@ -78,6 +77,12 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener("mouseup", handleItemDragStop);
+});
+
+watch(columns, () => {
+  nextTick(() => {
+    reset();
+  });
 });
 
 watch([table, columns, () => props.value], () => {
@@ -114,8 +119,11 @@ function reset() {
 
   for (let i = 0; i < header.value.children.length; i++) {
     const el = header.value.children[i] as HTMLElement;
-    el.style.removeProperty("width");
-    el.style.minWidth = getColumnMinWidth(el) + "px";
+    const minWidth = getColumnMinWidth(el);
+
+    el.style.removeProperty("minWidth");
+    el.style.width = minWidth + "px";
+    el.style.minWidth = minWidth + "px";
   }
 }
 
@@ -124,8 +132,8 @@ function addResizer(ref: Element | ComponentPublicInstance | null) {
   if (!el)
     return;
 
-  el.style.removeProperty("width");
-  el.style.minWidth = getColumnMinWidth(el) + "px";
+  el.style.removeProperty("minWidth");
+  el.style.width = getColumnMinWidth(el) + "px";
 
   if (el.children.length > 1) {
     const resizer = el.getElementsByClassName("resizer--small")[0] as HTMLElement;
@@ -143,12 +151,6 @@ function handleResizeStart(event: MouseEvent) {
 
   resizeCurrentColumn.value = current;
   resizeCurrentColumnWidth.value = current.offsetWidth;
-
-  const next = current.nextElementSibling as HTMLElement;
-  if (next) {
-    resizeNextColumn.value = next;
-    resizeNextColumnWidth.value = next.offsetWidth;
-  }
 }
 
 function handleResize(event: MouseEvent, start: MouseEvent) {
@@ -158,17 +160,10 @@ function handleResize(event: MouseEvent, start: MouseEvent) {
   const dx = event.clientX - start.clientX;
 
   const currentNewWidth = resizeCurrentColumnWidth.value + dx - 4; // wtf is that?
-  if (currentNewWidth < parseInt(resizeCurrentColumn.value.style.minWidth))
+  if (currentNewWidth < parseInt(resizeCurrentColumn.value.style.width))
     return;
 
-  if (resizeNextColumn.value && resizeNextColumnWidth.value) {
-    const nextNewWidth = resizeNextColumnWidth.value - dx;
-    if (nextNewWidth < parseInt(resizeNextColumn.value.style.minWidth))
-      return;
-    resizeNextColumn.value.style.width = nextNewWidth + "px";
-  }
-
-  resizeCurrentColumn.value.style.width = currentNewWidth + "px";
+  resizeCurrentColumn.value.style.minWidth = currentNewWidth + "px";
 }
 
 function handleItemDragStart(item: number, event: MouseEvent) {
@@ -346,6 +341,10 @@ td {
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+}
+
+td:last-child {
+  width: 100%;
 }
 
 thead > tr:first-child th:first-child {

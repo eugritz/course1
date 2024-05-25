@@ -75,7 +75,7 @@ function handleItemPrev() {
             <template v-else>
               <Column field="test" header="Основное поле" />
               <Column field="test" header="Запись" />
-              <Column field="test" header="Карт" />
+              <Column field="test" header="Карты" />
               <Column field="test" header="Метки" />
               <Column field="test" header="Появление" />
               <Column field="test" header="Создание" />
@@ -129,11 +129,14 @@ function handleItemPrev() {
 }
 
 .data-view__data {
+  position: relative;
   display: flex;
   height: 100%;
 }
 
 .data-view__data__wrapper {
+  position: absolute;
+  overflow: auto;
   width: 100%;
   height: calc(100% - 16px);
   border-radius: 4px;
@@ -142,6 +145,5 @@ function handleItemPrev() {
 }
 
 .data-view__data__table {
-  width: 100%;
 }
 </style>
