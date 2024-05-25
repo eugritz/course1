@@ -14,6 +14,9 @@ import SplitterPanel from 'components/SplitterPanel.vue';
 const filterSidebar = ref<FilterSidebarExposed | null>(null);
 const splitter = ref<SplitterExposed | null>(null);
 const dataTable = ref<DataTableExposed | null>(null);
+
+const cardSwitch = ref(false);
+
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
 
 onMounted(() => {
@@ -43,7 +46,7 @@ function handleItemPrev() {
     </SplitterPanel>
     <SplitterPanel class="data-view" min-size="400px">
       <div class="data-view__controls">
-        <CardSwitch class="data-view__controls__switch" />
+        <CardSwitch class="data-view__controls__switch" v-model="cardSwitch" />
         <input
           class="data-view__controls__search"
           type="text"
@@ -61,12 +64,22 @@ function handleItemPrev() {
             ref="dataTable"
             tabindex="-1"
             class="data-view__data__table"
-            :value="[{ test: 'asd' }, { test: 'asd111111111111111111111111' }]"
+            :value="[{ test: 'aaaaaaaaaaaaaaaa' }]"
           >
-            <Column field="test" header="Основное поле" />
-            <Column field="test" header="Карта" />
-            <Column field="test" header="Появление" />
-            <Column field="test" header="Колода" />
+            <template v-if="!cardSwitch">
+              <Column field="test" header="Основное поле" />
+              <Column field="test" header="Карта" />
+              <Column field="test" header="Появление" />
+              <Column field="test" header="Колода" />
+            </template>
+            <template v-else>
+              <Column field="test" header="Основное поле" />
+              <Column field="test" header="Запись" />
+              <Column field="test" header="Карт" />
+              <Column field="test" header="Метки" />
+              <Column field="test" header="Появление" />
+              <Column field="test" header="Создание" />
+            </template>
           </DataTable>
         </div>
       </div>

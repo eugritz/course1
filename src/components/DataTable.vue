@@ -9,27 +9,55 @@ export interface DataTableExposed {
 <script setup lang="ts" generic="T">
 import {
   ComponentPublicInstance,
+  Fragment,
+  VNode,
+  VNodeNormalizedChildren,
   computed,
+  isVNode,
   onMounted,
   onUnmounted,
   ref,
   useSlots,
   watch,
 } from 'vue';
+
 import Column from './Column.vue';
 import Resizer from './Resizer.vue';
+
+function getColumns(children: VNodeNormalizedChildren) {
+  let columns = <VNode[]>[];
+  if (!Array.isArray(children))
+    return [];
+
+  for (let i = 0; i < children.length; i++) {
+    const vnode = children[i];
+    if (!isVNode(vnode))
+      continue;
+
+    if (vnode.type === Column)
+      columns.push(vnode);
+    else if (vnode.type === Fragment)
+      columns = columns.concat(getColumns(vnode.children));
+  }
+
+  return columns;
+}
 
 const props = defineProps<{
   value: T[],
 }>();
 
 const slots = useSlots();
-const columns = computed(() =>
-  slots && slots.default ? slots.default().filter(x => x.type === Column) : []);
+const columns = computed(() => {
+  if (!slots || !slots.default)
+    return [];
+  return getColumns(slots.default());
+});
 
 const table = ref<HTMLElement | null>(null);
 const header = ref<HTMLElement | null>();
 const resizers = ref<HTMLElement[]>([]);
+const oldResizersCount = ref(0);
 
 const resizeCurrentColumn = ref<HTMLElement | null>(null);
 const resizeCurrentColumnWidth = ref<number | null>(null);
@@ -45,50 +73,65 @@ const sortDirection = ref(false);
 
 onMounted(() => {
   window.addEventListener("mouseup", handleItemDragStop);
-
-  if (!header.value)
-    return;
-
-  for (let i = 0; i < header.value.children.length; i++) {
-    const el = header.value.children[i] as HTMLElement;
-
-    let textWidth = 0;
-    let sortWidth = 0;
-
-    const textEl = el.getElementsByTagName("span");
-    if (textEl.length > 0) {
-      textWidth = textEl[0].getBoundingClientRect().width;
-    }
-
-    const sortEl = el.getElementsByClassName("sort");
-    if (sortEl.length > 0) {
-      sortWidth = sortEl[0].getBoundingClientRect().width;
-    }
-
-    const minWidth = textWidth + sortWidth + 16;
-    el.style.minWidth = minWidth + "px";
-  }
+  reset();
 });
 
 onUnmounted(() => {
   window.removeEventListener("mouseup", handleItemDragStop);
 });
 
-watch([table, () => props.value], () => {
+watch([table, columns, () => props.value], () => {
   if (!table.value)
     return;
 
+  resizers.value.splice(0, oldResizersCount.value);
   resizers.value.forEach(x => {
     x.style.height = (table.value?.offsetHeight ?? 0) + "px";
   });
+  oldResizersCount.value = resizers.value.length;
 });
+
+function getColumnMinWidth(el: HTMLElement) {
+  let textWidth = 0;
+  let sortWidth = 0;
+
+  const textEl = el.getElementsByTagName("span");
+  if (textEl.length > 0) {
+    textWidth = textEl[0].getBoundingClientRect().width;
+  }
+
+  const sortEl = el.getElementsByClassName("sort");
+  if (sortEl.length > 0) {
+    sortWidth = sortEl[0].getBoundingClientRect().width;
+  }
+
+  return textWidth + sortWidth + 16;
+}
+
+function reset() {
+  if (!header.value)
+    return;
+
+  for (let i = 0; i < header.value.children.length; i++) {
+    const el = header.value.children[i] as HTMLElement;
+    el.style.removeProperty("width");
+    el.style.minWidth = getColumnMinWidth(el) + "px";
+  }
+}
 
 function addResizer(ref: Element | ComponentPublicInstance | null) {
   const el = ref as HTMLElement;
-  if (el.children.length > 1)
-    resizers.value.push(
-      el.getElementsByClassName("resizer--small")[0] as HTMLElement
-    );
+  if (!el)
+    return;
+
+  el.style.removeProperty("width");
+  el.style.minWidth = getColumnMinWidth(el) + "px";
+
+  if (el.children.length > 1) {
+    const resizer = el.getElementsByClassName("resizer--small")[0] as HTMLElement;
+    resizer.style.height = (table.value?.offsetHeight ?? 0) + "px";
+    resizers.value.push(resizer);
+  }
 }
 
 function handleResizeStart(event: MouseEvent) {
@@ -287,7 +330,13 @@ tr {
 
 th {
   position: relative;
+  font-weight: 300;
   white-space: nowrap;
+}
+
+th > div:first-child {
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 td {

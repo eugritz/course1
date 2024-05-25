@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 
-const checked = ref(false);
+const checked = defineModel<boolean>();
 const transition = ref(false);
 
 function handleChange() {
