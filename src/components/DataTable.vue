@@ -65,7 +65,8 @@ onMounted(() => {
       sortWidth = sortEl[0].getBoundingClientRect().width;
     }
 
-    el.style.minWidth = textWidth + sortWidth + 16 + "px";
+    const minWidth = textWidth + sortWidth + 16;
+    el.style.minWidth = minWidth + "px";
   }
 });
 
@@ -280,17 +281,22 @@ thead {
   background-color: #454545;
 }
 
-th {
-  position: relative;
-}
-
 tr {
   @include user-select-none;
 }
 
-tr > td {
+th {
+  position: relative;
+  white-space: nowrap;
+}
+
+td {
+  max-width: 0px;
   padding: 0px 4px;
   text-align: left;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 thead > tr:first-child th:first-child {
@@ -317,13 +323,6 @@ tbody > tr:nth-of-type(odd) {
 
 tbody > tr:nth-of-type(even) {
   background-color: #2f2f2f;
-}
-
-tbody > tr > td {
-  max-width: 0px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .selected {
