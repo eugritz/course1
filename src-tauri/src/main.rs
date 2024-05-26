@@ -25,6 +25,7 @@ fn main() {
             windows::api::open_deck_filter_modal,
             // Windows
             windows::api::open_cards_window,
+            windows::api::open_add_window,
 
             api::decks::get_all_decks,
             api::decks::create_deck,

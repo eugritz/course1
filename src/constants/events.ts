@@ -24,4 +24,7 @@ export default {
   CardsWindow: {
     open: "open_cards_window",
   },
+  AddWindow: {
+    open: "open_add_window",
+  },
 };

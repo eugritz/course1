@@ -6,13 +6,18 @@ import HomeButton from "./HomeButton.vue";
 function openCardsWindow() {
   invoke(events.CardsWindow.open);
 }
+
+function openAddWindow() {
+  invoke(events.AddWindow.open);
+}
 </script>
 
 <template>
   <header class="header">
     <ul class="header__button-list">
       <home-button>Главная</home-button>
-      <home-button @click="openCardsWindow">Карты</home-button>
+      <home-button @click="openAddWindow">Добавить</home-button>
+      <home-button @click="openCardsWindow">Просмотр</home-button>
       <home-button>Статистика</home-button>
     </ul>
   </header>

@@ -70,6 +70,20 @@ pub fn build_windows(app: &tauri::App) {
     .build()
     .unwrap();
 
+    let add_window = tauri::WindowBuilder::new(
+        app,
+        "AddWindow",
+        tauri::WindowUrl::App(
+            "src/views/AddWindow/index.html".parse().unwrap(),
+        ),
+    )
+    .ancestor(&main_window)
+    .title("course1 - Добавить")
+    .visible(false)
+    .inner_size(800.0, 600.0)
+    .build()
+    .unwrap();
+
     tauri::WindowBuilder::new(
         app,
         "DeckFilterModal",
@@ -77,6 +91,7 @@ pub fn build_windows(app: &tauri::App) {
             "src/views/DeckFilterModal/index.html".parse().unwrap(),
         ),
     )
+    .ancestor(&add_window)
     .title("Выбор колоды")
     .visible(false)
     .resizable(false)
