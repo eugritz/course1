@@ -1,9 +1,40 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue';
 import { invoke } from '@tauri-apps/api';
+import { Event, emit } from '@tauri-apps/api/event';
+
+import { Deck } from 'entities/Deck';
+import { deckStore } from 'stores/deckStore';
+import { useTauriEvent } from 'utils/tauriEvent';
 import events from 'constants/events';
 
+const decks = computed(() => deckStore.cached_all);
+const selectedDeck = ref<Deck | null>(null);
+
+useTauriEvent(events.DeckFilterModal.onResult, handleDeckSelected);
+
+useTauriEvent(events.window_open, () => {
+  deckStore.all();
+  deckStore.last().then((deck) => {
+    selectedDeck.value = deck;
+  });
+});
+
 function openDeckFilterModal() {
-  invoke(events.DeckFilterModal.open);
+  emit(events.DeckFilterModal.setData, {
+    selectedDeckId: selectedDeck.value?.id,
+  }).then(() => {
+    invoke(events.DeckFilterModal.open);
+  });
+}
+
+function handleDeckSelected(event: Event<unknown>) {
+  const payload = event.payload as {
+    selectedDeckId: number,
+  };
+
+  selectedDeck.value = decks.value.find((deck) =>
+    deck.id === payload.selectedDeckId) ?? null;
 }
 </script>
 
@@ -16,7 +47,7 @@ function openDeckFilterModal() {
       </div>
       <div class="record__deck">
         Колода
-        <button @click="openDeckFilterModal">Колода</button>
+        <button @click="openDeckFilterModal">{{selectedDeck?.name}}</button>
       </div>
     </div>
     <div class="wrapper">

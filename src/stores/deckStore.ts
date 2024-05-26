@@ -4,11 +4,12 @@ import { shallowReactive } from "vue";
 import { Deck } from "entities/Deck";
 
 export const deckStore = shallowReactive({
-  cached: <Deck[]>[],
+  cached_all: <Deck[]>[],
+  cached_last: <Deck | null>null,
 
   async all(): Promise<Deck[]> {
     return invoke("get_all_decks").then((decks) => {
-        this.cached = decks as Deck[];
+        this.cached_all = decks as Deck[];
         return decks as Deck[];
     });
   },
@@ -28,5 +29,12 @@ export const deckStore = shallowReactive({
 
   async delete(id: number): Promise<Deck> {
     return invoke("delete_deck", { deckId: id });
-  }
+  },
+
+  async last(): Promise<Deck | null> {
+    return invoke("last_deck").then((deck) => {
+        this.cached_last = deck as Deck | null;
+        return deck as Deck | null;
+    });
+  },
 });

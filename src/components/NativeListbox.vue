@@ -5,7 +5,7 @@ export interface NativeListboxExposed {
 </script>
 
 <script setup lang="ts" generic="T">
-import { onMounted, onUnmounted, ref, shallowRef } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 
 const props = defineProps<{
   items: T[],
@@ -13,6 +13,11 @@ const props = defineProps<{
 
 defineSlots<{
   item(props: T): any,
+}>();
+
+const emit = defineEmits<{
+  (e: "item:dblclick", item: T): void,
+  (e: "item:keydown", item: T): void,
 }>();
 
 onMounted(() => {
@@ -24,8 +29,15 @@ onUnmounted(() => {
 });
 
 const isItemDragging = ref(false);
-const selectedItemIdx = shallowRef<number | null>(null);
+const selectedItemIdx = defineModel<number | null>("index", { default: null });
 const pickedItem = defineModel<T | null>();
+
+function handleItemDoubleClick() {
+  if (!pickedItem.value)
+    return;
+
+  emit("item:dblclick", pickedItem.value);
+}
 
 function handleItemDragStart(item: number, event: MouseEvent) {
   if (event.button === 0)
@@ -53,6 +65,7 @@ function handleItemPick() {
     return;
 
   pickedItem.value = props.items[selectedItemIdx.value];
+  emit('item:keydown', props.items[selectedItemIdx.value]);
 }
 
 function handleItemNext(_event: KeyboardEvent) {
@@ -98,6 +111,7 @@ defineExpose({
         }"
         @mousedown="(e) => handleItemDragStart(idx, e)"
         @mouseenter="handleItemDragUpdate(idx)"
+        @dblclick="handleItemDoubleClick"
       >
         <slot name="item" v-bind="item" />
       </li>

@@ -1,5 +1,6 @@
 export default {
   // Windows API
+  window_open: "window_open",
   window_close: "window_close",
   // Modals
   ConfirmationModal: {
@@ -19,6 +20,8 @@ export default {
   },
   DeckFilterModal: {
     open: "open_deck_filter_modal",
+    setData: "DeckFilterModal:setData",
+    onResult: "DeckFilterModal:onResult",
   },
   // Windows
   CardsWindow: {

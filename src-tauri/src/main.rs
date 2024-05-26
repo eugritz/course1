@@ -31,6 +31,7 @@ fn main() {
             api::decks::create_deck,
             api::decks::rename_deck,
             api::decks::delete_deck,
+            api::decks::last_deck,
         ])
         .on_window_event(|event| match event.event() {
             tauri::WindowEvent::CloseRequested { api, .. } => {

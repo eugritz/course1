@@ -13,7 +13,7 @@ import DeckList from "components/DeckList.vue";
 import DeckListItem from 'components/DeckListItem.vue';
 import Popup, { PopupExposed } from "components/Popup.vue";
 
-const decks = computed(() => deckStore.cached);
+const decks = computed(() => deckStore.cached_all);
 const optionsPopup = ref<PopupExposed | null>(null);
 const selectedDeck = shallowRef<Deck | null>(null);
 

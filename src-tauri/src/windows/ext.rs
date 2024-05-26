@@ -83,6 +83,18 @@ impl<R: tauri::Runtime> ShowModal for tauri::Window<R> {
     }
 }
 
+pub trait ShowExt {
+    fn show_ext(&self);
+}
+
+impl<R: tauri::Runtime> ShowExt for tauri::Window<R> {
+    fn show_ext(&self) {
+        self.emit("window_open", ()).unwrap();
+        self.show().unwrap();
+        self.set_focus().unwrap();
+    }
+}
+
 #[cfg(windows)]
 pub fn get_parent_window(window: &tauri::Window) -> Option<tauri::Window> {
     let hwnd_parent = unsafe { GetWindow(window.hwnd().unwrap(), GW_OWNER) };

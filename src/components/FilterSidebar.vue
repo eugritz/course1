@@ -71,7 +71,7 @@ import { deckStore } from 'stores/deckStore';
 import FilterSidebarItem, { ItemIcons } from './FilterSidebarItem.vue';
 import NativeListbox, { NativeListboxExposed } from './NativeListbox.vue';
 
-const decks = computed(() => deckStore.cached);
+const decks = computed(() => deckStore.cached_all);
 const searchQuery = ref("");
 const selectedItem = shallowRef<any | null>(null);
 const items = ref<FilterSidebarItem[]>([
@@ -147,8 +147,8 @@ watch(searchQuery, () => {
 });
 
 watch(decks, () => {
-  for (let i = 0; i < deckStore.cached.length; i++) {
-    const deck = deckStore.cached[i];
+  for (let i = 0; i < deckStore.cached_all.length; i++) {
+    const deck = deckStore.cached_all[i];
     items.value[mapIdToItemIdx.decks].subitems?.push({
       icon: "deck",
       value: deck.name,

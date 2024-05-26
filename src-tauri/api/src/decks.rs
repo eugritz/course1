@@ -42,7 +42,6 @@ pub async fn rename_deck(
         },
     )
     .await
-    .map(|x| x.try_into().unwrap())
     .map_err(|_| ())
 }
 
@@ -55,4 +54,14 @@ pub async fn delete_deck(
         .await
         .map_err(|_| ())?;
     Ok(())
+}
+
+#[tauri::command]
+pub async fn last_deck(
+    state: tauri::State<'_, DbConn>,
+) -> Result<Option<entity::decks::Model>, ()> {
+    DeckService::find_last_deck(&state)
+    .await
+    .map(|x| x)
+    .map_err(|_| ())
 }

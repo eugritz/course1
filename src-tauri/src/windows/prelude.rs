@@ -97,6 +97,7 @@ pub fn build_windows(app: &tauri::App) {
     .resizable(false)
     .minimizable(false)
     .maximizable(false)
+    .inner_size(400.0, 300.0)
     .build()
     .unwrap();
 }
