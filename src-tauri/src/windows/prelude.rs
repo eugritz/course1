@@ -63,10 +63,25 @@ pub fn build_windows(app: &tauri::App) {
         ),
     )
     .ancestor(&main_window)
-    .title("course1 - Карты")
+    .title("course1 - Просмотр")
     .visible(false)
     .inner_size(1300.0, 600.0)
     .min_inner_size(1000.0, 500.0)
+    .build()
+    .unwrap();
+
+    tauri::WindowBuilder::new(
+        app,
+        "DeckFilterModal",
+        tauri::WindowUrl::App(
+            "src/views/DeckFilterModal/index.html".parse().unwrap(),
+        ),
+    )
+    .title("Выбор колоды")
+    .visible(false)
+    .resizable(false)
+    .minimizable(false)
+    .maximizable(false)
     .build()
     .unwrap();
 }

@@ -24,18 +24,21 @@ onMounted(() => {
 });
 
 function reset() {
-  splitter.value?.reset();
   filterSidebar.value?.reset();
+  splitter.value?.reset();
+  dataTable.value?.reset();
+
+  cardSwitch.value = false;
 }
 
 function handleItemNext() {
   if (dataTable.value)
-    dataTable.value.next();
+    dataTable.value.selectNext();
 }
 
 function handleItemPrev() {
   if (dataTable.value)
-    dataTable.value.prev();
+    dataTable.value.selectPrev();
 }
 </script>
 
@@ -142,8 +145,5 @@ function handleItemPrev() {
   border-radius: 4px;
   background-color: #272727;
   @include user-select-none;
-}
-
-.data-view__data__table {
 }
 </style>

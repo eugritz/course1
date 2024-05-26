@@ -1,4 +1,7 @@
 export default {
+  // Windows API
+  window_close: "window_close",
+  // Modals
   ConfirmationModal: {
     open: "open_confirmation_modal",
     setData: "ConfirmationModal:setData",
@@ -14,8 +17,11 @@ export default {
     setData: "RenameDeckModal:setData",
     onResult: "RenameDeckModal:onResult",
   },
+  DeckFilterModal: {
+    open: "open_deck_filter_modal",
+  },
+  // Windows
   CardsWindow: {
     open: "open_cards_window",
   },
-  window_close: "window_close",
 };

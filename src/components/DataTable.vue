@@ -1,8 +1,9 @@
 <script lang="ts">
 export interface DataTableExposed {
-  next: () => void;
-  prev: () => void;
+  selectNext: () => void;
+  selectPrev: () => void;
   deselect: () => void;
+  reset: () => void;
 }
 </script>
 
@@ -117,11 +118,12 @@ function reset() {
   if (!header.value)
     return;
 
+  sortColumnIdx.value = null;
+  sortDirection.value = false;
+  deselect();
   for (let i = 0; i < header.value.children.length; i++) {
     const el = header.value.children[i] as HTMLElement;
     const minWidth = getColumnMinWidth(el);
-
-    el.style.removeProperty("minWidth");
     el.style.width = minWidth + "px";
     el.style.minWidth = minWidth + "px";
   }
@@ -187,24 +189,6 @@ function handleItemDragStop() {
   pickedItem.value = props.value[selectedItemIdx.value];
 }
 
-function handleItemNext() {
-  if (selectedItemIdx.value === null) {
-    selectedItemIdx.value = 0;
-  } else if (selectedItemIdx.value + 1 < props.value.length) {
-    selectedItemIdx.value++;
-  }
-  pickedItem.value = props.value[selectedItemIdx.value];
-}
-
-function handleItemPrev() {
-  if (!selectedItemIdx.value) {
-    selectedItemIdx.value = 0;
-  } else {
-    selectedItemIdx.value--;
-  }
-  pickedItem.value = props.value[selectedItemIdx.value];
-}
-
 function handleColumnHeaderClick(idx: number) {
   if (idx !== sortColumnIdx.value)
     sortDirection.value = false;
@@ -213,15 +197,34 @@ function handleColumnHeaderClick(idx: number) {
   sortColumnIdx.value = idx;
 }
 
+function selectNext() {
+  if (selectedItemIdx.value === null) {
+    selectedItemIdx.value = 0;
+  } else if (selectedItemIdx.value + 1 < props.value.length) {
+    selectedItemIdx.value++;
+  }
+  pickedItem.value = props.value[selectedItemIdx.value];
+}
+
+function selectPrev() {
+  if (!selectedItemIdx.value) {
+    selectedItemIdx.value = 0;
+  } else {
+    selectedItemIdx.value--;
+  }
+  pickedItem.value = props.value[selectedItemIdx.value];
+}
+
 function deselect() {
   selectedItemIdx.value = null;
   pickedItem.value = null;
 }
 
 defineExpose({
-  next: handleItemNext,
-  prev: handleItemPrev,
+  selectNext,
+  selectPrev,
   deselect,
+  reset,
 });
 </script>
 

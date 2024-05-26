@@ -105,9 +105,11 @@ defineExpose({
     <template v-else>
       <div
         v-for="(item, idx) in items"
-        class="item"
+        :class="{
+          'listbox__item': true,
+          'listbox__item--selected': selectedItemIdx == idx
+        }"
         :key="idx"
-        :class="{ selected: selectedItemIdx == idx }"
         @mousedown="(e) => handleItemDragStart(idx, e)"
         @mouseenter="handleItemDragUpdate(idx)"
       >
@@ -126,6 +128,8 @@ defineExpose({
 }
 
 .listbox__item {
+  padding: 0px 5px;
+  text-align: left;
   @include user-select-none;
 }
 

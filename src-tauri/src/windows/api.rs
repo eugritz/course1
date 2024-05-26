@@ -82,3 +82,10 @@ pub async fn open_cards_window(handle: tauri::AppHandle) {
         window.set_focus().unwrap();
     }
 }
+
+#[tauri::command]
+pub async fn open_deck_filter_modal(handle: tauri::AppHandle) {
+    if let Some(window) = handle.get_window("DeckFilterModal") {
+        window.show_modal();
+    }
+}

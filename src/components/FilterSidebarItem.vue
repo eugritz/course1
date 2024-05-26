@@ -79,7 +79,7 @@ const level = computed(() =>
 .filter-sidebar__list__item-lvl-1,
 .filter-sidebar__list__item-lvl-2 {
   margin: 0;
-  padding: 1px 1.5em;
+  padding: 1px 1em;
   padding-right: 0;
   display: flex;
   align-items: center;
