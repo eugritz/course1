@@ -24,14 +24,16 @@ const decks = computed(() =>
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
 useTauriEvent(events.DeckFilterModal.setData, handleSetData);
-
-useTauriEvent(events.window_open, () => {
-  deckStore.all();
-});
+useTauriEvent(events.window_open, load);
 
 onMounted(() => {
+  load();
   reset();
 });
+
+function load() {
+  deckStore.all();
+}
 
 function reset() {
   filter.value = "";

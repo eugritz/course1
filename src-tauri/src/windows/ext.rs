@@ -76,6 +76,7 @@ pub trait ShowModal {
 
 impl<R: tauri::Runtime> ShowModal for tauri::Window<R> {
     fn show_modal(&self) {
+        self.emit_to(self.label(), "window_open", ()).unwrap();
         self.center().unwrap();
         self.show().unwrap();
         self.set_focus().unwrap();
@@ -89,7 +90,7 @@ pub trait ShowExt {
 
 impl<R: tauri::Runtime> ShowExt for tauri::Window<R> {
     fn show_ext(&self) {
-        self.emit("window_open", ()).unwrap();
+        self.emit_to(self.label(), "window_open", ()).unwrap();
         self.show().unwrap();
         self.set_focus().unwrap();
     }

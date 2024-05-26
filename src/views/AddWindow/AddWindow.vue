@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { invoke } from '@tauri-apps/api';
 import { Event, emit } from '@tauri-apps/api/event';
 
@@ -12,13 +12,18 @@ const decks = computed(() => deckStore.cached_all);
 const selectedDeck = ref<Deck | null>(null);
 
 useTauriEvent(events.DeckFilterModal.onResult, handleDeckSelected);
+useTauriEvent(events.window_open, load);
 
-useTauriEvent(events.window_open, () => {
+onMounted(() => {
+  load();
+});
+
+function load() {
   deckStore.all();
   deckStore.last().then((deck) => {
     selectedDeck.value = deck;
   });
-});
+}
 
 function openDeckFilterModal() {
   emit(events.DeckFilterModal.setData, {
