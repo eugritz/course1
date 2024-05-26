@@ -91,7 +91,7 @@ defineExpose({
     @keydown.up="handleItemPrev"
   >
     <template v-if="$slots.item" v-for="(item, idx) in items">
-      <div
+      <li
         :class="{
           'listbox__item': true,
           'listbox__item--selected': selectedItemIdx == idx
@@ -100,10 +100,10 @@ defineExpose({
         @mouseenter="handleItemDragUpdate(idx)"
       >
         <slot name="item" v-bind="item" />
-      </div>
+      </li>
     </template>
     <template v-else>
-      <div
+      <li
         v-for="(item, idx) in items"
         :class="{
           'listbox__item': true,
@@ -114,7 +114,7 @@ defineExpose({
         @mouseenter="handleItemDragUpdate(idx)"
       >
         {{item}}
-      </div>
+      </li>
     </template>
   </ul>
 </template>
@@ -128,6 +128,7 @@ defineExpose({
 }
 
 .listbox__item {
+  margin: 0;
   padding: 0px 5px;
   text-align: left;
   @include user-select-none;

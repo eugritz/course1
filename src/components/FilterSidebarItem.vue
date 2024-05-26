@@ -60,7 +60,7 @@ const level = computed(() =>
 </script>
 
 <template>
-  <li :class="level">
+  <div :class="level">
     <unicon
       v-if="icon"
       class="icon"
@@ -69,7 +69,7 @@ const level = computed(() =>
       :name="mapIconIdToName[icon]"
     />
     {{$props.value}}
-  </li>
+  </div>
 </template>
 
 <style scoped lang="scss">
