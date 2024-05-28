@@ -20,6 +20,7 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(Column::Name).string().not_null())
+                    .col(ColumnDef::new(Column::Default).boolean().not_null())
                     .to_owned(),
             )
             .await

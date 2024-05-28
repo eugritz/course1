@@ -46,6 +46,7 @@ impl EntryKindService {
         entity::entry_kinds::ActiveModel {
             id: entry_kind.id,
             name: Set(form_data.name.to_owned()),
+            default: entry_kind.default,
         }
         .update(db)
         .await
