@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { invoke } from '@tauri-apps/api';
-import { Event, TauriEvent, emit } from '@tauri-apps/api/event';
+import { Event, TauriEvent } from '@tauri-apps/api/event';
 
 import { EntryKind } from 'entities/EntryKind';
 import { entryKindStore } from 'stores/entryKindStore';
@@ -48,16 +48,6 @@ function handleSetData(event: Event<unknown>) {
   selectedEntryKindIdx.value = found < 0 ? null : found;
 }
 
-function handleItemSelect(item: EntryKind) {
-  emit(events.EntryKindListModal.onResult, {
-    selectedEntryKindId: item.id,
-  }).then(() => {
-    invoke(events.window_close).then(() => {
-      reset();
-    });
-  });
-}
-
 function handleAddEntryKind() {
   invoke(events.EntryKindAddModal.open);
 }
@@ -86,8 +76,6 @@ function handleClose() {
         ref="listRef"
         class="list"
         :items="entryKinds"
-        @item:dblclick="handleItemSelect"
-        @item:keydown="handleItemSelect"
       >
         <template #item="slotProps">
           {{slotProps.name}}
