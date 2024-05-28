@@ -98,7 +98,9 @@ function handleCancel() {
       </NativeListbox>
     </div>
     <div class="controls">
-      <button @click="handleSubmit">Выбрать</button>
+      <button @click="handleSubmit" :disabled="selectedDeckIdx === null">
+        Выбрать
+      </button>
       <button @click="handleCancel">Отменить</button>
     </div>
   </div>

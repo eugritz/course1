@@ -90,6 +90,10 @@ button:active {
   border-color: #396cd8;
 }
 
+button:disabled {
+  cursor: not-allowed;
+}
+
 label {
   display: block;
 }
