@@ -57,8 +57,8 @@ function handleEntryKindSelected(event: Event<unknown>) {
     selectedEntryKindId: number,
   };
 
-  selectedEntryKind.value = decks.value.find((deck) =>
-    deck.id === payload.selectedEntryKindId) ?? null;
+  selectedEntryKind.value = entryKinds.value.find((entryKind) =>
+    entryKind.id === payload.selectedEntryKindId) ?? null;
 }
 
 function handleDeckSelected(event: Event<unknown>) {

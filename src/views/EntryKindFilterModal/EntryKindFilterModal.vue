@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import { invoke } from '@tauri-apps/api';
 import { Event, TauriEvent, emit } from '@tauri-apps/api/event';
 
-import { Deck } from 'entities/Deck';
+import { EntryKind } from 'entities/EntryKind';
 import { entryKindStore } from 'stores/entryKindStore';
 import { useTauriEvent } from 'utils/tauriEvent';
 import events from 'constants/events';
@@ -14,7 +14,7 @@ const filter = ref("");
 const filterRef = ref<HTMLElement | null>(null);
 const listRef = ref<NativeListboxExposed | null>(null);
 
-const selectedEntryKind = ref<Deck | null>(null);
+const selectedEntryKind = ref<EntryKind | null>(null);
 const selectedEntryKindIdx = ref<number | null>(null);
 
 const entryKinds = computed(() =>
@@ -35,12 +35,23 @@ function load() {
   entryKindStore.all();
 }
 
-function reset() {
+function reset(event?: Event<unknown>) {
+  if (event && event.windowLabel !== "EntryKindFilterModal")
+    return;
+
   filter.value = "";
   if (filterRef.value)
     filterRef.value.focus();
   if (listRef.value)
     listRef.value.deselect();
+}
+
+function openEntryKindListModal() {
+  emit(events.EntryKindListModal.setData, {
+    selectedEntryKindId: selectedEntryKind.value?.id,
+  }).then(() => {
+    invoke(events.EntryKindListModal.open);
+  })
 }
 
 function handleSetData(event: Event<unknown>) {
@@ -53,9 +64,9 @@ function handleSetData(event: Event<unknown>) {
   selectedEntryKindIdx.value = found < 0 ? null : found;
 }
 
-function handleItemSelect(item: Deck) {
+function handleItemSelect(item: EntryKind) {
   emit(events.EntryKindFilterModal.onResult, {
-    selectedDeckId: item.id,
+    selectedEntryKindId: item.id,
   }).then(() => {
     invoke(events.window_close).then(() => {
       reset();
@@ -100,7 +111,7 @@ function handleCancel() {
     </div>
     <div class="controls">
       <div>
-        <button>Изменить</button>
+        <button @click="openEntryKindListModal">Изменить</button>
       </div>
       <div>
         <button @click="handleSubmit" :disabled="selectedEntryKindIdx === null">
