@@ -39,18 +39,18 @@ function handleSetData(event: Event<unknown>) {
   const payload = event.payload as {
     title: string,
     label: string,
-    value: string,
-    placeholder: string,
-    buttonText: string,
-    loading: boolean,
+    value: string | null,
+    placeholder: string | null,
+    buttonText: string | null,
+    loading: boolean | null,
     parent: string,
   };
 
   label.value = payload.label;
-  input.value = payload.value;
-  placeholder.value = payload.placeholder;
-  buttonText.value = payload.buttonText;
-  loading_.value = payload.loading;
+  input.value = payload.value ?? "";
+  placeholder.value = payload.placeholder ?? "";
+  buttonText.value = payload.buttonText ?? "OK";
+  loading_.value = payload.loading ?? false;
   parent.value = payload.parent;
 }
 

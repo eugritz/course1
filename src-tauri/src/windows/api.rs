@@ -25,7 +25,7 @@ pub async fn open_confirmation_modal(
     window: tauri::Window,
     title: String,
     message: String,
-    loading: bool,
+    loading: Option<bool>,
 ) {
     debug!("open_confirmation_modal");
     if let Some(window) = window.app_handle().get_window("ConfirmationModal") {
@@ -74,9 +74,9 @@ pub async fn open_input_modal(
     title: String,
     label: String,
     value: Option<String>,
-    placeholder: String,
-    button_text: String,
-    loading: bool,
+    placeholder: Option<String>,
+    button_text: Option<String>,
+    loading: Option<bool>,
 ) {
     debug!("open_input_modal");
     if let Some(window) = window.app_handle().get_window("InputModal") {

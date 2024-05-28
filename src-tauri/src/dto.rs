@@ -4,7 +4,7 @@
 pub struct ConfirmationModalInputPayload {
     pub title: String,
     pub message: String,
-    pub loading: bool,
+    pub loading: Option<bool>,
     pub parent: String,
 }
 
@@ -18,9 +18,9 @@ pub struct InputModalInputPayload {
     pub title: String,
     pub label: String,
     pub value: Option<String>,
-    pub placeholder: String,
-    pub buttonText: String,
-    pub loading: bool,
+    pub placeholder: Option<String>,
+    pub buttonText: Option<String>,
+    pub loading: Option<bool>,
     pub parent: String,
 }
 

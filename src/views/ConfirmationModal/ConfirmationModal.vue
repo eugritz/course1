@@ -30,12 +30,12 @@ function handleSetData(event: Event<unknown>) {
   const payload = event.payload as {
     title: string,
     message: string,
-    loading: boolean,
+    loading: boolean | null,
     parent: string,
   };
 
   message.value = payload.message;
-  loading_.value = payload.loading;
+  loading_.value = payload.loading ?? false;
   parent.value = payload.parent;
 }
 
