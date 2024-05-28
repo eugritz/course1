@@ -63,17 +63,17 @@ pub async fn confirmation_modal_on_result(
 }
 
 #[tauri::command]
-pub async fn open_new_deck_modal(handle: tauri::AppHandle) {
-    debug!("open_new_deck_modal");
-    if let Some(window) = handle.get_window("NewDeckModal") {
+pub async fn open_deck_new_modal(handle: tauri::AppHandle) {
+    debug!("open_deck_new_modal");
+    if let Some(window) = handle.get_window("DeckNewModal") {
         window.show_modal();
     }
 }
 
 #[tauri::command]
-pub async fn open_rename_deck_modal(handle: tauri::AppHandle) {
-    debug!("open_rename_deck_modal");
-    if let Some(window) = handle.get_window("RenameDeckModal") {
+pub async fn open_deck_rename_modal(handle: tauri::AppHandle) {
+    debug!("open_deck_rename_modal");
+    if let Some(window) = handle.get_window("DeckRenameModal") {
         window.show_modal();
     }
 }

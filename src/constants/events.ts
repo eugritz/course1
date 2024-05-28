@@ -9,14 +9,14 @@ export default {
     onResult: "ConfirmationModal:onResult",
     onReady: "ConfirmationModal:onReady",
   },
-  NewDeckModal: {
-    open: "open_new_deck_modal",
-    onResult: "NewDeckModal:onResult",
+  DeckNewModal: {
+    open: "open_deck_new_modal",
+    onResult: "DeckNewModal:onResult",
   },
-  RenameDeckModal: {
-    open: "open_rename_deck_modal",
-    setData: "RenameDeckModal:setData",
-    onResult: "RenameDeckModal:onResult",
+  DeckRenameModal: {
+    open: "open_deck_rename_modal",
+    setData: "DeckRenameModal:setData",
+    onResult: "DeckRenameModal:onResult",
   },
   DeckFilterModal: {
     open: "open_deck_filter_modal",

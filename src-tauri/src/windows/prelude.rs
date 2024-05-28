@@ -23,9 +23,9 @@ pub fn build_windows(app: &tauri::App) {
 
     tauri::WindowBuilder::new(
         app,
-        "NewDeckModal",
+        "DeckNewModal",
         tauri::WindowUrl::App(
-            "src/views/NewDeckModal/index.html".parse().unwrap(),
+            "src/views/DeckNewModal/index.html".parse().unwrap(),
         ),
     )
     .ancestor(&main_window)
@@ -40,9 +40,9 @@ pub fn build_windows(app: &tauri::App) {
 
     tauri::WindowBuilder::new(
         app,
-        "RenameDeckModal",
+        "DeckRenameModal",
         tauri::WindowUrl::App(
-            "src/views/RenameDeckModal/index.html".parse().unwrap(),
+            "src/views/DeckRenameModal/index.html".parse().unwrap(),
         ),
     )
     .ancestor(&main_window)

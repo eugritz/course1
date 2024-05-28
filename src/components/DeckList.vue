@@ -13,7 +13,7 @@ const deckCount = computed(
 );
 
 function handleOpenNewDeckDialog() {
-  invoke(events.NewDeckModal.open);
+  invoke(events.DeckNewModal.open);
 }
 </script>
 
