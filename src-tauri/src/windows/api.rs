@@ -147,6 +147,14 @@ pub async fn open_deck_filter_modal(handle: tauri::AppHandle) {
 }
 
 #[tauri::command]
+pub async fn open_entry_kind_add_modal(handle: tauri::AppHandle) {
+    debug!("open_entry_kind_add_modal");
+    if let Some(window) = handle.get_window("EntryKindAddModal") {
+        window.show_modal();
+    }
+}
+
+#[tauri::command]
 pub async fn open_entry_kind_filter_modal(handle: tauri::AppHandle) {
     debug!("open_entry_kind_filter_modal");
     if let Some(window) = handle.get_window("EntryKindFilterModal") {

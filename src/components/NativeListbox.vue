@@ -1,5 +1,7 @@
 <script lang="ts">
 export interface NativeListboxExposed {
+  focus: () => void;
+  select: (idx: number) => void;
   deselect: () => void;
 }
 </script>
@@ -28,6 +30,7 @@ onUnmounted(() => {
   window.removeEventListener("mouseup", handleItemDragStop);
 });
 
+const listRef = ref<HTMLElement | null>(null);
 const isItemDragging = ref(false);
 const selectedItemIdx = defineModel<number | null>("index", { default: null });
 const pickedItem = defineModel<T | null>();
@@ -84,18 +87,31 @@ function handleItemPrev(_event: KeyboardEvent) {
   }
 }
 
+function focus() {
+  if (listRef.value)
+    listRef.value.focus();
+}
+
+function select(idx: number) {
+  selectedItemIdx.value = idx;
+  pickedItem.value = props.items[idx];
+}
+
 function deselect() {
   selectedItemIdx.value = null;
   pickedItem.value = null;
 }
 
 defineExpose({
+  focus,
+  select,
   deselect,
 });
 </script>
 
 <template>
   <ul
+    ref="listRef"
     class="listbox"
     tabindex="0"
     @mouseup="handleItemDragStop"

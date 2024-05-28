@@ -29,6 +29,10 @@ export default {
     setData: "DeckFilterModal:setData",
     onResult: "DeckFilterModal:onResult",
   },
+  EntryKindAddModal: {
+    open: "open_entry_kind_add_modal",
+    onResult: "EntryKindAddModal:onResult",
+  },
   EntryKindFilterModal: {
     open: "open_entry_kind_filter_modal",
     setData: "EntryKindFilterModal:setData",

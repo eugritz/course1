@@ -29,6 +29,7 @@ fn main() {
             windows::api::open_deck_new_modal,
             windows::api::open_deck_rename_modal,
             windows::api::open_deck_filter_modal,
+            windows::api::open_entry_kind_add_modal,
             windows::api::open_entry_kind_filter_modal,
             windows::api::open_entry_kind_list_modal,
             // Windows

@@ -18,7 +18,7 @@ const selectedEntryKindIdx = ref<number | null>(null);
 const entryKinds = computed(() => entryKindStore.cached_all);
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
-useTauriEvent(events.EntryKindListModal.setData, handleSetData);
+useTauriEvent(events.InputModal.onResult, handleEntryKindNameResult);
 useTauriEvent(events.window_open, load);
 
 onMounted(() => {
@@ -31,46 +31,49 @@ function load() {
 }
 
 function reset(event?: Event<unknown>) {
-  if (event && event.windowLabel !== "EntryKindFilterModal")
+  if (event && event.windowLabel !== "EntryKindAddModal")
     return;
 
-  if (listRef.value)
-    listRef.value.deselect();
+  if (listRef.value) {
+    listRef.value.focus();
+    listRef.value.select(0);
+  }
 }
 
-function handleSetData(event: Event<unknown>) {
+function handleEntryKindNameResult(event: Event<unknown>) {
   const payload = event.payload as {
-    selectedEntryKindId: number,
+    input: string,
   };
 
-  let found = entryKinds.value.findIndex((deck) =>
-    deck.id == payload.selectedEntryKindId);
-  selectedEntryKindIdx.value = found < 0 ? null : found;
-}
-
-function handleItemSelect(item: EntryKind) {
-  emit(events.EntryKindListModal.onResult, {
-    selectedEntryKindId: item.id,
-  }).then(() => {
-    invoke(events.window_close).then(() => {
-      reset();
+  // TODO
+  emit(events.EntryKindAddModal.onResult).then(() => {
+    emit(events.InputModal.onReady).then(() => {
+      invoke(events.window_close).then(() => {
+        reset();
+      });
     });
   });
 }
 
-function handleAddEntryKind() {
-  invoke(events.EntryKindAddModal.open);
+function handleItemSelect(item: EntryKind) {
+  invoke(events.InputModal.open, {
+    title: "Введите новое имя",
+    label: "Новое имя:",
+    value: item.name,
+    placeholder: item.name,
+    buttonText: "Добавить",
+    loading: true,
+  });
 }
 
-function handleRenameEntryKind() {
-  // TODO
+function handleSubmit() {
+  if (!selectedEntryKind.value)
+    return;
+
+  handleItemSelect(selectedEntryKind.value);
 }
 
-function handleDeleteEntryKind() {
-  // TODO
-}
-
-function handleClose() {
+function handleCancel() {
   invoke(events.window_close).then(() => {
     reset();
   });
@@ -78,7 +81,7 @@ function handleClose() {
 </script>
 
 <template>
-  <div class="content" @keydown.esc="handleClose">
+  <div class="content" @keydown.esc="handleCancel">
     <div class="wrapper">
       <NativeListbox
         v-model="selectedEntryKind"
@@ -90,25 +93,19 @@ function handleClose() {
         @item:keydown="handleItemSelect"
       >
         <template #item="slotProps">
-          {{slotProps.name}}
+          {{
+            slotProps.default
+            ? "Добавить: " + slotProps.name
+            : "Клонировать: " + slotProps.name
+          }}
         </template>
       </NativeListbox>
     </div>
     <div class="controls">
-      <button @click="handleAddEntryKind">Добавить</button>
-      <button
-        @click="handleRenameEntryKind"
-        :disabled="selectedEntryKind?.default"
-      >
-        Переименовать
+      <button @click="handleSubmit" :disabled="selectedEntryKindIdx === null">
+        Выбрать
       </button>
-      <button
-        @click="handleDeleteEntryKind"
-        :disabled="selectedEntryKind?.default"
-      >
-        Удалить
-      </button>
-      <button @click="handleClose">Закрыть</button>
+      <button @click="handleCancel">Отменить</button>
     </div>
   </div>
 </template>
@@ -117,12 +114,13 @@ function handleClose() {
 @import "../../styles/mixins";
 
 button {
-  padding: 0.3em 1.2em;
+  padding: 0.3em 0.6em;
 }
 
 .content {
   height: calc(100vh - 16px);
   display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
@@ -153,7 +151,7 @@ button {
 
 .controls {
   display: flex;
-  flex-direction: column;
+  justify-content: flex-end;
   gap: 5px;
 }
 </style>

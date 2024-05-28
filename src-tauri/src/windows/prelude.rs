@@ -150,6 +150,23 @@ pub fn build_windows(app: &tauri::App) {
     .inner_size(500.0, 300.0)
     .build()
     .unwrap();
+
+    tauri::WindowBuilder::new(
+        app,
+        "EntryKindAddModal",
+        tauri::WindowUrl::App(
+            "src/views/EntryKindAddModal/index.html".parse().unwrap(),
+        ),
+    )
+    .ancestor(&entry_kind_list_modal)
+    .title("Добавить вид записи")
+    .visible(false)
+    .resizable(false)
+    .minimizable(false)
+    .maximizable(false)
+    .inner_size(350.0, 250.0)
+    .build()
+    .unwrap();
 }
 
 pub fn rebuild_windows(handle: &tauri::AppHandle) {
