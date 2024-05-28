@@ -95,6 +95,14 @@ pub async fn open_entry_kind_filter_modal(handle: tauri::AppHandle) {
 }
 
 #[tauri::command]
+pub async fn open_entry_kind_list_modal(handle: tauri::AppHandle) {
+    debug!("open_entry_kind_list_modal");
+    if let Some(window) = handle.get_window("EntryKindListModal") {
+        window.show_modal();
+    }
+}
+
+#[tauri::command]
 pub async fn open_cards_window(handle: tauri::AppHandle) {
     debug!("open_cards_window");
     if let Some(window) = handle.get_window("CardsWindow") {

@@ -1,0 +1,167 @@
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
+import { invoke } from '@tauri-apps/api';
+import { Event, TauriEvent, emit } from '@tauri-apps/api/event';
+
+import { EntryKind } from 'entities/EntryKind';
+import { entryKindStore } from 'stores/entryKindStore';
+import { useTauriEvent } from 'utils/tauriEvent';
+import events from 'constants/events';
+
+import NativeListbox, { NativeListboxExposed } from 'components/NativeListbox.vue';
+
+const filter = ref("");
+const filterRef = ref<HTMLElement | null>(null);
+const listRef = ref<NativeListboxExposed | null>(null);
+
+const selectedEntryKind = ref<EntryKind | null>(null);
+const selectedEntryKindIdx = ref<number | null>(null);
+
+const entryKinds = computed(() =>
+  entryKindStore.cached_all.filter(
+    (entryKind) =>
+      entryKind.name.toLowerCase().includes(filter.value.trim().toLowerCase())));
+
+useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
+useTauriEvent(events.EntryKindListModal.setData, handleSetData);
+useTauriEvent(events.window_open, load);
+
+onMounted(() => {
+  load();
+  reset();
+});
+
+function load() {
+  entryKindStore.all();
+}
+
+function reset(event?: Event<unknown>) {
+  if (event && event.windowLabel !== "EntryKindFilterModal")
+    return;
+
+  filter.value = "";
+  if (filterRef.value)
+    filterRef.value.focus();
+  if (listRef.value)
+    listRef.value.deselect();
+}
+
+function handleSetData(event: Event<unknown>) {
+  const payload = event.payload as {
+    selectedEntryKindId: number,
+  };
+
+  let found = entryKinds.value.findIndex((deck) =>
+    deck.id == payload.selectedEntryKindId);
+  selectedEntryKindIdx.value = found < 0 ? null : found;
+}
+
+function handleItemSelect(item: EntryKind) {
+  emit(events.EntryKindListModal.onResult, {
+    selectedEntryKindId: item.id,
+  }).then(() => {
+    invoke(events.window_close).then(() => {
+      reset();
+    });
+  });
+}
+
+function handleAddEntryKind() {
+  // TODO
+}
+
+function handleRenameEntryKind() {
+  // TODO
+}
+
+function handleDeleteEntryKind() {
+  // TODO
+}
+
+function handleClose() {
+  invoke(events.window_close).then(() => {
+    reset();
+  });
+}
+</script>
+
+<template>
+  <div class="content" @keydown.esc="handleClose">
+    <div class="wrapper">
+      <NativeListbox
+        v-model="selectedEntryKind"
+        v-model:index="selectedEntryKindIdx"
+        ref="listRef"
+        class="list"
+        :items="entryKinds"
+        @item:dblclick="handleItemSelect"
+        @item:keydown="handleItemSelect"
+      >
+        <template #item="slotProps">
+          {{slotProps.name}}
+        </template>
+      </NativeListbox>
+    </div>
+    <div class="controls">
+      <button @click="handleAddEntryKind">Добавить</button>
+      <button
+        @click="handleRenameEntryKind"
+        :disabled="selectedEntryKind?.default"
+      >
+        Переименовать
+      </button>
+      <button
+        @click="handleDeleteEntryKind"
+        :disabled="selectedEntryKind?.default"
+      >
+        Удалить
+      </button>
+      <button @click="handleClose">Закрыть</button>
+    </div>
+  </div>
+</template>
+
+<style scoped lang="scss">
+@import "../../styles/mixins";
+
+button {
+  padding: 0.3em 1.2em;
+}
+
+.content {
+  height: calc(100vh - 16px);
+  display: flex;
+  gap: 8px;
+}
+
+.filter {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  @include user-select-none;
+
+  input {
+    width: 100%;
+    padding: 0.3em 0.6em;
+  }
+}
+
+.wrapper {
+  flex: 1;
+}
+
+.list {
+  height: 100%;
+  padding: 4px 0;
+  border-radius: 4px;
+  box-sizing: border-box;
+  background-color: #272727;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+</style>

@@ -117,6 +117,23 @@ pub fn build_windows(app: &tauri::App) {
     .inner_size(400.0, 300.0)
     .build()
     .unwrap();
+
+    tauri::WindowBuilder::new(
+        app,
+        "EntryKindListModal",
+        tauri::WindowUrl::App(
+            "src/views/EntryKindListModal/index.html".parse().unwrap(),
+        ),
+    )
+    .ancestor(&add_window)
+    .title("Виды записей")
+    .visible(false)
+    .resizable(false)
+    .minimizable(false)
+    .maximizable(false)
+    .inner_size(500.0, 300.0)
+    .build()
+    .unwrap();
 }
 
 pub fn rebuild_windows(handle: &tauri::AppHandle) {
