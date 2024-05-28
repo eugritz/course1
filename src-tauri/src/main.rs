@@ -23,6 +23,7 @@ fn main() {
             windows::api::open_new_deck_modal,
             windows::api::open_rename_deck_modal,
             windows::api::open_deck_filter_modal,
+            windows::api::open_entry_kind_filter_modal,
             // Windows
             windows::api::open_cards_window,
             windows::api::open_add_window,

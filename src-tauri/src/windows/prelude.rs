@@ -100,6 +100,23 @@ pub fn build_windows(app: &tauri::App) {
     .inner_size(400.0, 300.0)
     .build()
     .unwrap();
+
+    tauri::WindowBuilder::new(
+        app,
+        "EntryKindFilterModal",
+        tauri::WindowUrl::App(
+            "src/views/EntryKindFilterModal/index.html".parse().unwrap(),
+        ),
+    )
+    .ancestor(&add_window)
+    .title("Выбор вида записи")
+    .visible(false)
+    .resizable(false)
+    .minimizable(false)
+    .maximizable(false)
+    .inner_size(400.0, 300.0)
+    .build()
+    .unwrap();
 }
 
 pub fn rebuild_windows(handle: &tauri::AppHandle) {

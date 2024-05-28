@@ -23,6 +23,11 @@ export default {
     setData: "DeckFilterModal:setData",
     onResult: "DeckFilterModal:onResult",
   },
+  EntryKindFilterModal: {
+    open: "open_entry_kind_filter_modal",
+    setData: "EntryKindFilterModal:setData",
+    onResult: "EntryKindFilterModal:onResult",
+  },
   // Windows
   CardsWindow: {
     open: "open_cards_window",
