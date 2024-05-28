@@ -22,7 +22,10 @@ onMounted(() => {
   deckTitleRef.value?.focus();
 });
 
-function reset() {
+function reset(event: Event<unknown>) {
+  if (event && event.windowLabel !== "RenameDeckModal")
+    return;
+
   loading.value = false;
   deckTitle.value = "";
   deckTitleRef.value?.focus();

@@ -35,7 +35,10 @@ function load() {
   deckStore.all();
 }
 
-function reset() {
+function reset(event?: Event<unknown>) {
+  if (event && event.windowLabel !== "DeckFilterModal")
+    return;
+
   filter.value = "";
   if (filterRef.value)
     filterRef.value.focus();

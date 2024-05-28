@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { invoke } from "@tauri-apps/api";
-import { emit, TauriEvent } from "@tauri-apps/api/event";
+import { emit, Event, TauriEvent } from "@tauri-apps/api/event";
 
 import { deckStore } from "stores/deckStore";
 import { useTauriEvent } from "utils/tauriEvent";
@@ -19,7 +19,10 @@ onMounted(() => {
   deckTitleRef.value?.focus();
 });
 
-function reset() {
+function reset(event?: Event<unknown>) {
+  if (event && event.windowLabel !== "NewDeckModal")
+    return;
+
   loading.value = false;
   deckTitleRef.value?.focus();
   deckTitle.value = "";

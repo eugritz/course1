@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { TauriEvent } from '@tauri-apps/api/event';
+import { Event, TauriEvent } from '@tauri-apps/api/event';
 
 import { useTauriEvent } from 'utils/tauriEvent';
 
@@ -23,7 +23,10 @@ onMounted(() => {
   reset();
 });
 
-function reset() {
+function reset(event?: Event<unknown>) {
+  if (event && event.windowLabel !== "CardsWindow")
+    return;
+
   filterSidebar.value?.reset();
   splitter.value?.reset();
   dataTable.value?.reset();

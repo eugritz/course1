@@ -16,7 +16,10 @@ useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
 useTauriEvent(events.ConfirmationModal.setData, handleSetData);
 useTauriEvent(events.ConfirmationModal.onReady, handleReady);
 
-function reset() {
+function reset(event?: Event<unknown>) {
+  if (event && event.windowLabel !== "ConfirmationModal")
+    return;
+
   message.value = "";
   loading_.value = false;
   loading.value = null;
