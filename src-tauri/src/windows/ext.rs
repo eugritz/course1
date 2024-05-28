@@ -55,17 +55,17 @@ impl<R: tauri::Runtime> SetModal for tauri::Window<R> {
 #[cfg(target_os = "linux")]
 impl<R: tauri::Runtime> SetModal for tauri::Window<R> {
     fn set_modal(&self, is_modal: bool) {
-        if is_modal {
-            let gtk_window = self.gtk_window().unwrap();
-            if let Some(parent_window) = self.get_focused_window() {
-                let gtk_parent = parent_window.gtk_window().unwrap();
-                gtk_window.set_modal(true);
-                gtk_window.set_transient_for(Some(&gtk_parent));
-            }
-        } else {
-            let gtk_window = self.gtk_window().unwrap();
-            gtk_window.set_modal(false);
-        }
+        // if is_modal {
+        //     let gtk_window = self.gtk_window().unwrap();
+        //     if let Some(parent_window) = self.get_focused_window() {
+        //         let gtk_parent = parent_window.gtk_window().unwrap();
+        //         gtk_window.set_modal(true);
+        //         gtk_window.set_transient_for(Some(&gtk_parent));
+        //     }
+        // } else {
+        //     let gtk_window = self.gtk_window().unwrap();
+        //     gtk_window.set_modal(false);
+        // }
     }
 }
 

@@ -2,7 +2,10 @@ use log::debug;
 use tauri::Manager;
 
 use crate::dto::{
-    ConfirmationModalInputPayload, ConfirmationModalOutputPayload,
+    ConfirmationModalInputPayload,
+    ConfirmationModalOutputPayload,
+    InputModalInputPayload,
+    InputModalOutputPayload,
 };
 use crate::windows::ext::*;
 
@@ -19,12 +22,13 @@ pub async fn window_close(window: tauri::Window) {
 
 #[tauri::command]
 pub async fn open_confirmation_modal(
-    handle: tauri::AppHandle,
+    window: tauri::Window,
     title: String,
     message: String,
     loading: bool,
 ) {
-    if let Some(window) = handle.get_window("ConfirmationModal") {
+    debug!("open_confirmation_modal");
+    if let Some(window) = window.app_handle().get_window("ConfirmationModal") {
         window.set_title(&title).unwrap();
         window
             .emit(
@@ -33,6 +37,7 @@ pub async fn open_confirmation_modal(
                     title,
                     message,
                     loading,
+                    parent: window.label().to_owned(),
                 },
             )
             .unwrap();
@@ -45,17 +50,72 @@ pub async fn open_confirmation_modal(
 pub async fn confirmation_modal_on_result(
     handle: tauri::AppHandle,
     button: i32,
+    parent: String,
 ) {
     if let Some(confirmation_window) = handle.get_focused_window() {
         if confirmation_window.label() != "ConfirmationModal" {
             return;
         }
 
-        if let Some(parent) = get_parent_window(&confirmation_window) {
+        if let Some(parent) = handle.get_window(parent.as_str()) {
             parent
                 .emit(
                     "ConfirmationModal:onResult",
                     ConfirmationModalOutputPayload { button },
+                )
+                .unwrap();
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn open_input_modal(
+    window: tauri::Window,
+    title: String,
+    label: String,
+    value: Option<String>,
+    placeholder: String,
+    button_text: String,
+    loading: bool,
+) {
+    debug!("open_input_modal");
+    if let Some(window) = window.app_handle().get_window("InputModal") {
+        window.set_title(&title).unwrap();
+        window
+            .emit(
+                "InputModal:setData",
+                InputModalInputPayload {
+                    title,
+                    label,
+                    value,
+                    placeholder,
+                    buttonText: button_text,
+                    loading,
+                    parent: window.label().to_owned(),
+                },
+            )
+            .unwrap();
+
+        window.show_modal();
+    }
+}
+
+#[tauri::command]
+pub async fn input_modal_on_result(
+    handle: tauri::AppHandle,
+    input: String,
+    parent: String,
+) {
+    if let Some(input_window) = handle.get_focused_window() {
+        if input_window.label() != "InputModal" {
+            return;
+        }
+
+        if let Some(parent) = handle.get_window(parent.as_str()) {
+            parent
+                .emit(
+                    "InputModal:onResult",
+                    InputModalOutputPayload { input },
                 )
                 .unwrap();
         }

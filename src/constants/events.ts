@@ -9,6 +9,12 @@ export default {
     onResult: "ConfirmationModal:onResult",
     onReady: "ConfirmationModal:onReady",
   },
+  InputModal: {
+    open: "open_input_modal",
+    setData: "InputModal:setData",
+    onResult: "InputModal:onResult",
+    onReady: "InputModal:onReady",
+  },
   DeckNewModal: {
     open: "open_deck_new_modal",
     onResult: "DeckNewModal:onResult",

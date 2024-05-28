@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { invoke } from "@tauri-apps/api";
 import { Event, TauriEvent } from "@tauri-apps/api/event";
 
@@ -8,45 +8,60 @@ import events from "constants/events";
 
 import Loader from "components/Loader.vue";
 
-const message = ref("");
+const label = ref("");
+const input = ref("");
+const inputRef = ref<HTMLInputElement | null>(null);
+const placeholder = ref("");
+const buttonText = ref("OK");
 const loading_ = ref(false);
-const loading = ref<number | null>(null);
-const parent = ref<string>("");
+const loading = ref(false);
+const parent = ref("");
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
-useTauriEvent(events.ConfirmationModal.setData, handleSetData);
-useTauriEvent(events.ConfirmationModal.onReady, handleReady);
+useTauriEvent(events.InputModal.setData, handleSetData);
+useTauriEvent(events.InputModal.onReady, handleReady);
+
+onMounted(() => {
+  inputRef.value?.focus();
+});
 
 function reset(event?: Event<unknown>) {
-  if (event && event.windowLabel !== "ConfirmationModal")
+  if (event && event.windowLabel !== "InputModal")
     return;
 
-  message.value = "";
+  input.value = "";
+  inputRef.value?.focus();
   loading_.value = false;
-  loading.value = null;
+  loading.value = false;
 }
 
 function handleSetData(event: Event<unknown>) {
   const payload = event.payload as {
     title: string,
-    message: string,
+    label: string,
+    value: string,
+    placeholder: string,
+    buttonText: string,
     loading: boolean,
     parent: string,
   };
 
-  message.value = payload.message;
+  label.value = payload.label;
+  input.value = payload.value;
+  placeholder.value = payload.placeholder;
+  buttonText.value = payload.buttonText;
   loading_.value = payload.loading;
   parent.value = payload.parent;
 }
 
 function handleConfirm() {
-  invoke("confirmation_modal_on_result", {
-    button: 1,
+  invoke("input_modal_on_result", {
+    input: input.value,
     parent: parent.value,
   });
 
   if (loading_.value) {
-    loading.value = 1;
+    loading.value = true;
     return;
   }
 
@@ -56,23 +71,13 @@ function handleConfirm() {
 }
 
 function handleCancel() {
-  invoke("confirmation_modal_on_result", {
-    button: 0,
-    parent: parent.value,
-  });
-
-  if (loading_.value) {
-    loading.value = 0;
-    return;
-  }
-
   invoke(events.window_close).then(() => {
     reset();
   });
 }
 
 function handleReady() {
-  if (loading.value === null) {
+  if (!loading.value) {
     return;
   }
 
@@ -88,15 +93,19 @@ function handleReady() {
     @submit.prevent="handleConfirm"
     @keydown.esc="handleCancel"
   >
-    <p>{{ message }}</p>
+    <label>{{label}}</label>
+    <input
+      class="dialog__input"
+      type="text"
+      :placeholder="placeholder"
+      v-model="input"
+      ref="inputRef"
+    />
     <div class="dialog__controls">
-      <button :disabled="loading === 0" @click="handleCancel">
-        <Loader v-show="loading === 0" />
-        <span :class="{ hidden: loading === 0 }">Нет</span>
-      </button>
-      <button type="submit" :disabled="loading === 1">
-        <Loader v-show="loading === 1" />
-        <span :class="{ hidden: loading === 1 }">Да</span>
+      <button type="button" @click="handleCancel">Отменить</button>
+      <button type="submit" :disabled="loading">
+        <Loader v-show="loading" />
+        <span :class="{ hidden: loading }">{{buttonText}}</span>
       </button>
     </div>
   </form>
@@ -116,6 +125,10 @@ function handleReady() {
   display: flex;
   justify-content: flex-end;
   gap: 5px
+}
+
+.dialog__input {
+  width: 100%;
 }
 
 .hidden {

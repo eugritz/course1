@@ -24,6 +24,8 @@ fn main() {
             // Modals
             windows::api::open_confirmation_modal,
             windows::api::confirmation_modal_on_result,
+            windows::api::open_input_modal,
+            windows::api::input_modal_on_result,
             windows::api::open_deck_new_modal,
             windows::api::open_deck_rename_modal,
             windows::api::open_deck_filter_modal,

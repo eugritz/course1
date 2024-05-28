@@ -23,6 +23,22 @@ pub fn build_windows(app: &tauri::App) {
 
     tauri::WindowBuilder::new(
         app,
+        "InputModal",
+        tauri::WindowUrl::App(
+            "src/views/InputModal/index.html".parse().unwrap(),
+        ),
+    )
+    .ancestor(&main_window)
+    .visible(false)
+    .resizable(false)
+    .minimizable(false)
+    .maximizable(false)
+    .inner_size(400.0, 140.0)
+    .build()
+    .unwrap();
+
+    tauri::WindowBuilder::new(
+        app,
         "DeckNewModal",
         tauri::WindowUrl::App(
             "src/views/DeckNewModal/index.html".parse().unwrap(),
@@ -101,7 +117,7 @@ pub fn build_windows(app: &tauri::App) {
     .build()
     .unwrap();
 
-    tauri::WindowBuilder::new(
+    let entry_kind_filter_modal = tauri::WindowBuilder::new(
         app,
         "EntryKindFilterModal",
         tauri::WindowUrl::App(
@@ -118,14 +134,14 @@ pub fn build_windows(app: &tauri::App) {
     .build()
     .unwrap();
 
-    tauri::WindowBuilder::new(
+    let entry_kind_list_modal = tauri::WindowBuilder::new(
         app,
         "EntryKindListModal",
         tauri::WindowUrl::App(
             "src/views/EntryKindListModal/index.html".parse().unwrap(),
         ),
     )
-    .ancestor(&add_window)
+    .ancestor(&entry_kind_filter_modal)
     .title("Виды записей")
     .visible(false)
     .resizable(false)
