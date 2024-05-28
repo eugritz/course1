@@ -13,10 +13,10 @@ impl DeckService {
     pub async fn find_last_deck(
         db: &DbConn,
     ) -> Result<Option<entity::decks::Model>, DbErr> {
-        entity::decks::Entity::find().
-        order_by_desc(entity::decks::Column::Id)
-        .one(db)
-        .await
+        entity::decks::Entity::find()
+            .order_by_desc(entity::decks::Column::Id)
+            .one(db)
+            .await
     }
 
     pub async fn create_deck(

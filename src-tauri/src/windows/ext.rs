@@ -42,7 +42,6 @@ impl<R: tauri::Runtime> SetModal for tauri::Window<R> {
 
                 EnableWindow(parent, false);
             }
-
         } else {
             let hwnd = self.hwnd().unwrap();
             unsafe {
@@ -112,11 +111,7 @@ pub fn get_parent_window(window: &tauri::Window) -> Option<tauri::Window> {
 
 #[cfg(target_os = "linux")]
 pub fn get_parent_window(window: &tauri::Window) -> Option<tauri::Window> {
-    let gtk_parent = window
-        .gtk_window()
-        .unwrap()
-        .transient_for()
-        .unwrap();
+    let gtk_parent = window.gtk_window().unwrap().transient_for().unwrap();
 
     for (_, window) in window.app_handle().windows() {
         let gtk_window = window.gtk_window().unwrap();

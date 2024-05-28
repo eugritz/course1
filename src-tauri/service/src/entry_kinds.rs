@@ -13,10 +13,10 @@ impl EntryKindService {
     pub async fn find_last_entry_kind(
         db: &DbConn,
     ) -> Result<Option<entity::entry_kinds::Model>, DbErr> {
-        entity::entry_kinds::Entity::find().
-        order_by_desc(entity::entry_kinds::Column::Id)
-        .one(db)
-        .await
+        entity::entry_kinds::Entity::find()
+            .order_by_desc(entity::entry_kinds::Column::Id)
+            .one(db)
+            .await
     }
 
     pub async fn create_entry_kind(

@@ -1,3 +1,4 @@
+use log::debug;
 use tauri::Manager;
 
 use crate::dto::{
@@ -63,6 +64,7 @@ pub async fn confirmation_modal_on_result(
 
 #[tauri::command]
 pub async fn open_new_deck_modal(handle: tauri::AppHandle) {
+    debug!("open_new_deck_modal");
     if let Some(window) = handle.get_window("NewDeckModal") {
         window.show_modal();
     }
@@ -70,6 +72,7 @@ pub async fn open_new_deck_modal(handle: tauri::AppHandle) {
 
 #[tauri::command]
 pub async fn open_rename_deck_modal(handle: tauri::AppHandle) {
+    debug!("open_rename_deck_modal");
     if let Some(window) = handle.get_window("RenameDeckModal") {
         window.show_modal();
     }
@@ -77,6 +80,7 @@ pub async fn open_rename_deck_modal(handle: tauri::AppHandle) {
 
 #[tauri::command]
 pub async fn open_deck_filter_modal(handle: tauri::AppHandle) {
+    debug!("open_deck_filter_modal");
     if let Some(window) = handle.get_window("DeckFilterModal") {
         window.show_modal();
     }
@@ -84,6 +88,7 @@ pub async fn open_deck_filter_modal(handle: tauri::AppHandle) {
 
 #[tauri::command]
 pub async fn open_entry_kind_filter_modal(handle: tauri::AppHandle) {
+    debug!("open_entry_kind_filter_modal");
     if let Some(window) = handle.get_window("EntryKindFilterModal") {
         window.show_modal();
     }
@@ -91,6 +96,7 @@ pub async fn open_entry_kind_filter_modal(handle: tauri::AppHandle) {
 
 #[tauri::command]
 pub async fn open_cards_window(handle: tauri::AppHandle) {
+    debug!("open_cards_window");
     if let Some(window) = handle.get_window("CardsWindow") {
         window.show_ext();
     }
@@ -98,6 +104,7 @@ pub async fn open_cards_window(handle: tauri::AppHandle) {
 
 #[tauri::command]
 pub async fn open_add_window(handle: tauri::AppHandle) {
+    debug!("open_add_window");
     if let Some(window) = handle.get_window("AddWindow") {
         window.show_ext();
     }

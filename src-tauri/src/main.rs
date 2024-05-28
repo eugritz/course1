@@ -13,6 +13,10 @@ use windows::build_windows;
 use windows::ext::*;
 
 fn main() {
+    env_logger::builder()
+        .filter_level(log::LevelFilter::Debug)
+        .init();
+
     let app = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             // Windows API
@@ -27,13 +31,12 @@ fn main() {
             // Windows
             windows::api::open_cards_window,
             windows::api::open_add_window,
-
+            // API
             api::decks::get_all_decks,
             api::decks::create_deck,
             api::decks::rename_deck,
             api::decks::delete_deck,
             api::decks::last_deck,
-
             api::entry_kinds::get_all_entry_kinds,
             api::entry_kinds::create_entry_kind,
             api::entry_kinds::rename_entry_kind,
