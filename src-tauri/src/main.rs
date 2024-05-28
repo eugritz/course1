@@ -32,6 +32,12 @@ fn main() {
             api::decks::rename_deck,
             api::decks::delete_deck,
             api::decks::last_deck,
+
+            api::entry_kinds::get_all_entry_kinds,
+            api::entry_kinds::create_entry_kind,
+            api::entry_kinds::rename_entry_kind,
+            api::entry_kinds::delete_entry_kind,
+            api::entry_kinds::last_entry_kind,
         ])
         .on_window_event(|event| match event.event() {
             tauri::WindowEvent::CloseRequested { api, .. } => {
