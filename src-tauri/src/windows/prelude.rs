@@ -39,40 +39,6 @@ pub fn build_windows(app: &tauri::App) {
 
     tauri::WindowBuilder::new(
         app,
-        "DeckNewModal",
-        tauri::WindowUrl::App(
-            "src/views/DeckNewModal/index.html".parse().unwrap(),
-        ),
-    )
-    .ancestor(&main_window)
-    .title("Создать новую колоду")
-    .visible(false)
-    .resizable(false)
-    .minimizable(false)
-    .maximizable(false)
-    .inner_size(400.0, 140.0)
-    .build()
-    .unwrap();
-
-    tauri::WindowBuilder::new(
-        app,
-        "DeckRenameModal",
-        tauri::WindowUrl::App(
-            "src/views/DeckRenameModal/index.html".parse().unwrap(),
-        ),
-    )
-    .ancestor(&main_window)
-    .title("Переименовать колоду")
-    .visible(false)
-    .resizable(false)
-    .minimizable(false)
-    .maximizable(false)
-    .inner_size(400.0, 140.0)
-    .build()
-    .unwrap();
-
-    tauri::WindowBuilder::new(
-        app,
         "CardsWindow",
         tauri::WindowUrl::App(
             "src/views/CardsWindow/index.html".parse().unwrap(),

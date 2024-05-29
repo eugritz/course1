@@ -8,6 +8,7 @@ import uiEvents from "constants/uiEvents";
 
 import Loader from "components/Loader.vue";
 
+const id = ref<string | null>(null);
 const label = ref("");
 const input = ref("");
 const inputRef = ref<HTMLInputElement | null>(null);
@@ -37,6 +38,7 @@ function reset(event?: Event<unknown>) {
 
 function handleSetData(event: Event<unknown>) {
   const payload = event.payload as {
+    id: string | null,
     title: string,
     label: string,
     value: string | null,
@@ -46,6 +48,7 @@ function handleSetData(event: Event<unknown>) {
     parent: string,
   };
 
+  id.value = payload.id,
   label.value = payload.label;
   input.value = payload.value ?? "";
   placeholder.value = payload.placeholder ?? "";
@@ -56,6 +59,7 @@ function handleSetData(event: Event<unknown>) {
 
 function handleConfirm() {
   invoke("input_modal_on_result", {
+    id: id.value,
     input: input.value,
     parent: parent.value,
   });

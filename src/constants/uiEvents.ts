@@ -15,15 +15,6 @@ export default {
     onResult: "InputModal:onResult",
     onReady: "InputModal:onReady",
   },
-  DeckNewModal: {
-    open: "open_deck_new_modal",
-    onResult: "DeckNewModal:onResult",
-  },
-  DeckRenameModal: {
-    open: "open_deck_rename_modal",
-    setData: "DeckRenameModal:setData",
-    onResult: "DeckRenameModal:onResult",
-  },
   DeckFilterModal: {
     open: "open_deck_filter_modal",
     setData: "DeckFilterModal:setData",

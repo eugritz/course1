@@ -6,6 +6,7 @@ import { Event, emit } from "@tauri-apps/api/event";
 import { Deck } from "entities/Deck";
 import { deckStore } from "stores/deckStore";
 import { useTauriEvent } from "utils/tauriEvent";
+import dataEvents from "constants/dataEvents";
 import uiEvents from "constants/uiEvents";
 
 import Header from "components/Header.vue";
@@ -17,9 +18,9 @@ const decks = computed(() => deckStore.cached_all);
 const optionsPopup = ref<PopupExposed | null>(null);
 const selectedDeck = shallowRef<Deck | null>(null);
 
-useTauriEvent(uiEvents.DeckNewModal.onResult, handleDeckDialogResult);
-useTauriEvent(uiEvents.DeckRenameModal.onResult, handleDeckDialogResult);
-useTauriEvent(uiEvents.ConfirmationModal.onResult, handleDeckDeleteDialogResult);
+useTauriEvent(dataEvents.update.deck, reset);
+useTauriEvent(uiEvents.InputModal.onResult, handleRenameDeckDialogResult);
+useTauriEvent(uiEvents.ConfirmationModal.onResult, handleDeleteDeckDialogResult);
 
 watchEffect(() => {
   reset();
@@ -27,26 +28,6 @@ watchEffect(() => {
 
 function reset() {
   deckStore.all();
-}
-
-function handleDeckDialogResult() {
-  reset();
-}
-
-function handleDeckDeleteDialogResult(event: Event<unknown>) {
-  const payload = event.payload as {
-    button: number,
-  };
-
-  if (payload.button !== 1 || !selectedDeck.value) {
-    emit(uiEvents.ConfirmationModal.onReady);
-    return;
-  }
-
-  deckStore.delete(selectedDeck.value.id).then(() => {
-    emit(uiEvents.ConfirmationModal.onReady);
-    reset();
-  });
 }
 
 function handleOptionsToggle(event: MouseEvent, deck: Deck) {
@@ -59,13 +40,41 @@ function handleOpenRenameDeckDialog() {
     return;
   }
 
-  emit(uiEvents.DeckRenameModal.setData, {
-    deck: selectedDeck.value,
-  }).then(() => {
-    invoke(uiEvents.DeckRenameModal.open);
+  
+  invoke(uiEvents.InputModal.open, {
+    id: "rename",
+    title: "Переименовать колоду",
+    label: "Новое название колоды",
+    value: selectedDeck.value.name,
+    placeholder: selectedDeck.value.name,
+    buttonText: "Изменить",
+    loading: true,
   });
 
   optionsPopup.value?.close();
+}
+
+function handleRenameDeckDialogResult(event: Event<unknown>) {
+  const payload = event.payload as {
+    id: string,
+    input: string,
+  };
+
+  if (payload.id !== "rename")
+    return;
+
+  const newName = payload.input.trim();
+
+  if (!selectedDeck.value || newName.length === 0) {
+    emit(uiEvents.InputModal.onReady);
+    return;
+  }
+
+  deckStore.rename(selectedDeck.value.id, newName).then(() => {
+    emit(dataEvents.update.deck);
+  }).finally(() => {
+    emit(uiEvents.InputModal.onReady);
+  });
 }
 
 function handleOpenDeleteDeckDialog() {
@@ -81,6 +90,23 @@ function handleOpenDeleteDeckDialog() {
 
   optionsPopup.value?.close();
 }
+
+function handleDeleteDeckDialogResult(event: Event<unknown>) {
+  const payload = event.payload as {
+    button: number,
+  };
+
+  if (payload.button !== 1 || !selectedDeck.value) {
+    emit(uiEvents.ConfirmationModal.onReady);
+    return;
+  }
+
+  deckStore.delete(selectedDeck.value.id).then(() => {
+    emit(uiEvents.ConfirmationModal.onReady);
+    reset();
+  });
+}
+
 </script>
 
 <template>

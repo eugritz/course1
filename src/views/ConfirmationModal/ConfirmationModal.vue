@@ -8,6 +8,7 @@ import uiEvents from "constants/uiEvents";
 
 import Loader from "components/Loader.vue";
 
+const id = ref<string | null>(null);
 const message = ref("");
 const loading_ = ref(false);
 const loading = ref<number | null>(null);
@@ -28,12 +29,14 @@ function reset(event?: Event<unknown>) {
 
 function handleSetData(event: Event<unknown>) {
   const payload = event.payload as {
+    id: string | null,
     title: string,
     message: string,
     loading: boolean | null,
     parent: string,
   };
 
+  id.value = payload.id;
   message.value = payload.message;
   loading_.value = payload.loading ?? false;
   parent.value = payload.parent;
@@ -41,6 +44,7 @@ function handleSetData(event: Event<unknown>) {
 
 function handleConfirm() {
   invoke("confirmation_modal_on_result", {
+    id: id.value,
     button: 1,
     parent: parent.value,
   });

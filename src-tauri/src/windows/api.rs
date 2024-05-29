@@ -23,6 +23,7 @@ pub async fn window_close(window: tauri::Window) {
 #[tauri::command]
 pub async fn open_confirmation_modal(
     window: tauri::Window,
+    id: Option<String>,
     title: String,
     message: String,
     loading: Option<bool>,
@@ -35,6 +36,7 @@ pub async fn open_confirmation_modal(
                 confirmation_modal.label(),
                 "ConfirmationModal:setData",
                 ConfirmationModalInputPayload {
+                    id,
                     title,
                     message,
                     loading,
@@ -50,6 +52,7 @@ pub async fn open_confirmation_modal(
 #[tauri::command]
 pub async fn confirmation_modal_on_result(
     handle: tauri::AppHandle,
+    id: Option<String>,
     button: i32,
     parent: String,
 ) {
@@ -62,7 +65,10 @@ pub async fn confirmation_modal_on_result(
             .emit_to(
                 &parent,
                 "ConfirmationModal:onResult",
-                ConfirmationModalOutputPayload { button },
+                ConfirmationModalOutputPayload {
+                    id,
+                    button,
+                },
             )
             .unwrap();
     }
@@ -71,6 +77,7 @@ pub async fn confirmation_modal_on_result(
 #[tauri::command]
 pub async fn open_input_modal(
     window: tauri::Window,
+    id: Option<String>,
     title: String,
     label: String,
     value: Option<String>,
@@ -85,6 +92,7 @@ pub async fn open_input_modal(
             .emit(
                 "InputModal:setData",
                 InputModalInputPayload {
+                    id,
                     title,
                     label,
                     value,
@@ -103,6 +111,7 @@ pub async fn open_input_modal(
 #[tauri::command]
 pub async fn input_modal_on_result(
     handle: tauri::AppHandle,
+    id: Option<String>,
     input: String,
     parent: String,
 ) {
@@ -115,25 +124,12 @@ pub async fn input_modal_on_result(
             .emit_to(
                 &parent,
                 "InputModal:onResult",
-                InputModalOutputPayload { input },
+                InputModalOutputPayload {
+                    id,
+                    input,
+                },
             )
             .unwrap();
-    }
-}
-
-#[tauri::command]
-pub async fn open_deck_new_modal(handle: tauri::AppHandle) {
-    debug!("open_deck_new_modal");
-    if let Some(window) = handle.get_window("DeckNewModal") {
-        window.show_modal();
-    }
-}
-
-#[tauri::command]
-pub async fn open_deck_rename_modal(handle: tauri::AppHandle) {
-    debug!("open_deck_rename_modal");
-    if let Some(window) = handle.get_window("DeckRenameModal") {
-        window.show_modal();
     }
 }
 

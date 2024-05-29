@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { computed, useSlots } from 'vue';
 import { invoke } from "@tauri-apps/api";
+import { Event, emit } from '@tauri-apps/api/event';
 
+import { deckStore } from 'stores/deckStore';
+import { useTauriEvent } from 'utils/tauriEvent';
+import dataEvents from 'constants/dataEvents';
 import uiEvents from 'constants/uiEvents';
 
 import Badge from './Badge.vue';
@@ -12,8 +16,33 @@ const deckCount = computed(
   () => slots.default ? (slots.default()[0].children?.length ?? 0) : 0
 );
 
+useTauriEvent(uiEvents.InputModal.onResult, handleNewDeckDialogResult);
+
 function handleOpenNewDeckDialog() {
-  invoke(uiEvents.DeckNewModal.open);
+  invoke(uiEvents.InputModal.open, {
+    id: "new",
+    title: "Создать новую колоду",
+    label: "Название колоды",
+    value: "По умолчанию",
+    buttonText: "Создать",
+    loading: true,
+  });
+}
+
+function handleNewDeckDialogResult(event: Event<unknown>) {
+  const payload = event.payload as {
+    id: string,
+    input: string,
+  };
+
+  if (payload.id !== "new")
+    return;
+
+  deckStore.create(payload.input).then(() => {
+    emit(dataEvents.update.deck);
+  }).finally(() => {
+    emit(uiEvents.InputModal.onReady);
+  });
 }
 </script>
 
