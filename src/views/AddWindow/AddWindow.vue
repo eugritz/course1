@@ -9,6 +9,7 @@ import { EntryKind } from 'entities/EntryKind';
 import { entryKindStore } from 'stores/entryKindStore';
 import { deckStore } from 'stores/deckStore';
 import { useTauriEvent } from 'utils/tauriEvent';
+import dataEvents from 'constants/dataEvents';
 import uiEvents from 'constants/uiEvents';
 
 const entryKinds = computed(() => entryKindStore.cached_all);
@@ -16,7 +17,7 @@ const decks = computed(() => deckStore.cached_all);
 const selectedEntryKind = ref<EntryKind | null>(null);
 const selectedDeck = ref<Deck | null>(null);
 
-useTauriEvent(uiEvents.EntryKindAddModal.onResult, load);
+useTauriEvent(dataEvents.update.entryKind, load);
 useTauriEvent(uiEvents.EntryKindFilterModal.onResult, handleEntryKindSelected);
 useTauriEvent(uiEvents.DeckFilterModal.onResult, handleDeckSelected);
 useTauriEvent(uiEvents.window_open, load);

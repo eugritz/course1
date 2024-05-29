@@ -6,6 +6,7 @@ import { Event, TauriEvent, emit } from '@tauri-apps/api/event';
 import { EntryKind } from 'entities/EntryKind';
 import { entryKindStore } from 'stores/entryKindStore';
 import { useTauriEvent } from 'utils/tauriEvent';
+import dataEvents from 'constants/dataEvents';
 import uiEvents from 'constants/uiEvents';
 
 import NativeListbox, { NativeListboxExposed } from 'components/NativeListbox.vue';
@@ -23,7 +24,7 @@ const entryKinds = computed(() =>
       entryKind.name.toLowerCase().includes(filter.value.trim().toLowerCase())));
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
-useTauriEvent(uiEvents.EntryKindAddModal.onResult, load);
+useTauriEvent(dataEvents.update.entryKind, load);
 useTauriEvent(uiEvents.EntryKindFilterModal.setData, handleSetData);
 useTauriEvent(uiEvents.window_open, load);
 

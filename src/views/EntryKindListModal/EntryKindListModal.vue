@@ -6,6 +6,7 @@ import { Event, TauriEvent, emit } from '@tauri-apps/api/event';
 import { EntryKind } from 'entities/EntryKind';
 import { entryKindStore } from 'stores/entryKindStore';
 import { useTauriEvent } from 'utils/tauriEvent';
+import dataEvents from 'constants/dataEvents';
 import uiEvents from 'constants/uiEvents';
 
 import NativeListbox, { NativeListboxExposed } from 'components/NativeListbox.vue';
@@ -18,7 +19,7 @@ const selectedEntryKindIdx = ref<number | null>(null);
 const entryKinds = computed(() => entryKindStore.cached_all);
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
-useTauriEvent(uiEvents.EntryKindAddModal.onResult, load);
+useTauriEvent(dataEvents.update.entryKind, load);
 useTauriEvent(uiEvents.EntryKindListModal.setData, handleSetData);
 useTauriEvent(uiEvents.InputModal.onResult, handleRenameEntryKindResult);
 useTauriEvent(uiEvents.window_open, load);
@@ -82,7 +83,7 @@ function handleRenameEntryKindResult(event: Event<unknown>) {
     .finally(
       () => {
         emit(uiEvents.InputModal.onReady);
-        load();
+        emit(dataEvents.update.entryKind);
       }
     );
 }

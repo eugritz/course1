@@ -6,6 +6,7 @@ import { Event, TauriEvent, emit } from '@tauri-apps/api/event';
 import { EntryKind } from 'entities/EntryKind';
 import { entryKindStore } from 'stores/entryKindStore';
 import { useTauriEvent } from 'utils/tauriEvent';
+import dataEvents from 'constants/dataEvents';
 import uiEvents from 'constants/uiEvents';
 
 import NativeListbox, { NativeListboxExposed } from 'components/NativeListbox.vue';
@@ -49,11 +50,10 @@ function handleEntryKindNameResult(event: Event<unknown>) {
   };
 
   entryKindStore.create(selectedEntryKind.value.id, payload.input).finally(() => {
-    emit(uiEvents.EntryKindAddModal.onResult).then(() => {
-      emit(uiEvents.InputModal.onReady).then(() => {
-        invoke(uiEvents.window_close).then(() => {
-          reset();
-        });
+    emit(dataEvents.update.entryKind).then(() => {
+      emit(uiEvents.InputModal.onReady);
+      invoke(uiEvents.window_close).then(() => {
+        reset();
       });
     });
   });
