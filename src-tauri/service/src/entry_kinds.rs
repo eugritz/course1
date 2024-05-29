@@ -19,12 +19,20 @@ impl EntryKindService {
             .await
     }
 
+    pub async fn find_entry_kind_by_id(
+        db: &DbConn,
+        id: i32,
+    ) -> Result<Option<entity::entry_kinds::Model>, DbErr> {
+        entity::entry_kinds::Entity::find_by_id(id).one(db).await
+    }
+
     pub async fn create_entry_kind(
         db: &DbConn,
         form_data: entity::entry_kinds::Model,
     ) -> Result<entity::entry_kinds::ActiveModel, DbErr> {
         entity::entry_kinds::ActiveModel {
             name: Set(form_data.name.to_owned()),
+            default: Set(form_data.default),
             ..Default::default()
         }
         .save(db)

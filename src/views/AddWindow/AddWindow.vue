@@ -16,6 +16,7 @@ const decks = computed(() => deckStore.cached_all);
 const selectedEntryKind = ref<EntryKind | null>(null);
 const selectedDeck = ref<Deck | null>(null);
 
+useTauriEvent(events.EntryKindAddModal.onResult, load);
 useTauriEvent(events.EntryKindFilterModal.onResult, handleEntryKindSelected);
 useTauriEvent(events.DeckFilterModal.onResult, handleDeckSelected);
 useTauriEvent(events.window_open, load);

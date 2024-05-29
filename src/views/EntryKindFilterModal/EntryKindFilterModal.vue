@@ -23,6 +23,7 @@ const entryKinds = computed(() =>
       entryKind.name.toLowerCase().includes(filter.value.trim().toLowerCase())));
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
+useTauriEvent(events.EntryKindAddModal.onResult, load);
 useTauriEvent(events.EntryKindFilterModal.setData, handleSetData);
 useTauriEvent(events.window_open, load);
 

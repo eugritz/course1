@@ -14,9 +14,10 @@ export const entryKindStore = shallowReactive({
     });
   },
 
-  async create(title: string): Promise<EntryKind> {
+  async create(baseId: number, name: string): Promise<EntryKind> {
     return invoke("create_entry_kind", {
-      entryKindName: title,
+      entryKindId: baseId,
+      entryKindName: name,
     });
   },
 

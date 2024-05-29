@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { invoke } from '@tauri-apps/api';
-import { Event, TauriEvent } from '@tauri-apps/api/event';
+import { Event, TauriEvent, emit } from '@tauri-apps/api/event';
 
 import { EntryKind } from 'entities/EntryKind';
 import { entryKindStore } from 'stores/entryKindStore';
@@ -18,7 +18,9 @@ const selectedEntryKindIdx = ref<number | null>(null);
 const entryKinds = computed(() => entryKindStore.cached_all);
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
+useTauriEvent(events.EntryKindAddModal.onResult, load);
 useTauriEvent(events.EntryKindListModal.setData, handleSetData);
+useTauriEvent(events.InputModal.onResult, handleRenameEntryKindResult);
 useTauriEvent(events.window_open, load);
 
 onMounted(() => {
@@ -53,7 +55,36 @@ function handleAddEntryKind() {
 }
 
 function handleRenameEntryKind() {
-  // TODO
+  if (!selectedEntryKind.value)
+    return;
+
+  invoke(events.InputModal.open, {
+    title: "Переименовать вид записи",
+    label: "Новое имя вида записи",
+    value: selectedEntryKind.value.name,
+    placeholder: selectedEntryKind.value.name,
+    buttonText: "Изменить",
+    loading: true,
+  });
+}
+
+function handleRenameEntryKindResult(event: Event<unknown>) {
+  if (!selectedEntryKind.value)
+    return;
+
+  const payload = event.payload as {
+    input: string
+  };
+
+  console.log("rename", payload.input);
+  entryKindStore
+    .rename(selectedEntryKind.value.id, payload.input)
+    .finally(
+      () => {
+        emit(events.InputModal.onReady);
+        load();
+      }
+    );
 }
 
 function handleDeleteEntryKind() {

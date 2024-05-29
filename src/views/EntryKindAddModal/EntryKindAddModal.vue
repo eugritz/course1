@@ -41,15 +41,19 @@ function reset(event?: Event<unknown>) {
 }
 
 function handleEntryKindNameResult(event: Event<unknown>) {
+  if (!selectedEntryKind.value)
+    return;
+
   const payload = event.payload as {
     input: string,
   };
 
-  // TODO
-  emit(events.EntryKindAddModal.onResult).then(() => {
-    emit(events.InputModal.onReady).then(() => {
-      invoke(events.window_close).then(() => {
-        reset();
+  entryKindStore.create(selectedEntryKind.value.id, payload.input).finally(() => {
+    emit(events.EntryKindAddModal.onResult).then(() => {
+      emit(events.InputModal.onReady).then(() => {
+        invoke(events.window_close).then(() => {
+          reset();
+        });
       });
     });
   });
@@ -57,8 +61,8 @@ function handleEntryKindNameResult(event: Event<unknown>) {
 
 function handleItemSelect(item: EntryKind) {
   invoke(events.InputModal.open, {
-    title: "Введите новое имя",
-    label: "Новое имя:",
+    title: "Добавить вид записи",
+    label: "Имя нового вида записи",
     value: item.name,
     placeholder: item.name,
     buttonText: "Добавить",

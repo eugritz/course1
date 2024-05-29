@@ -19,9 +19,19 @@ pub async fn get_all_entry_kinds(
 #[tauri::command]
 pub async fn create_entry_kind(
     state: tauri::State<'_, DbConn>,
+    entry_kind_id: i32,
     entry_kind_name: String,
 ) -> Result<entity::entry_kinds::Model, ()> {
     debug!("create_entry_kind START");
+    let entry_kind = EntryKindService::find_entry_kind_by_id(
+        &state,
+        entry_kind_id
+    ).await;
+
+    if entry_kind.is_err() || entry_kind.unwrap().is_none() {
+        return Err(());
+    }
+
     let result = EntryKindService::create_entry_kind(
         &state,
         entity::entry_kinds::Model {
@@ -33,6 +43,10 @@ pub async fn create_entry_kind(
     .await
     .map(|x| x.try_into().unwrap())
     .map_err(|_| ());
+
+    // TODO: clone fields
+    // TODO: clone cards
+
     debug!("create_entry_kind FINISH");
     return result;
 }
