@@ -12,6 +12,8 @@ import { useTauriEvent } from 'utils/tauriEvent';
 import dataEvents from 'constants/dataEvents';
 import uiEvents from 'constants/uiEvents';
 
+import Editor from 'components/Editor.vue';
+
 const entryKinds = computed(() => entryKindStore.cached_all);
 const decks = computed(() => deckStore.cached_all);
 const selectedEntryKind = ref<EntryKind | null>(null);
@@ -90,6 +92,7 @@ function handleDeckSelected(event: Event<unknown>) {
       </div>
     </div>
     <div class="wrapper">
+      <Editor />
     </div>
     <div class="controls">
       <button>Добавить</button>
@@ -105,6 +108,7 @@ function handleDeckSelected(event: Event<unknown>) {
   height: calc(100vh - 16px);
   display: flex;
   flex-direction: column;
+  gap: 8px
 }
 
 .record {

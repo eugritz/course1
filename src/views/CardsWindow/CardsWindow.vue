@@ -10,6 +10,7 @@ import DataTable, { DataTableExposed } from 'components/DataTable.vue';
 import FilterSidebar, { FilterSidebarExposed } from 'components/FilterSidebar.vue';
 import Splitter, { SplitterExposed } from 'components/Splitter.vue';
 import SplitterPanel from 'components/SplitterPanel.vue';
+import Editor from 'components/Editor.vue';
 
 const filterSidebar = ref<FilterSidebarExposed | null>(null);
 const splitter = ref<SplitterExposed | null>(null);
@@ -90,8 +91,10 @@ function handleItemPrev() {
         </div>
       </div>
     </SplitterPanel>
-    <SplitterPanel size="30%">
-      three
+    <SplitterPanel min-size="540px">
+      <div class="editor__wrapper">
+        <Editor />
+      </div>
     </SplitterPanel>
   </Splitter>
 </template>
@@ -148,5 +151,21 @@ function handleItemPrev() {
   border-radius: 4px;
   background-color: #272727;
   @include user-select-none;
+}
+</style>
+
+<style lang="scss">
+.editor__wrapper {
+  height: calc(100vh - 16px);
+
+  button {
+    box-shadow: none;
+  }
+
+  .editor__section__tags {
+    input {
+      box-shadow: none;
+    }
+  }
 }
 </style>

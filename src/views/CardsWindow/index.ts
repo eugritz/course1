@@ -9,6 +9,13 @@ import {
   uniDraggabledots,
   uniTable,
   uniTagAlt,
+  uniBold,
+  uniItalic,
+  uniUnderline,
+  uniMicrophone,
+  uniPaperclip,
+  uniAngleDown,
+  uniArrow,
 // @ts-ignore 6133
 } from "vue-unicons/dist/icons";
 import customIcons from "utils/customIcons";
@@ -30,6 +37,11 @@ Unicon.add([
   customIcons.customCardStateLearning,
   customIcons.customCardStateSuspended,
   customIcons.customTagUnspecified,
+  customIcons.customSettings,
+  customIcons.customSuperscript,
+  customIcons.customSubscript,
+  customIcons.customFunction,
+  customIcons.customPin,
   uniBook,
   uniBookAlt,
   uniBookOpen,
@@ -38,7 +50,14 @@ Unicon.add([
   uniDraggabledots,
   uniTable,
   uniTagAlt,
-])
+  uniBold,
+  uniItalic,
+  uniUnderline,
+  uniMicrophone,
+  uniPaperclip,
+  uniAngleDown,
+  uniArrow,
+]);
 
 // @ts-ignore 2374
 createApp(CardsWindow).use(Unicon).mount("#app");
