@@ -28,10 +28,11 @@ pub async fn open_confirmation_modal(
     loading: Option<bool>,
 ) {
     debug!("open_confirmation_modal");
-    if let Some(window) = window.app_handle().get_window("ConfirmationModal") {
-        window.set_title(&title).unwrap();
-        window
-            .emit(
+    if let Some(confirmation_modal) = window.app_handle().get_window("ConfirmationModal") {
+        confirmation_modal.set_title(&title).unwrap();
+        confirmation_modal
+            .emit_to(
+                confirmation_modal.label(),
                 "ConfirmationModal:setData",
                 ConfirmationModalInputPayload {
                     title,
@@ -42,7 +43,7 @@ pub async fn open_confirmation_modal(
             )
             .unwrap();
 
-        window.show_modal();
+        confirmation_modal.show_modal();
     }
 }
 
@@ -52,19 +53,18 @@ pub async fn confirmation_modal_on_result(
     button: i32,
     parent: String,
 ) {
-    if let Some(confirmation_window) = handle.get_focused_window() {
-        if confirmation_window.label() != "ConfirmationModal" {
+    if let Some(confirmation_modal) = handle.get_focused_window() {
+        if confirmation_modal.label() != "ConfirmationModal" {
             return;
         }
 
-        if let Some(parent) = handle.get_window(parent.as_str()) {
-            parent
-                .emit(
-                    "ConfirmationModal:onResult",
-                    ConfirmationModalOutputPayload { button },
-                )
-                .unwrap();
-        }
+        handle
+            .emit_to(
+                &parent,
+                "ConfirmationModal:onResult",
+                ConfirmationModalOutputPayload { button },
+            )
+            .unwrap();
     }
 }
 
@@ -79,9 +79,9 @@ pub async fn open_input_modal(
     loading: Option<bool>,
 ) {
     debug!("open_input_modal");
-    if let Some(window) = window.app_handle().get_window("InputModal") {
-        window.set_title(&title).unwrap();
-        window
+    if let Some(input_modal) = window.app_handle().get_window("InputModal") {
+        input_modal.set_title(&title).unwrap();
+        input_modal
             .emit(
                 "InputModal:setData",
                 InputModalInputPayload {
@@ -96,7 +96,7 @@ pub async fn open_input_modal(
             )
             .unwrap();
 
-        window.show_modal();
+        input_modal.show_modal();
     }
 }
 
@@ -106,19 +106,18 @@ pub async fn input_modal_on_result(
     input: String,
     parent: String,
 ) {
-    if let Some(input_window) = handle.get_focused_window() {
-        if input_window.label() != "InputModal" {
+    if let Some(input_modal) = handle.get_focused_window() {
+        if input_modal.label() != "InputModal" {
             return;
         }
 
-        if let Some(parent) = handle.get_window(parent.as_str()) {
-            parent
-                .emit(
-                    "InputModal:onResult",
-                    InputModalOutputPayload { input },
-                )
-                .unwrap();
-        }
+        handle
+            .emit_to(
+                &parent,
+                "InputModal:onResult",
+                InputModalOutputPayload { input },
+            )
+            .unwrap();
     }
 }
 
