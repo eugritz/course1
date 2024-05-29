@@ -29,7 +29,7 @@ export const entryKindStore = shallowReactive({
   },
 
   async delete(id: number): Promise<EntryKind> {
-    return invoke("delete_entry_kind", { deckId: id });
+    return invoke("delete_entry_kind", { entryKindId: id });
   },
 
   async last(): Promise<EntryKind | null> {

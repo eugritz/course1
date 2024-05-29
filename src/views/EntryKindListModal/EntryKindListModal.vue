@@ -22,6 +22,7 @@ useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
 useTauriEvent(dataEvents.update.entryKind, load);
 useTauriEvent(uiEvents.EntryKindListModal.setData, handleSetData);
 useTauriEvent(uiEvents.InputModal.onResult, handleRenameEntryKindResult);
+useTauriEvent(uiEvents.ConfirmationModal.onResult, handleDeleteEntryKindResult);
 useTauriEvent(uiEvents.window_open, load);
 
 onMounted(() => {
@@ -70,26 +71,56 @@ function handleRenameEntryKind() {
 }
 
 function handleRenameEntryKindResult(event: Event<unknown>) {
-  if (!selectedEntryKind.value)
-    return;
-
   const payload = event.payload as {
-    input: string
+    input: string,
   };
 
-  console.log("rename", payload.input);
+  const newName = payload.input.trim();
+
+  if (!selectedEntryKind.value
+      || newName === selectedEntryKind.value.name
+      || newName.length == 0) {
+    emit(uiEvents.InputModal.onReady);
+    return;
+  }
+
   entryKindStore
     .rename(selectedEntryKind.value.id, payload.input)
+    .then(
+      () => {
+        emit(dataEvents.update.entryKind);
+      }
+    )
     .finally(
       () => {
         emit(uiEvents.InputModal.onReady);
-        emit(dataEvents.update.entryKind);
       }
     );
 }
 
 function handleDeleteEntryKind() {
-  // TODO
+  invoke(uiEvents.ConfirmationModal.open, {
+    title: "Удалить вид записи",
+    message: "Вы уверены, что хотите удалить вид записи?",
+    loading: true,
+  });
+}
+
+function handleDeleteEntryKindResult(event: Event<unknown>) {
+  const payload = event.payload as {
+    button: number,
+  };
+
+  if (!selectedEntryKind.value || payload.button !== 1) {
+    emit(uiEvents.ConfirmationModal.onReady);
+    return;
+  }
+
+  entryKindStore.delete(selectedEntryKind.value.id).then(() => {
+    emit(dataEvents.update.entryKind);
+  }).finally(() => {
+    emit(uiEvents.ConfirmationModal.onReady);
+  });
 }
 
 function handleClose() {
