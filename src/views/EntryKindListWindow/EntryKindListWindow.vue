@@ -20,7 +20,7 @@ const entryKinds = computed(() => entryKindStore.cached_all);
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
 useTauriEvent(dataEvents.update.entryKind, load);
-useTauriEvent(uiEvents.EntryKindListModal.setData, handleSetData);
+useTauriEvent(uiEvents.EntryKindListWindow.setData, handleSetData);
 useTauriEvent(uiEvents.InputModal.onResult, handleRenameEntryKindResult);
 useTauriEvent(uiEvents.ConfirmationModal.onResult, handleDeleteEntryKindResult);
 useTauriEvent(uiEvents.window_open, load);
@@ -35,7 +35,7 @@ function load() {
 }
 
 function reset(event?: Event<unknown>) {
-  if (event && event.windowLabel !== "EntryKindFilterModal")
+  if (event && event.windowLabel !== "EntryKindFilterWindow")
     return;
 
   if (listRef.value)

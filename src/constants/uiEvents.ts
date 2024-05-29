@@ -28,10 +28,10 @@ export default {
     setData: "EntryKindFilterModal:setData",
     onResult: "EntryKindFilterModal:onResult",
   },
-  EntryKindListModal: {
-    open: "open_entry_kind_list_modal",
-    setData: "EntryKindListModal:setData",
-    onResult: "EntryKindListModal:onResult",
+  EntryKindListWindow: {
+    open: "open_entry_kind_list_window",
+    setData: "EntryKindListWindow:setData",
+    onResult: "EntryKindListWindow:onResult",
   },
   // Windows
   CardsWindow: {

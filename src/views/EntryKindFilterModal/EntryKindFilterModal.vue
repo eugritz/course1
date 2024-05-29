@@ -49,10 +49,10 @@ function reset(event?: Event<unknown>) {
 }
 
 function openEntryKindListModal() {
-  emit(uiEvents.EntryKindListModal.setData, {
+  emit(uiEvents.EntryKindListWindow.setData, {
     selectedEntryKindId: selectedEntryKind.value?.id,
   }).then(() => {
-    invoke(uiEvents.EntryKindListModal.open);
+    invoke(uiEvents.EntryKindListWindow.open);
   })
 }
 

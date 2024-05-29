@@ -29,7 +29,7 @@ fn main() {
             windows::api::open_deck_filter_modal,
             windows::api::open_entry_kind_add_modal,
             windows::api::open_entry_kind_filter_modal,
-            windows::api::open_entry_kind_list_modal,
+            windows::api::open_entry_kind_list_window,
             // Windows
             windows::api::open_cards_window,
             windows::api::open_add_window,

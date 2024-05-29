@@ -102,9 +102,9 @@ pub fn build_windows(app: &tauri::App) {
 
     let entry_kind_list_modal = tauri::WindowBuilder::new(
         app,
-        "EntryKindListModal",
+        "EntryKindListWindow",
         tauri::WindowUrl::App(
-            "src/views/EntryKindListModal/index.html".parse().unwrap(),
+            "src/views/EntryKindListWindow/index.html".parse().unwrap(),
         ),
     )
     .ancestor(&entry_kind_filter_modal)
