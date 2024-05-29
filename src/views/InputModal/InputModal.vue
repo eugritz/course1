@@ -4,7 +4,7 @@ import { invoke } from "@tauri-apps/api";
 import { Event, TauriEvent } from "@tauri-apps/api/event";
 
 import { useTauriEvent } from "utils/tauriEvent";
-import events from "constants/events";
+import uiEvents from "constants/uiEvents";
 
 import Loader from "components/Loader.vue";
 
@@ -18,8 +18,8 @@ const loading = ref(false);
 const parent = ref("");
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
-useTauriEvent(events.InputModal.setData, handleSetData);
-useTauriEvent(events.InputModal.onReady, handleReady);
+useTauriEvent(uiEvents.InputModal.setData, handleSetData);
+useTauriEvent(uiEvents.InputModal.onReady, handleReady);
 
 onMounted(() => {
   inputRef.value?.focus();
@@ -65,13 +65,13 @@ function handleConfirm() {
     return;
   }
 
-  invoke(events.window_close).then(() => {
+  invoke(uiEvents.window_close).then(() => {
     reset();
   });
 }
 
 function handleCancel() {
-  invoke(events.window_close).then(() => {
+  invoke(uiEvents.window_close).then(() => {
     reset();
   });
 }
@@ -81,7 +81,7 @@ function handleReady() {
     return;
   }
 
-  invoke(events.window_close).then(() => {
+  invoke(uiEvents.window_close).then(() => {
     reset();
   });
 }

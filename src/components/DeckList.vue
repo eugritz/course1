@@ -2,7 +2,7 @@
 import { computed, useSlots } from 'vue';
 import { invoke } from "@tauri-apps/api";
 
-import events from 'constants/events';
+import uiEvents from 'constants/uiEvents';
 
 import Badge from './Badge.vue';
 import LinkButton from './LinkButton.vue';
@@ -13,7 +13,7 @@ const deckCount = computed(
 );
 
 function handleOpenNewDeckDialog() {
-  invoke(events.DeckNewModal.open);
+  invoke(uiEvents.DeckNewModal.open);
 }
 </script>
 

@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import { invoke } from "@tauri-apps/api";
 import { emit, Event, TauriEvent } from "@tauri-apps/api/event";
 
 import { Deck } from "entities/Deck";
 import { deckStore } from "stores/deckStore";
 import { useTauriEvent } from "utils/tauriEvent";
-import events from "constants/events";
+import uiEvents from "constants/uiEvents";
 
 import Loader from "components/Loader.vue";
-import {invoke} from "@tauri-apps/api";
 
 const loading = ref(false);
 const deck = ref<Deck | null>(null);
@@ -16,7 +16,7 @@ const deckTitle = ref("");
 const deckTitleRef = ref<HTMLInputElement | null>(null);
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
-useTauriEvent(events.DeckRenameModal.setData, handleSetData);
+useTauriEvent(uiEvents.DeckRenameModal.setData, handleSetData);
 
 onMounted(() => {
   deckTitleRef.value?.focus();
@@ -38,8 +38,8 @@ function renameDeck() {
 
   loading.value = true;
   deckStore.rename(deck.value.id, deckTitle.value).finally(() => {
-    emit(events.DeckRenameModal.onResult);
-    invoke(events.window_close).then(() => {
+    emit(uiEvents.DeckRenameModal.onResult);
+    invoke(uiEvents.window_close).then(() => {
       reset();
     });
   });
@@ -58,7 +58,7 @@ function handleSetData(event: Event<unknown>) {
 }
 
 function handleCancel() {
-  invoke(events.window_close).then(() => {
+  invoke(uiEvents.window_close).then(() => {
     reset();
   });
 }

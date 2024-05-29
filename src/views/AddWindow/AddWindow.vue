@@ -9,17 +9,17 @@ import { EntryKind } from 'entities/EntryKind';
 import { entryKindStore } from 'stores/entryKindStore';
 import { deckStore } from 'stores/deckStore';
 import { useTauriEvent } from 'utils/tauriEvent';
-import events from 'constants/events';
+import uiEvents from 'constants/uiEvents';
 
 const entryKinds = computed(() => entryKindStore.cached_all);
 const decks = computed(() => deckStore.cached_all);
 const selectedEntryKind = ref<EntryKind | null>(null);
 const selectedDeck = ref<Deck | null>(null);
 
-useTauriEvent(events.EntryKindAddModal.onResult, load);
-useTauriEvent(events.EntryKindFilterModal.onResult, handleEntryKindSelected);
-useTauriEvent(events.DeckFilterModal.onResult, handleDeckSelected);
-useTauriEvent(events.window_open, load);
+useTauriEvent(uiEvents.EntryKindAddModal.onResult, load);
+useTauriEvent(uiEvents.EntryKindFilterModal.onResult, handleEntryKindSelected);
+useTauriEvent(uiEvents.DeckFilterModal.onResult, handleDeckSelected);
+useTauriEvent(uiEvents.window_open, load);
 
 onMounted(() => {
   load();
@@ -38,18 +38,18 @@ function load() {
 }
 
 function openEntryKindFilterModal() {
-  emit(events.EntryKindFilterModal.setData, {
+  emit(uiEvents.EntryKindFilterModal.setData, {
     selectedEntryKindId: selectedEntryKind.value?.id,
   }).then(() => {
-    invoke(events.EntryKindFilterModal.open);
+    invoke(uiEvents.EntryKindFilterModal.open);
   });
 }
 
 function openDeckFilterModal() {
-  emit(events.DeckFilterModal.setData, {
+  emit(uiEvents.DeckFilterModal.setData, {
     selectedDeckId: selectedDeck.value?.id,
   }).then(() => {
-    invoke(events.DeckFilterModal.open);
+    invoke(uiEvents.DeckFilterModal.open);
   });
 }
 

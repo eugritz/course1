@@ -6,7 +6,7 @@ import { Event, TauriEvent, emit } from '@tauri-apps/api/event';
 import { EntryKind } from 'entities/EntryKind';
 import { entryKindStore } from 'stores/entryKindStore';
 import { useTauriEvent } from 'utils/tauriEvent';
-import events from 'constants/events';
+import uiEvents from 'constants/uiEvents';
 
 import NativeListbox, { NativeListboxExposed } from 'components/NativeListbox.vue';
 
@@ -23,9 +23,9 @@ const entryKinds = computed(() =>
       entryKind.name.toLowerCase().includes(filter.value.trim().toLowerCase())));
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
-useTauriEvent(events.EntryKindAddModal.onResult, load);
-useTauriEvent(events.EntryKindFilterModal.setData, handleSetData);
-useTauriEvent(events.window_open, load);
+useTauriEvent(uiEvents.EntryKindAddModal.onResult, load);
+useTauriEvent(uiEvents.EntryKindFilterModal.setData, handleSetData);
+useTauriEvent(uiEvents.window_open, load);
 
 onMounted(() => {
   load();
@@ -48,10 +48,10 @@ function reset(event?: Event<unknown>) {
 }
 
 function openEntryKindListModal() {
-  emit(events.EntryKindListModal.setData, {
+  emit(uiEvents.EntryKindListModal.setData, {
     selectedEntryKindId: selectedEntryKind.value?.id,
   }).then(() => {
-    invoke(events.EntryKindListModal.open);
+    invoke(uiEvents.EntryKindListModal.open);
   })
 }
 
@@ -66,10 +66,10 @@ function handleSetData(event: Event<unknown>) {
 }
 
 function handleItemSelect(item: EntryKind) {
-  emit(events.EntryKindFilterModal.onResult, {
+  emit(uiEvents.EntryKindFilterModal.onResult, {
     selectedEntryKindId: item.id,
   }).then(() => {
-    invoke(events.window_close).then(() => {
+    invoke(uiEvents.window_close).then(() => {
       reset();
     });
   });
@@ -83,7 +83,7 @@ function handleSubmit() {
 }
 
 function handleCancel() {
-  invoke(events.window_close).then(() => {
+  invoke(uiEvents.window_close).then(() => {
     reset();
   });
 }

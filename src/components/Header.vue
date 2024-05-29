@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { invoke } from "@tauri-apps/api";
-import events from "constants/events";
+import uiEvents from "constants/uiEvents";
 import HomeButton from "./HomeButton.vue";
 
 function openCardsWindow() {
-  invoke(events.CardsWindow.open);
+  invoke(uiEvents.CardsWindow.open);
 }
 
 function openAddWindow() {
-  invoke(events.AddWindow.open);
+  invoke(uiEvents.AddWindow.open);
 }
 </script>
 

@@ -6,7 +6,7 @@ import { Event, TauriEvent, emit } from '@tauri-apps/api/event';
 import { EntryKind } from 'entities/EntryKind';
 import { entryKindStore } from 'stores/entryKindStore';
 import { useTauriEvent } from 'utils/tauriEvent';
-import events from 'constants/events';
+import uiEvents from 'constants/uiEvents';
 
 import NativeListbox, { NativeListboxExposed } from 'components/NativeListbox.vue';
 
@@ -18,8 +18,8 @@ const selectedEntryKindIdx = ref<number | null>(null);
 const entryKinds = computed(() => entryKindStore.cached_all);
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
-useTauriEvent(events.InputModal.onResult, handleEntryKindNameResult);
-useTauriEvent(events.window_open, load);
+useTauriEvent(uiEvents.InputModal.onResult, handleEntryKindNameResult);
+useTauriEvent(uiEvents.window_open, load);
 
 onMounted(() => {
   load();
@@ -49,9 +49,9 @@ function handleEntryKindNameResult(event: Event<unknown>) {
   };
 
   entryKindStore.create(selectedEntryKind.value.id, payload.input).finally(() => {
-    emit(events.EntryKindAddModal.onResult).then(() => {
-      emit(events.InputModal.onReady).then(() => {
-        invoke(events.window_close).then(() => {
+    emit(uiEvents.EntryKindAddModal.onResult).then(() => {
+      emit(uiEvents.InputModal.onReady).then(() => {
+        invoke(uiEvents.window_close).then(() => {
           reset();
         });
       });
@@ -60,7 +60,7 @@ function handleEntryKindNameResult(event: Event<unknown>) {
 }
 
 function handleItemSelect(item: EntryKind) {
-  invoke(events.InputModal.open, {
+  invoke(uiEvents.InputModal.open, {
     title: "Добавить вид записи",
     label: "Имя нового вида записи",
     value: item.name,
@@ -78,7 +78,7 @@ function handleSubmit() {
 }
 
 function handleCancel() {
-  invoke(events.window_close).then(() => {
+  invoke(uiEvents.window_close).then(() => {
     reset();
   });
 }

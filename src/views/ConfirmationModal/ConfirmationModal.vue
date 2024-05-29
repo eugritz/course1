@@ -4,7 +4,7 @@ import { invoke } from "@tauri-apps/api";
 import { Event, TauriEvent } from "@tauri-apps/api/event";
 
 import { useTauriEvent } from "utils/tauriEvent";
-import events from "constants/events";
+import uiEvents from "constants/uiEvents";
 
 import Loader from "components/Loader.vue";
 
@@ -14,8 +14,8 @@ const loading = ref<number | null>(null);
 const parent = ref<string>("");
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
-useTauriEvent(events.ConfirmationModal.setData, handleSetData);
-useTauriEvent(events.ConfirmationModal.onReady, handleReady);
+useTauriEvent(uiEvents.ConfirmationModal.setData, handleSetData);
+useTauriEvent(uiEvents.ConfirmationModal.onReady, handleReady);
 
 function reset(event?: Event<unknown>) {
   if (event && event.windowLabel !== "ConfirmationModal")
@@ -50,7 +50,7 @@ function handleConfirm() {
     return;
   }
 
-  invoke(events.window_close).then(() => {
+  invoke(uiEvents.window_close).then(() => {
     reset();
   });
 }
@@ -66,7 +66,7 @@ function handleCancel() {
     return;
   }
 
-  invoke(events.window_close).then(() => {
+  invoke(uiEvents.window_close).then(() => {
     reset();
   });
 }
@@ -76,7 +76,7 @@ function handleReady() {
     return;
   }
 
-  invoke(events.window_close).then(() => {
+  invoke(uiEvents.window_close).then(() => {
     reset();
   });
 }

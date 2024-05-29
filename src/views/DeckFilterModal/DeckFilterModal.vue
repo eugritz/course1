@@ -6,7 +6,7 @@ import { Event, TauriEvent, emit } from '@tauri-apps/api/event';
 import { Deck } from 'entities/Deck';
 import { deckStore } from 'stores/deckStore';
 import { useTauriEvent } from 'utils/tauriEvent';
-import events from 'constants/events';
+import uiEvents from 'constants/uiEvents';
 
 import NativeListbox, { NativeListboxExposed } from 'components/NativeListbox.vue';
 
@@ -23,8 +23,8 @@ const decks = computed(() =>
       deck.name.toLowerCase().includes(filter.value.trim().toLowerCase())));
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
-useTauriEvent(events.DeckFilterModal.setData, handleSetData);
-useTauriEvent(events.window_open, load);
+useTauriEvent(uiEvents.DeckFilterModal.setData, handleSetData);
+useTauriEvent(uiEvents.window_open, load);
 
 onMounted(() => {
   load();
@@ -56,10 +56,10 @@ function handleSetData(event: Event<unknown>) {
 }
 
 function handleItemSelect(item: Deck) {
-  emit(events.DeckFilterModal.onResult, {
+  emit(uiEvents.DeckFilterModal.onResult, {
     selectedDeckId: item.id,
   }).then(() => {
-    invoke(events.window_close).then(() => {
+    invoke(uiEvents.window_close).then(() => {
       reset();
     });
   });
@@ -73,7 +73,7 @@ function handleSubmit() {
 }
 
 function handleCancel() {
-  invoke(events.window_close).then(() => {
+  invoke(uiEvents.window_close).then(() => {
     reset();
   });
 }

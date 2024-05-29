@@ -5,7 +5,7 @@ import { emit, Event, TauriEvent } from "@tauri-apps/api/event";
 
 import { deckStore } from "stores/deckStore";
 import { useTauriEvent } from "utils/tauriEvent";
-import events from "constants/events";
+import uiEvents from "constants/uiEvents";
 
 import Loader from "components/Loader.vue";
 
@@ -31,17 +31,17 @@ function reset(event?: Event<unknown>) {
 function createNewDeck() {
   loading.value = true;
   deckStore.create(deckTitle.value).finally(() => {
-    emit(events.DeckNewModal.onResult, {
+    emit(uiEvents.DeckNewModal.onResult, {
       deckTitle: deckTitle.value,
     });
-    invoke(events.window_close).then(() => {
+    invoke(uiEvents.window_close).then(() => {
       reset();
     });
   });
 }
 
 function handleCancel() {
-  invoke(events.window_close).then(() => {
+  invoke(uiEvents.window_close).then(() => {
     reset();
   });
 }

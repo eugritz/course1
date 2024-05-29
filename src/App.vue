@@ -6,7 +6,7 @@ import { Event, emit } from "@tauri-apps/api/event";
 import { Deck } from "entities/Deck";
 import { deckStore } from "stores/deckStore";
 import { useTauriEvent } from "utils/tauriEvent";
-import events from "constants/events";
+import uiEvents from "constants/uiEvents";
 
 import Header from "components/Header.vue";
 import DeckList from "components/DeckList.vue";
@@ -17,9 +17,9 @@ const decks = computed(() => deckStore.cached_all);
 const optionsPopup = ref<PopupExposed | null>(null);
 const selectedDeck = shallowRef<Deck | null>(null);
 
-useTauriEvent(events.DeckNewModal.onResult, handleDeckDialogResult);
-useTauriEvent(events.DeckRenameModal.onResult, handleDeckDialogResult);
-useTauriEvent(events.ConfirmationModal.onResult, handleDeckDeleteDialogResult);
+useTauriEvent(uiEvents.DeckNewModal.onResult, handleDeckDialogResult);
+useTauriEvent(uiEvents.DeckRenameModal.onResult, handleDeckDialogResult);
+useTauriEvent(uiEvents.ConfirmationModal.onResult, handleDeckDeleteDialogResult);
 
 watchEffect(() => {
   reset();
@@ -39,12 +39,12 @@ function handleDeckDeleteDialogResult(event: Event<unknown>) {
   };
 
   if (payload.button !== 1 || !selectedDeck.value) {
-    emit(events.ConfirmationModal.onReady);
+    emit(uiEvents.ConfirmationModal.onReady);
     return;
   }
 
   deckStore.delete(selectedDeck.value.id).then(() => {
-    emit(events.ConfirmationModal.onReady);
+    emit(uiEvents.ConfirmationModal.onReady);
     reset();
   });
 }
@@ -59,10 +59,10 @@ function handleOpenRenameDeckDialog() {
     return;
   }
 
-  emit(events.DeckRenameModal.setData, {
+  emit(uiEvents.DeckRenameModal.setData, {
     deck: selectedDeck.value,
   }).then(() => {
-    invoke(events.DeckRenameModal.open);
+    invoke(uiEvents.DeckRenameModal.open);
   });
 
   optionsPopup.value?.close();
@@ -73,7 +73,7 @@ function handleOpenDeleteDeckDialog() {
     return;
   }
 
-  invoke(events.ConfirmationModal.open, {
+  invoke(uiEvents.ConfirmationModal.open, {
     title: "Удалить колоду",
     message: "Вы уверены, что хотите удалить колоду?",
     loading: true,

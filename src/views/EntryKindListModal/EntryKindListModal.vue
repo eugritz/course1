@@ -6,7 +6,7 @@ import { Event, TauriEvent, emit } from '@tauri-apps/api/event';
 import { EntryKind } from 'entities/EntryKind';
 import { entryKindStore } from 'stores/entryKindStore';
 import { useTauriEvent } from 'utils/tauriEvent';
-import events from 'constants/events';
+import uiEvents from 'constants/uiEvents';
 
 import NativeListbox, { NativeListboxExposed } from 'components/NativeListbox.vue';
 
@@ -18,10 +18,10 @@ const selectedEntryKindIdx = ref<number | null>(null);
 const entryKinds = computed(() => entryKindStore.cached_all);
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
-useTauriEvent(events.EntryKindAddModal.onResult, load);
-useTauriEvent(events.EntryKindListModal.setData, handleSetData);
-useTauriEvent(events.InputModal.onResult, handleRenameEntryKindResult);
-useTauriEvent(events.window_open, load);
+useTauriEvent(uiEvents.EntryKindAddModal.onResult, load);
+useTauriEvent(uiEvents.EntryKindListModal.setData, handleSetData);
+useTauriEvent(uiEvents.InputModal.onResult, handleRenameEntryKindResult);
+useTauriEvent(uiEvents.window_open, load);
 
 onMounted(() => {
   load();
@@ -51,14 +51,14 @@ function handleSetData(event: Event<unknown>) {
 }
 
 function handleAddEntryKind() {
-  invoke(events.EntryKindAddModal.open);
+  invoke(uiEvents.EntryKindAddModal.open);
 }
 
 function handleRenameEntryKind() {
   if (!selectedEntryKind.value)
     return;
 
-  invoke(events.InputModal.open, {
+  invoke(uiEvents.InputModal.open, {
     title: "Переименовать вид записи",
     label: "Новое имя вида записи",
     value: selectedEntryKind.value.name,
@@ -81,7 +81,7 @@ function handleRenameEntryKindResult(event: Event<unknown>) {
     .rename(selectedEntryKind.value.id, payload.input)
     .finally(
       () => {
-        emit(events.InputModal.onReady);
+        emit(uiEvents.InputModal.onReady);
         load();
       }
     );
@@ -92,7 +92,7 @@ function handleDeleteEntryKind() {
 }
 
 function handleClose() {
-  invoke(events.window_close).then(() => {
+  invoke(uiEvents.window_close).then(() => {
     reset();
   });
 }
