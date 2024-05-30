@@ -2,6 +2,8 @@
 export interface NativeListboxExposed {
   focus: () => void;
   select: (idx: number) => void;
+  selectNext: () => void;
+  selectPrev: () => void;
   deselect: () => void;
 }
 </script>
@@ -18,6 +20,7 @@ defineSlots<{
 }>();
 
 const emit = defineEmits<{
+  (e: "item:selected", item: T): void,
   (e: "item:dblclick", item: T): void,
   (e: "item:keydown", item: T): void,
 }>();
@@ -61,6 +64,9 @@ function handleItemDragStop() {
 
   isItemDragging.value = false;
   pickedItem.value = props.items[selectedItemIdx.value];
+  if (props.items[selectedItemIdx.value] !== undefined) {
+    emit('item:selected', props.items[selectedItemIdx.value]);
+  }
 }
 
 function handleItemPick() {
@@ -68,7 +74,10 @@ function handleItemPick() {
     return;
 
   pickedItem.value = props.items[selectedItemIdx.value];
-  emit('item:keydown', props.items[selectedItemIdx.value]);
+  if (props.items[selectedItemIdx.value] !== undefined) {
+    emit('item:selected', props.items[selectedItemIdx.value]);
+    emit('item:keydown', props.items[selectedItemIdx.value]);
+  }
 }
 
 function handleItemNext(_event: KeyboardEvent) {
@@ -97,6 +106,24 @@ function select(idx: number) {
   pickedItem.value = props.items[idx];
 }
 
+function selectNext() {
+  if (selectedItemIdx.value === null) {
+    selectedItemIdx.value = 0;
+  } else if (selectedItemIdx.value + 1 < props.items.length) {
+    selectedItemIdx.value++;
+  }
+  pickedItem.value = props.items[selectedItemIdx.value];
+}
+
+function selectPrev() {
+  if (!selectedItemIdx.value) {
+    selectedItemIdx.value = 0;
+  } else {
+    selectedItemIdx.value--;
+  }
+  pickedItem.value = props.items[selectedItemIdx.value];
+}
+
 function deselect() {
   selectedItemIdx.value = null;
   pickedItem.value = null;
@@ -105,6 +132,8 @@ function deselect() {
 defineExpose({
   focus,
   select,
+  selectNext,
+  selectPrev,
   deselect,
 });
 </script>

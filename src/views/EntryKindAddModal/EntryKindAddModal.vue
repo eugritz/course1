@@ -128,19 +128,6 @@ button {
   gap: 8px;
 }
 
-.filter {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 1em;
-  @include user-select-none;
-
-  input {
-    width: 100%;
-    padding: 0.3em 0.6em;
-  }
-}
-
 .wrapper {
   flex: 1;
 }

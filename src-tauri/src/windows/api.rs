@@ -51,24 +51,25 @@ pub async fn open_confirmation_modal(
 
 #[tauri::command]
 pub async fn confirmation_modal_on_result(
-    handle: tauri::AppHandle,
+    window: tauri::Window,
     id: Option<String>,
     button: i32,
     parent: String,
 ) {
-    if let Some(confirmation_modal) = handle.get_focused_window() {
-        if confirmation_modal.label() != "ConfirmationModal" {
-            return;
-        }
-
-        handle
-            .emit_to(
-                &parent,
-                "ConfirmationModal:onResult",
-                ConfirmationModalOutputPayload { id, button },
-            )
-            .unwrap();
+    debug!("confirmation_modal_on_result START");
+    if window.label() != "ConfirmationModal" {
+        return;
     }
+
+    window
+        .app_handle()
+        .emit_to(
+            &parent,
+            "ConfirmationModal:onResult",
+            ConfirmationModalOutputPayload { id, button },
+        )
+        .unwrap();
+    debug!("confirmation_modal_on_result FINISH");
 }
 
 #[tauri::command]
@@ -107,24 +108,23 @@ pub async fn open_input_modal(
 
 #[tauri::command]
 pub async fn input_modal_on_result(
-    handle: tauri::AppHandle,
+    window: tauri::Window,
     id: Option<String>,
     input: String,
     parent: String,
 ) {
-    if let Some(input_modal) = handle.get_focused_window() {
-        if input_modal.label() != "InputModal" {
-            return;
-        }
-
-        handle
-            .emit_to(
-                &parent,
-                "InputModal:onResult",
-                InputModalOutputPayload { id, input },
-            )
-            .unwrap();
+    if window.label() != "InputModal" {
+        return;
     }
+
+    window
+        .app_handle()
+        .emit_to(
+            &parent,
+            "InputModal:onResult",
+            InputModalOutputPayload { id, input },
+        )
+        .unwrap();
 }
 
 #[tauri::command]
@@ -155,6 +155,14 @@ pub async fn open_entry_kind_filter_modal(handle: tauri::AppHandle) {
 pub async fn open_entry_kind_list_window(handle: tauri::AppHandle) {
     debug!("open_entry_kind_list_window");
     if let Some(window) = handle.get_window("EntryKindListWindow") {
+        window.show_modal();
+    }
+}
+
+#[tauri::command]
+pub async fn open_entry_kind_field_list_window(handle: tauri::AppHandle) {
+    debug!("open_entry_kind_field_list_window");
+    if let Some(window) = handle.get_window("EntryKindFieldListWindow") {
         window.show_modal();
     }
 }

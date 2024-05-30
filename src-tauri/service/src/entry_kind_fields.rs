@@ -11,7 +11,7 @@ pub struct EntryKindField {
     pub name: String,
     pub desc: Option<String>,
     pub r#type: String,
-    pub is_unique: bool,
+    pub is_default: bool,
 }
 
 pub struct EntryKindFieldService;
@@ -39,7 +39,7 @@ impl EntryKindFieldService {
                         false,
                     )
                     .finally(true),
-                "is_unique".to_owned(),
+                "is_default".to_owned(),
             )
             .into_model::<EntryKindField>()
             .all(db)

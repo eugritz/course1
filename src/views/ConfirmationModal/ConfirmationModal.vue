@@ -61,6 +61,7 @@ function handleConfirm() {
 
 function handleCancel() {
   invoke("confirmation_modal_on_result", {
+    id: id.value,
     button: 0,
     parent: parent.value,
   });
@@ -94,7 +95,7 @@ function handleReady() {
   >
     <p>{{ message }}</p>
     <div class="dialog__controls">
-      <button :disabled="loading === 0" @click="handleCancel">
+      <button type="button" :disabled="loading === 0" @click="handleCancel">
         <Loader v-show="loading === 0" />
         <span :class="{ hidden: loading === 0 }">Нет</span>
       </button>

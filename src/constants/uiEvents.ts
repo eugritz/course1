@@ -28,16 +28,19 @@ export default {
     setData: "EntryKindFilterModal:setData",
     onResult: "EntryKindFilterModal:onResult",
   },
-  EntryKindListWindow: {
-    open: "open_entry_kind_list_window",
-    setData: "EntryKindListWindow:setData",
-    onResult: "EntryKindListWindow:onResult",
-  },
   // Windows
   CardsWindow: {
     open: "open_cards_window",
   },
   AddWindow: {
     open: "open_add_window",
+  },
+  EntryKindListWindow: {
+    open: "open_entry_kind_list_window",
+    setData: "EntryKindListWindow:setData",
+  },
+  EntryKindFieldListWindow: {
+    open: "open_entry_kind_field_list_window",
+    setData: "EntryKindFieldListWindow:setData",
   },
 };

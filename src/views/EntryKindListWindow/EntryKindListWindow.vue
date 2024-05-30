@@ -35,7 +35,7 @@ function load() {
 }
 
 function reset(event?: Event<unknown>) {
-  if (event && event.windowLabel !== "EntryKindFilterWindow")
+  if (event && event.windowLabel !== "EntryKindListWindow")
     return;
 
   if (listRef.value)
@@ -175,19 +175,6 @@ button {
   height: calc(100vh - 16px);
   display: flex;
   gap: 8px;
-}
-
-.filter {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 1em;
-  @include user-select-none;
-
-  input {
-    width: 100%;
-    padding: 0.3em 0.6em;
-  }
 }
 
 .wrapper {

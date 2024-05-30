@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useTauriEvent } from 'utils/tauriEvent';
+import { invoke } from '@tauri-apps/api';
+import { emit } from '@tauri-apps/api/event';
 
 import { EntryKindField } from 'entities/EntryKindField';
 import { entryKindFieldStore } from 'stores/entryKindFieldStore';
+import { useTauriEvent } from 'utils/tauriEvent';
 import uiEvents from 'constants/uiEvents';
 
 import EditorSection from './EditorSection.vue';
@@ -25,9 +27,15 @@ function load() {
   });
 }
 
-function handleOpenEntryKindFields() {
+function handleOpenEntryKindFieldListWindow() {
   if (props.entryKindId === undefined)
     return;
+
+  emit(uiEvents.EntryKindFieldListWindow.setData, {
+    entryKindId: props.entryKindId,
+  }).then(() => {
+    invoke(uiEvents.EntryKindFieldListWindow.open);
+  });
 }
 </script>
 
@@ -37,7 +45,7 @@ function handleOpenEntryKindFields() {
       <div>
         <button
           title="Изменить поля вида записи"
-          @click="handleOpenEntryKindFields"
+          @click="handleOpenEntryKindFieldListWindow"
         >
           Поля...
         </button>

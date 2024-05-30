@@ -133,6 +133,22 @@ pub fn build_windows(app: &tauri::App) {
     .inner_size(350.0, 250.0)
     .build()
     .unwrap();
+
+    tauri::WindowBuilder::new(
+        app,
+        "EntryKindFieldListWindow",
+        tauri::WindowUrl::App(
+            "src/views/EntryKindFieldListWindow/index.html".parse().unwrap(),
+        ),
+    )
+    .title("Поля вида записи")
+    .visible(false)
+    .resizable(false)
+    .minimizable(false)
+    .maximizable(false)
+    .inner_size(600.0, 400.0)
+    .build()
+    .unwrap();
 }
 
 pub fn rebuild_windows(handle: &tauri::AppHandle) {
