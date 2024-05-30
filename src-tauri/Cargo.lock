@@ -3790,6 +3790,7 @@ version = "0.1.0"
 dependencies = [
  "entity",
  "sea-orm",
+ "serde",
 ]
 
 [[package]]
