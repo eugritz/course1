@@ -2,10 +2,8 @@ use log::debug;
 use tauri::Manager;
 
 use crate::dto::{
-    ConfirmationModalInputPayload,
-    ConfirmationModalOutputPayload,
-    InputModalInputPayload,
-    InputModalOutputPayload,
+    ConfirmationModalInputPayload, ConfirmationModalOutputPayload,
+    InputModalInputPayload, InputModalOutputPayload,
 };
 use crate::windows::ext::*;
 
@@ -29,7 +27,9 @@ pub async fn open_confirmation_modal(
     loading: Option<bool>,
 ) {
     debug!("open_confirmation_modal");
-    if let Some(confirmation_modal) = window.app_handle().get_window("ConfirmationModal") {
+    if let Some(confirmation_modal) =
+        window.app_handle().get_window("ConfirmationModal")
+    {
         confirmation_modal.set_title(&title).unwrap();
         confirmation_modal
             .emit_to(
@@ -65,10 +65,7 @@ pub async fn confirmation_modal_on_result(
             .emit_to(
                 &parent,
                 "ConfirmationModal:onResult",
-                ConfirmationModalOutputPayload {
-                    id,
-                    button,
-                },
+                ConfirmationModalOutputPayload { id, button },
             )
             .unwrap();
     }
@@ -124,10 +121,7 @@ pub async fn input_modal_on_result(
             .emit_to(
                 &parent,
                 "InputModal:onResult",
-                InputModalOutputPayload {
-                    id,
-                    input,
-                },
+                InputModalOutputPayload { id, input },
             )
             .unwrap();
     }

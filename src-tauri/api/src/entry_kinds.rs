@@ -23,10 +23,8 @@ pub async fn create_entry_kind(
     entry_kind_name: String,
 ) -> Result<entity::entry_kinds::Model, ()> {
     debug!("create_entry_kind START");
-    let entry_kind = EntryKindService::find_entry_kind_by_id(
-        &state,
-        entry_kind_id
-    ).await;
+    let entry_kind =
+        EntryKindService::find_entry_kind_by_id(&state, entry_kind_id).await;
 
     if entry_kind.is_err() || entry_kind.unwrap().is_none() {
         return Err(());

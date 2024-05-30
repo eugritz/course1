@@ -1,13 +1,46 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+import { useTauriEvent } from 'utils/tauriEvent';
+
+import { EntryKindField } from 'entities/EntryKindField';
+import { entryKindFieldStore } from 'stores/entryKindFieldStore';
+import uiEvents from 'constants/uiEvents';
+
 import EditorSection from './EditorSection.vue';
 
+const props = defineProps<{
+  entryKindId?: number,
+}>();
+
+const fields = ref<EntryKindField[]>([]);
+
+useTauriEvent(uiEvents.window_open, load);
+
+function load() {
+  if (props.entryKindId === undefined)
+    return;
+
+  entryKindFieldStore.fields(props.entryKindId).then((fields_) => {
+    fields.value = fields_;
+  });
+}
+
+function handleOpenEntryKindFields() {
+  if (props.entryKindId === undefined)
+    return;
+}
 </script>
 
 <template>
   <div class="editor">
     <div class="editor__controls">
       <div>
-        <button title="Изменить поля вида записи">Поля...</button>
+        <button
+          title="Изменить поля вида записи"
+          @click="handleOpenEntryKindFields"
+        >
+          Поля...
+        </button>
         <button title="Изменить карты вида записи">Карты...</button>
       </div>
       <div>
@@ -47,8 +80,7 @@ import EditorSection from './EditorSection.vue';
     </div>
     <div class="separator" />
     <div class="editor__fields">
-      <EditorSection title="Выражение" type="text" />
-      <EditorSection title="Значение" type="text" />
+      <EditorSection v-for="field in fields" :title="field.name" type="text" />
     </div>
     <div class="separator" />
     <div class="editor__tags">

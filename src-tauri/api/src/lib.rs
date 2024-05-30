@@ -1,2 +1,3 @@
 pub mod decks;
+pub mod entry_kind_fields;
 pub mod entry_kinds;

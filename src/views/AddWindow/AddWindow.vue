@@ -92,7 +92,7 @@ function handleDeckSelected(event: Event<unknown>) {
       </div>
     </div>
     <div class="wrapper">
-      <Editor />
+      <Editor :entry-kind-id="selectedEntryKind?.id" />
     </div>
     <div class="controls">
       <button>Добавить</button>
