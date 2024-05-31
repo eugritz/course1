@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api';
 import { emit } from '@tauri-apps/api/event';
 
 import { EntryKindField } from 'entities/EntryKindField';
 import { entryKindFieldStore } from 'stores/entryKindFieldStore';
 import { useTauriEvent } from 'utils/tauriEvent';
+import dataEvents from 'constants/dataEvents';
 import uiEvents from 'constants/uiEvents';
 
 import EditorSection from './EditorSection.vue';
@@ -16,13 +17,17 @@ const props = defineProps<{
 
 const fields = ref<EntryKindField[]>([]);
 
+useTauriEvent(dataEvents.update.entryKindField, load);
 useTauriEvent(uiEvents.window_open, load);
+
+onMounted(load);
+watch(() => props.entryKindId, load);
 
 function load() {
   if (props.entryKindId === undefined)
     return;
 
-  entryKindFieldStore.fields(props.entryKindId).then((fields_) => {
+  entryKindFieldStore.get_fields(props.entryKindId).then((fields_) => {
     fields.value = fields_;
   });
 }
@@ -88,7 +93,12 @@ function handleOpenEntryKindFieldListWindow() {
     </div>
     <div class="separator" />
     <div class="editor__fields">
-      <EditorSection v-for="field in fields" :title="field.name" type="text" />
+      <EditorSection
+        v-for="field in fields"
+        :title="field.name"
+        :placeholder="field.desc"
+        type="text"
+      />
     </div>
     <div class="separator" />
     <div class="editor__tags">

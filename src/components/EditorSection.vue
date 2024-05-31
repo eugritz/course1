@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import {ref} from 'vue';
 
-defineProps<{
+const props = defineProps<{
   title: string,
+  value?: string,
+  placeholder?: string,
   type?: "text" | "tags",
 }>();
 
 const isSectionClosed = ref(true);
+const value = ref(props.value ?? "");
 </script>
 
 <template>
@@ -35,7 +38,7 @@ const isSectionClosed = ref(true);
     </div>
     <div v-show="isSectionClosed" class="section__content">
       <slot>
-        <input type="text" />
+        <input type="text" v-model="value" :placeholder="placeholder" />
       </slot>
     </div>
   </div>

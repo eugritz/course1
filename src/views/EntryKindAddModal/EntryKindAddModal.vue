@@ -49,12 +49,12 @@ function handleEntryKindNameResult(event: Event<unknown>) {
     input: string,
   };
 
-  entryKindStore.create(selectedEntryKind.value.id, payload.input).finally(() => {
-    emit(dataEvents.update.entryKind).then(() => {
-      emit(uiEvents.InputModal.onReady);
-      invoke(uiEvents.window_close).then(() => {
-        reset();
-      });
+  entryKindStore.create(selectedEntryKind.value.id, payload.input).then(() => {
+    emit(dataEvents.update.entryKind);
+  }).finally(() => {
+    emit(uiEvents.InputModal.onReady);
+    invoke(uiEvents.window_close).then(() => {
+      reset();
     });
   });
 }

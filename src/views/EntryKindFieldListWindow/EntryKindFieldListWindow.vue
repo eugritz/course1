@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { nextTick, ref } from 'vue';
 import { invoke } from '@tauri-apps/api';
-import { Event as UiEvent, emit } from '@tauri-apps/api/event';
+import { TauriEvent, Event as UiEvent, emit } from '@tauri-apps/api/event';
 
 import { EntryKindField } from 'entities/EntryKindField';
 import { entryKindFieldStore } from 'stores/entryKindFieldStore';
 import { useTauriEvent } from 'utils/tauriEvent';
+import dataEvents from 'constants/dataEvents';
 import uiEvents from 'constants/uiEvents';
 
+import Loader from 'components/Loader.vue';
 import NativeListbox, { NativeListboxExposed } from 'components/NativeListbox.vue';
 
 const listRef = ref<NativeListboxExposed | null>(null);
@@ -15,20 +17,29 @@ const listRef = ref<NativeListboxExposed | null>(null);
 const entryKindId = ref<number | null>(null);
 const selectedField = ref<EntryKindField | null>(null);
 
-const refresh = ref(false);
 const fields = ref<EntryKindField[]>([]);
+const deletedFields = ref<number[]>([]);
 const defaultField = ref<EntryKindField | null>(null);
 const fieldDescription = ref("");
 
+const loading = ref(false);
+
+useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
 useTauriEvent(uiEvents.EntryKindFieldListWindow.setData, handleSetData);
 useTauriEvent(uiEvents.InputModal.onResult, handleInputDialogResult);
 useTauriEvent(uiEvents.ConfirmationModal.onResult, handleDeleteFieldResult);
+
+function reset() {
+  deletedFields.value = [];
+  fieldDescription.value = "";
+  loading.value = false;
+}
 
 function load() {
   if (entryKindId.value === null)
     return;
 
-  entryKindFieldStore.fields(entryKindId.value).then((fields_) => {
+  entryKindFieldStore.get_fields(entryKindId.value).then((fields_) => {
     fields.value = fields_;
     defaultField.value = fields_.find((field) => field.is_default) ?? null;
 
@@ -47,7 +58,6 @@ function handleSetData(event: UiEvent<unknown>) {
   };
 
   entryKindId.value = payload.entryKindId;
-  refresh.value = !refresh.value;
   load();
 }
 
@@ -84,7 +94,6 @@ function handleInputDialogResult(event: UiEvent<unknown>) {
     handleAddFieldResult(event);
   else if (payload.id === "rename")
     handleRenameFieldResult(event);
-
 }
 
 function handleAddFieldResult(event: UiEvent<unknown>) {
@@ -105,9 +114,10 @@ function handleAddFieldResult(event: UiEvent<unknown>) {
       name: newName,
       desc: "",
       type: "ANY",
-      is_default: false,
+      is_default: true,
     });
-
+    defaultField.value = fields.value[0];
+    listRef.value?.selectNext();
     return;
   }
 
@@ -175,6 +185,11 @@ function handleDeleteFieldResult(event: UiEvent<unknown>) {
     fields.value[i].order -= 1;
   }
 
+  if (selectedField.value.id > 0) {
+    deletedFields.value.push(selectedField.value.id);
+  }
+
+  deletedFields.value.push();
   fields.value.splice(selectedField.value.order - 1, 1);
   listRef.value?.selectPrev();
 }
@@ -203,14 +218,14 @@ function handleFieldSelected(field: EntryKindField) {
   fieldDescription.value = field.desc;
 }
 
-function handleFieldDescriptionChanged(event: Event) {
+function handleFieldDescriptionChanged() {
   if (!selectedField.value)
     return;
 
   selectedField.value.desc = fieldDescription.value;
 }
 
-function handleDefaultFieldChanged(event: Event) {
+function handleDefaultFieldChanged() {
   if (!defaultField.value || !selectedField.value)
     return;
 
@@ -220,12 +235,25 @@ function handleDefaultFieldChanged(event: Event) {
 }
 
 function handleConfirm() {
-  // TODO
-  invoke(uiEvents.window_close);
+  if (entryKindId.value === null)
+    return;
+
+  loading.value = true;
+  entryKindFieldStore
+    .update_fields(entryKindId.value, fields.value, deletedFields.value)
+    .then(() => {
+      emit(dataEvents.update.entryKindField);
+    }).finally(() => {
+      invoke(uiEvents.window_close).then(() => {
+        reset();
+      });
+    });
 }
 
 function handleCancel() {
-  invoke(uiEvents.window_close);
+  invoke(uiEvents.window_close).then(() => {
+    reset();
+  });
 }
 </script>
 
@@ -285,7 +313,10 @@ function handleCancel() {
       </div>
     </form>
     <div class="controls">
-      <button @click="handleConfirm">Сохранить</button>
+      <button :disabled="loading" @click="handleConfirm">
+        <Loader v-show="loading" />
+        <span :class="{ hidden: loading }">Сохранить</span>
+      </button>
       <button @click="handleCancel">Отменить</button>
     </div>
   </div>
@@ -293,6 +324,10 @@ function handleCancel() {
 
 <style scoped lang="scss">
 @import "../../styles/mixins";
+
+.hidden {
+  opacity: 0;
+}
 
 input[type="text"] {
   padding: 0.3em 0.6em;

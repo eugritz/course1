@@ -103,7 +103,11 @@ function focus() {
 
 function select(idx: number) {
   selectedItemIdx.value = idx;
+  if (idx < 0 || idx >= props.items.length)
+    return;
+
   pickedItem.value = props.items[idx];
+  emit('item:selected', props.items[idx]);
 }
 
 function selectNext() {
@@ -113,6 +117,7 @@ function selectNext() {
     selectedItemIdx.value++;
   }
   pickedItem.value = props.items[selectedItemIdx.value];
+  emit('item:selected', props.items[selectedItemIdx.value]);
 }
 
 function selectPrev() {
@@ -122,6 +127,7 @@ function selectPrev() {
     selectedItemIdx.value--;
   }
   pickedItem.value = props.items[selectedItemIdx.value];
+  emit('item:selected', props.items[selectedItemIdx.value]);
 }
 
 function deselect() {
