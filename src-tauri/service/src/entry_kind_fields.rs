@@ -9,7 +9,7 @@ pub struct EntryKindField {
     pub order: i32,
     pub entry_kind_id: i32,
     pub name: String,
-    pub desc: Option<String>,
+    pub desc: String,
     pub r#type: String,
     pub is_default: bool,
 }

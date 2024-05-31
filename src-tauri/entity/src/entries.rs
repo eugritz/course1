@@ -4,25 +4,34 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(
-    Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize,
+    Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize,
 )]
-#[sea_orm(table_name = "entry_kind_fields")]
+#[sea_orm(table_name = "entries")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     pub entry_kind_id: i32,
-    pub order: i32,
-    pub name: String,
-    pub desc: String,
-    pub r#type: String,
+    pub deck_id: i32,
+    pub color_tag: Option<String>,
+    #[sea_orm(column_type = "Double")]
+    pub progress: f64,
+    pub created_at: Date,
+    pub last_shown_at: Option<DateTimeUtc>,
+    pub next_shown_at: Option<DateTimeUtc>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::decks::Entity",
+        from = "Column::DeckId",
+        to = "super::decks::Column::Id",
+        on_update = "NoAction",
+        on_delete = "Cascade"
+    )]
+    Decks,
     #[sea_orm(has_many = "super::entry_field_values::Entity")]
     EntryFieldValues,
-    #[sea_orm(has_one = "super::entry_kind_default_field::Entity")]
-    EntryKindDefaultField,
     #[sea_orm(
         belongs_to = "super::entry_kinds::Entity",
         from = "Column::EntryKindId",
@@ -33,15 +42,15 @@ pub enum Relation {
     EntryKinds,
 }
 
-impl Related<super::entry_field_values::Entity> for Entity {
+impl Related<super::decks::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::EntryFieldValues.def()
+        Relation::Decks.def()
     }
 }
 
-impl Related<super::entry_kind_default_field::Entity> for Entity {
+impl Related<super::entry_field_values::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::EntryKindDefaultField.def()
+        Relation::EntryFieldValues.def()
     }
 }
 
