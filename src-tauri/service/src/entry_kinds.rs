@@ -4,14 +4,14 @@ use sea_orm::*;
 pub struct EntryKindService;
 
 impl EntryKindService {
-    pub async fn find_all_entry_kinds(
-        db: &DbConn,
+    pub async fn find_all_entry_kinds<'a, C: ConnectionTrait>(
+        db: &'a C,
     ) -> Result<Vec<entity::entry_kinds::Model>, DbErr> {
         entity::entry_kinds::Entity::find().all(db).await
     }
 
-    pub async fn find_last_entry_kind(
-        db: &DbConn,
+    pub async fn find_last_entry_kind<'a, C: ConnectionTrait>(
+        db: &'a C,
     ) -> Result<Option<entity::entry_kinds::Model>, DbErr> {
         entity::entry_kinds::Entity::find()
             .order_by_desc(entity::entry_kinds::Column::Id)
@@ -19,15 +19,15 @@ impl EntryKindService {
             .await
     }
 
-    pub async fn find_entry_kind_by_id(
-        db: &DbConn,
+    pub async fn find_entry_kind_by_id<'a, C: ConnectionTrait>(
+        db: &'a C,
         id: i32,
     ) -> Result<Option<entity::entry_kinds::Model>, DbErr> {
         entity::entry_kinds::Entity::find_by_id(id).one(db).await
     }
 
-    pub async fn create_entry_kind(
-        db: &DbConn,
+    pub async fn create_entry_kind<'a, C: ConnectionTrait>(
+        db: &'a C,
         form_data: entity::entry_kinds::Model,
     ) -> Result<entity::entry_kinds::ActiveModel, DbErr> {
         entity::entry_kinds::ActiveModel {
@@ -39,8 +39,8 @@ impl EntryKindService {
         .await
     }
 
-    pub async fn update_entry_kind_by_id(
-        db: &DbConn,
+    pub async fn update_entry_kind_by_id<'a, C: ConnectionTrait>(
+        db: &'a C,
         id: i32,
         form_data: entity::entry_kinds::Model,
     ) -> Result<entity::entry_kinds::Model, DbErr> {
@@ -60,8 +60,8 @@ impl EntryKindService {
         .await
     }
 
-    pub async fn delete_entry_kind(
-        db: &DbConn,
+    pub async fn delete_entry_kind<'a, C: ConnectionTrait>(
+        db: &'a C,
         id: i32,
     ) -> Result<DeleteResult, DbErr> {
         let entry_kind: entity::entry_kinds::ActiveModel =

@@ -13,7 +13,7 @@ pub async fn get_entry_kind_fields(
 ) -> Result<Vec<EntryKindField>, ()> {
     debug!("get_entry_kind_fields START");
     let result = EntryKindFieldService::find_fields_by_entry_kind_id(
-        &state,
+        state.inner(),
         entry_kind_id,
     )
     .await

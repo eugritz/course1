@@ -4,14 +4,14 @@ use sea_orm::*;
 pub struct DeckService;
 
 impl DeckService {
-    pub async fn find_all_decks(
-        db: &DbConn,
+    pub async fn find_all_decks<'a, C: ConnectionTrait>(
+        db: &'a C,
     ) -> Result<Vec<entity::decks::Model>, DbErr> {
         entity::decks::Entity::find().all(db).await
     }
 
-    pub async fn find_last_deck(
-        db: &DbConn,
+    pub async fn find_last_deck<'a, C: ConnectionTrait>(
+        db: &'a C,
     ) -> Result<Option<entity::decks::Model>, DbErr> {
         entity::decks::Entity::find()
             .order_by_desc(entity::decks::Column::Id)
@@ -19,8 +19,8 @@ impl DeckService {
             .await
     }
 
-    pub async fn create_deck(
-        db: &DbConn,
+    pub async fn create_deck<'a, C: ConnectionTrait>(
+        db: &'a C,
         form_data: entity::decks::Model,
     ) -> Result<entity::decks::ActiveModel, DbErr> {
         entity::decks::ActiveModel {
@@ -31,8 +31,8 @@ impl DeckService {
         .await
     }
 
-    pub async fn update_deck_by_id(
-        db: &DbConn,
+    pub async fn update_deck_by_id<'a, C: ConnectionTrait>(
+        db: &'a C,
         id: i32,
         form_data: entity::decks::Model,
     ) -> Result<entity::decks::Model, DbErr> {
@@ -51,8 +51,8 @@ impl DeckService {
         .await
     }
 
-    pub async fn delete_deck(
-        db: &DbConn,
+    pub async fn delete_deck<'a, C: ConnectionTrait>(
+        db: &'a C,
         id: i32,
     ) -> Result<DeleteResult, DbErr> {
         let deck: entity::decks::ActiveModel =

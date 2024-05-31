@@ -17,8 +17,8 @@ pub struct EntryKindField {
 pub struct EntryKindFieldService;
 
 impl EntryKindFieldService {
-    pub async fn find_fields_by_entry_kind_id(
-        db: &DbConn,
+    pub async fn find_fields_by_entry_kind_id<'a, C: ConnectionTrait>(
+        db: &'a C,
         entry_kind_id: i32,
     ) -> Result<Vec<EntryKindField>, DbErr> {
         entry_kind_fields::Entity::find()
