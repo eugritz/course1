@@ -49,7 +49,9 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(entry_kind_fields::Column::Desc)
-                            .string(),
+                            .string()
+                            .default("")
+                            .not_null(),
                     )
                     .col(
                         ColumnDef::new(entry_kind_fields::Column::Type)

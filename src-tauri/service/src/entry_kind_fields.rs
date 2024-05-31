@@ -45,4 +45,67 @@ impl EntryKindFieldService {
             .all(db)
             .await
     }
+
+    pub async fn create_entry_kind_fields<'a, C: ConnectionTrait>(
+        db: &'a C,
+        entry_kind_id: i32,
+        fields: Vec<entry_kind_fields::Model>,
+    ) -> Result<InsertResult<entry_kind_fields::ActiveModel>, DbErr> {
+        entry_kind_fields::Entity::insert_many(fields.iter().map(|field| {
+            entry_kind_fields::ActiveModel {
+                entry_kind_id: Set(entry_kind_id),
+                order: Set(field.order),
+                name: Set(field.name.clone()),
+                desc: Set(field.desc.clone()),
+                r#type: Set(field.r#type.clone()),
+                ..Default::default()
+            }
+        }))
+        .exec(db)
+        .await
+    }
+
+    pub async fn update_entry_kind_fields<'a, C: ConnectionTrait>(
+        db: &'a C,
+        entry_kind_id: i32,
+        fields: Vec<entry_kind_fields::Model>,
+    ) -> Result<(), DbErr> {
+        for field in fields {
+            entry_kind_fields::ActiveModel {
+                id: Set(field.id),
+                entry_kind_id: Set(entry_kind_id),
+                order: Set(field.order),
+                name: Set(field.name),
+                desc: Set(field.desc),
+                r#type: Set(field.r#type),
+            }
+            .update(db)
+            .await?;
+        }
+
+        Ok(())
+    }
+
+    pub async fn delete_entry_kind_fields<'a, C: ConnectionTrait>(
+        db: &'a C,
+        entry_kind_id: i32,
+        field_ids: Vec<i32>,
+    ) -> Result<DeleteResult, DbErr> {
+        let mut condition = Condition::any();
+        for field_id in field_ids {
+            condition = condition.add(
+                Condition::all()
+                    .add(entry_kind_fields::Column::Id.eq(field_id))
+                    .add(
+                        entry_kind_fields::Column::EntryKindId
+                            .eq(entry_kind_id),
+                    ),
+            );
+        }
+
+        entry_kind_fields::Entity::delete_many()
+            .filter(condition)
+            .exec(db)
+            .await
+    }
 }

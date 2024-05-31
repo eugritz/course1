@@ -138,7 +138,9 @@ pub fn build_windows(app: &tauri::App) {
         app,
         "EntryKindFieldListWindow",
         tauri::WindowUrl::App(
-            "src/views/EntryKindFieldListWindow/index.html".parse().unwrap(),
+            "src/views/EntryKindFieldListWindow/index.html"
+                .parse()
+                .unwrap(),
         ),
     )
     .title("Поля вида записи")

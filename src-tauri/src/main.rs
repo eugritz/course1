@@ -29,7 +29,6 @@ fn main() {
             windows::api::open_deck_filter_modal,
             windows::api::open_entry_kind_add_modal,
             windows::api::open_entry_kind_filter_modal,
-
             // Windows
             windows::api::open_cards_window,
             windows::api::open_add_window,
@@ -42,6 +41,7 @@ fn main() {
             api::decks::delete_deck,
             api::decks::last_deck,
             api::entry_kind_fields::get_entry_kind_fields,
+            api::entry_kind_fields::update_entry_kind_fields,
             api::entry_kinds::get_all_entry_kinds,
             api::entry_kinds::create_entry_kind,
             api::entry_kinds::rename_entry_kind,
