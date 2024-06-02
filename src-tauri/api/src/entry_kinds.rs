@@ -1,4 +1,4 @@
-use log::debug;
+use log::{debug, error};
 use sea_orm::DbConn;
 
 use entity;
@@ -8,12 +8,19 @@ use service::EntryKindService;
 pub async fn get_all_entry_kinds(
     state: tauri::State<'_, DbConn>,
 ) -> Result<Vec<entity::entry_kinds::Model>, ()> {
-    debug!("get_all_entry_kinds START");
-    let result = EntryKindService::find_all_entry_kinds(state.inner())
-        .await
-        .or(Ok(vec![]));
-    debug!("get_all_entry_kinds FINISH");
-    return result;
+    debug!("get_all_entry_kinds CALL");
+    let result = EntryKindService::find_all_entry_kinds(state.inner()).await;
+
+    match result {
+        Ok(result) => {
+            debug!("get_all_entry_kinds SUCCESS");
+            Ok(result)
+        },
+        Err(error) => {
+            error!("get_all_entry_kinds ERROR {}", error.to_string());
+            Ok(vec![])
+        },
+    }
 }
 
 #[tauri::command]
@@ -22,7 +29,7 @@ pub async fn create_entry_kind(
     entry_kind_id: i32,
     entry_kind_name: String,
 ) -> Result<entity::entry_kinds::Model, ()> {
-    debug!("create_entry_kind START");
+    debug!("create_entry_kind CALL");
     let entry_kind =
         EntryKindService::find_entry_kind_by_id(state.inner(), entry_kind_id)
             .await;
@@ -40,14 +47,21 @@ pub async fn create_entry_kind(
         },
     )
     .await
-    .map(|x| x.try_into().unwrap())
-    .map_err(|_| ());
+    .map(|x| x.try_into().unwrap());
 
     // TODO: clone fields
     // TODO: clone cards
 
-    debug!("create_entry_kind FINISH");
-    return result;
+    match result {
+        Ok(result) => {
+            debug!("create_entry_kind SUCCESS");
+            Ok(result)
+        },
+        Err(error) => {
+            error!("create_entry_kind ERROR {}", error.to_string());
+            Err(())
+        },
+    }
 }
 
 #[tauri::command]
@@ -56,7 +70,7 @@ pub async fn rename_entry_kind(
     entry_kind_id: i32,
     new_entry_kind_name: String,
 ) -> Result<entity::entry_kinds::Model, ()> {
-    debug!("rename_entry_kind START");
+    debug!("rename_entry_kind CALL");
     let result = EntryKindService::update_entry_kind_by_id(
         state.inner(),
         entry_kind_id,
@@ -66,10 +80,18 @@ pub async fn rename_entry_kind(
             default: false,
         },
     )
-    .await
-    .map_err(|_| ());
-    debug!("rename_entry_kind FINISH");
-    return result;
+    .await;
+
+    match result {
+        Ok(result) => {
+            debug!("rename_entry_kind SUCCESS");
+            Ok(result)
+        },
+        Err(error) => {
+            error!("rename_entry_kind ERROR {}", error.to_string());
+            Err(())
+        },
+    }
 }
 
 #[tauri::command]
@@ -77,23 +99,36 @@ pub async fn delete_entry_kind(
     state: tauri::State<'_, DbConn>,
     entry_kind_id: i32,
 ) -> Result<(), ()> {
-    debug!("delete_entry_kind START");
-    EntryKindService::delete_entry_kind(state.inner(), entry_kind_id)
-        .await
-        .map_err(|_| ())?;
-    debug!("delete_entry_kind FINISH");
-    Ok(())
+    debug!("delete_entry_kind CALL");
+    let result = EntryKindService::delete_entry_kind(state.inner(), entry_kind_id).await;
+
+    match result {
+        Ok(_) => {
+            debug!("delete_entry_kind SUCCESS");
+            Ok(())
+        },
+        Err(error) => {
+            error!("delete_entry_kind ERROR {}", error.to_string());
+            Err(())
+        },
+    }
 }
 
 #[tauri::command]
 pub async fn last_entry_kind(
     state: tauri::State<'_, DbConn>,
 ) -> Result<Option<entity::entry_kinds::Model>, ()> {
-    debug!("last_entry_kind START");
-    let result = EntryKindService::find_last_entry_kind(state.inner())
-        .await
-        .map(|x| x)
-        .map_err(|_| ());
-    debug!("last_entry_kind FINISH");
-    return result;
+    debug!("last_entry_kind CALL");
+    let result = EntryKindService::find_last_entry_kind(state.inner()).await;
+
+    match result {
+        Ok(result) => {
+            debug!("last_entry_kind SUCCESS");
+            Ok(result)
+        },
+        Err(error) => {
+            error!("last_entry_kind ERROR {}", error.to_string());
+            Err(())
+        },
+    }
 }

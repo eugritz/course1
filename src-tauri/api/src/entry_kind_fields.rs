@@ -1,4 +1,4 @@
-use log::debug;
+use log::{debug, error};
 use sea_orm::{DbConn, DbErr, TransactionTrait};
 
 use entity::entry_kind_fields;
@@ -11,15 +11,23 @@ pub async fn get_entry_kind_fields(
     state: tauri::State<'_, DbConn>,
     entry_kind_id: i32,
 ) -> Result<Vec<EntryKindField>, ()> {
-    debug!("get_entry_kind_fields START");
+    debug!("get_entry_kind_fields CALL");
     let result = EntryKindFieldService::find_fields_by_entry_kind_id(
         state.inner(),
         entry_kind_id,
     )
-    .await
-    .map_err(|_| ());
-    debug!("get_entry_kind_fields FINISH");
-    return result;
+    .await;
+
+    match result {
+        Ok(result) => {
+            debug!("get_entry_kind_fields SUCCESS");
+            Ok(result)
+        },
+        Err(error) => {
+            error!("get_entry_kind_fields ERROR {}", error.to_string());
+            Err(())
+        },
+    }
 }
 
 #[tauri::command]
@@ -29,7 +37,7 @@ pub async fn update_entry_kind_fields(
     fields: Vec<EntryKindField>,
     deleted_fields: Vec<i32>,
 ) -> Result<(), ()> {
-    debug!("update_entry_kind_fields START");
+    debug!("update_entry_kind_fields CALL");
 
     let mut old_fields = Vec::new();
     let mut new_fields = Vec::new();
@@ -61,7 +69,7 @@ pub async fn update_entry_kind_fields(
         }
     }
 
-    state
+    let result = state
         .transaction::<_, (), DbErr>(|txn| {
             Box::pin(async move {
                 if deleted_fields.len() > 0 {
@@ -101,9 +109,16 @@ pub async fn update_entry_kind_fields(
                 Ok(())
             })
         })
-        .await
-        .map_err(|_| ())?;
+        .await;
 
-    debug!("update_entry_kind_fields FINISH");
-    Ok(())
+    match result {
+        Ok(result) => {
+            debug!("update_entry_kind_fields SUCCESS");
+            Ok(result)
+        },
+        Err(error) => {
+            error!("update_entry_kind_fields ERROR {}", error.to_string());
+            Err(())
+        },
+    }
 }
