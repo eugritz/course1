@@ -4,6 +4,7 @@ mod entry_kind_default_field;
 mod entry_kind_fields;
 mod entry_kinds;
 
+mod ext;
 mod utils;
 
 pub use decks::*;

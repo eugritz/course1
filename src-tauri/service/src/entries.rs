@@ -6,8 +6,8 @@ use crate::entry_query_builder::EntryQueryBuilder;
 pub struct EntryService;
 
 impl EntryService {
-    pub async fn find<'a, C: ConnectionTrait>() -> EntryQueryBuilder {
-        EntryQueryBuilder::new(entries::Entity::find())
+    pub fn find<'a, C: ConnectionTrait>(db: &'a C) -> EntryQueryBuilder<'a, C> {
+        EntryQueryBuilder::new(db, entries::Entity::find())
     }
 
     pub async fn create_entry<'a, C: ConnectionTrait>(
