@@ -40,6 +40,7 @@ fn main() {
             api::decks::rename_deck,
             api::decks::delete_deck,
             api::decks::last_deck,
+            api::entries::filter_entries,
             api::entry_kind_fields::get_entry_kind_fields,
             api::entry_kind_fields::update_entry_kind_fields,
             api::entry_kinds::get_all_entry_kinds,

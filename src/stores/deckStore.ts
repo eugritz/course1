@@ -9,8 +9,8 @@ export const deckStore = shallowReactive({
 
   async all(): Promise<Deck[]> {
     return invoke("get_all_decks").then((decks) => {
-        this.cached_all = decks as Deck[];
-        return decks as Deck[];
+      this.cached_all = decks as Deck[];
+      return decks as Deck[];
     });
   },
 
@@ -33,8 +33,8 @@ export const deckStore = shallowReactive({
 
   async last(): Promise<Deck | null> {
     return invoke("last_deck").then((deck) => {
-        this.cached_last = deck as Deck | null;
-        return deck as Deck | null;
+      this.cached_last = deck as Deck | null;
+      return deck as Deck | null;
     });
   },
 });

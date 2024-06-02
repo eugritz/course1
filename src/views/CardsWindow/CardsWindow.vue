@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { Event, TauriEvent } from '@tauri-apps/api/event';
+import { Event as UiEvent, TauriEvent } from '@tauri-apps/api/event';
 
+import { entryStore } from 'stores/entryStore';
 import { useTauriEvent } from 'utils/tauriEvent';
 
 import CardSwitch from 'components/CardSwitch.vue';
@@ -24,7 +25,7 @@ onMounted(() => {
   reset();
 });
 
-function reset(event?: Event<unknown>) {
+function reset(event?: UiEvent<unknown>) {
   if (event && event.windowLabel !== "CardsWindow")
     return;
 
@@ -33,6 +34,11 @@ function reset(event?: Event<unknown>) {
   dataTable.value?.reset();
 
   cardSwitch.value = false;
+}
+
+function searchEntries(event: Event) {
+  const target = event.target as HTMLInputElement;
+  entryStore.filter(target.value);
 }
 
 function handleItemNext() {
@@ -58,6 +64,7 @@ function handleItemPrev() {
           class="data-view__controls__search"
           type="text"
           placeholder="Поиск по картам/записям"
+          @keydown.enter="searchEntries"
         />
       </div>
       <div class="data-view__data">
