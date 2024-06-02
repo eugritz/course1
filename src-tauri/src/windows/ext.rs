@@ -20,6 +20,7 @@ impl<R: tauri::Runtime> SetAncestor<R> for tauri::WindowBuilder<'_> {
 
 #[cfg(target_os = "linux")]
 impl<R: tauri::Runtime> SetAncestor<R> for tauri::WindowBuilder<'_> {
+    #[allow(unused_variables)]
     fn ancestor(self, window: &tauri::Window<R>) -> Self {
         self
     }
@@ -54,6 +55,7 @@ impl<R: tauri::Runtime> SetModal for tauri::Window<R> {
 
 #[cfg(target_os = "linux")]
 impl<R: tauri::Runtime> SetModal for tauri::Window<R> {
+    #[allow(unused_variables)]
     fn set_modal(&self, is_modal: bool) {
         // if is_modal {
         //     let gtk_window = self.gtk_window().unwrap();
@@ -109,6 +111,7 @@ pub fn get_parent_window(window: &tauri::Window) -> Option<tauri::Window> {
     None
 }
 
+#[allow(dead_code)]
 #[cfg(target_os = "linux")]
 pub fn get_parent_window(window: &tauri::Window) -> Option<tauri::Window> {
     let gtk_parent = window.gtk_window().unwrap().transient_for().unwrap();

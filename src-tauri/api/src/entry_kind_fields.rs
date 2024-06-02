@@ -22,11 +22,11 @@ pub async fn get_entry_kind_fields(
         Ok(result) => {
             debug!("get_entry_kind_fields SUCCESS");
             Ok(result)
-        },
+        }
         Err(error) => {
             error!("get_entry_kind_fields ERROR {}", error.to_string());
             Err(())
-        },
+        }
     }
 }
 
@@ -115,10 +115,10 @@ pub async fn update_entry_kind_fields(
         Ok(result) => {
             debug!("update_entry_kind_fields SUCCESS");
             Ok(result)
-        },
+        }
         Err(error) => {
             error!("update_entry_kind_fields ERROR {}", error.to_string());
             Err(())
-        },
+        }
     }
 }

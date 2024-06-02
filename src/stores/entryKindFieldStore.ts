@@ -11,9 +11,9 @@ export const entryKindFieldStore = shallowReactive({
   },
 
   async update_fields(
-      id: number,
-      fields: EntryKindField[],
-      deleted_fields: number[],
+    id: number,
+    fields: EntryKindField[],
+    deleted_fields: number[],
   ): Promise<EntryKindField[]> {
     return invoke("update_entry_kind_fields", {
       entryKindId: id,

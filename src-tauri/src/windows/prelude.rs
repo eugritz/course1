@@ -152,25 +152,3 @@ pub fn build_windows(app: &tauri::App) {
     .build()
     .unwrap();
 }
-
-pub fn rebuild_windows(handle: &tauri::AppHandle) {
-    if let Some(confirmation_window) = handle.get_window("ConfirmationModal") {
-        confirmation_window.close().unwrap();
-    }
-
-    tauri::WindowBuilder::new(
-        handle,
-        "ConfirmationModal",
-        tauri::WindowUrl::App(
-            "src/views/ConfirmationModal/index.html".parse().unwrap(),
-        ),
-    )
-    .ancestor(&handle.get_focused_window().unwrap())
-    .visible(false)
-    .resizable(false)
-    .minimizable(false)
-    .maximizable(false)
-    .inner_size(400.0, 140.0)
-    .build()
-    .unwrap();
-}

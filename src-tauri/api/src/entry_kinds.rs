@@ -15,11 +15,11 @@ pub async fn get_all_entry_kinds(
         Ok(result) => {
             debug!("get_all_entry_kinds SUCCESS");
             Ok(result)
-        },
+        }
         Err(error) => {
             error!("get_all_entry_kinds ERROR {}", error.to_string());
             Ok(vec![])
-        },
+        }
     }
 }
 
@@ -56,11 +56,11 @@ pub async fn create_entry_kind(
         Ok(result) => {
             debug!("create_entry_kind SUCCESS");
             Ok(result)
-        },
+        }
         Err(error) => {
             error!("create_entry_kind ERROR {}", error.to_string());
             Err(())
-        },
+        }
     }
 }
 
@@ -86,11 +86,11 @@ pub async fn rename_entry_kind(
         Ok(result) => {
             debug!("rename_entry_kind SUCCESS");
             Ok(result)
-        },
+        }
         Err(error) => {
             error!("rename_entry_kind ERROR {}", error.to_string());
             Err(())
-        },
+        }
     }
 }
 
@@ -100,17 +100,18 @@ pub async fn delete_entry_kind(
     entry_kind_id: i32,
 ) -> Result<(), ()> {
     debug!("delete_entry_kind CALL");
-    let result = EntryKindService::delete_entry_kind(state.inner(), entry_kind_id).await;
+    let result =
+        EntryKindService::delete_entry_kind(state.inner(), entry_kind_id).await;
 
     match result {
         Ok(_) => {
             debug!("delete_entry_kind SUCCESS");
             Ok(())
-        },
+        }
         Err(error) => {
             error!("delete_entry_kind ERROR {}", error.to_string());
             Err(())
-        },
+        }
     }
 }
 
@@ -125,10 +126,10 @@ pub async fn last_entry_kind(
         Ok(result) => {
             debug!("last_entry_kind SUCCESS");
             Ok(result)
-        },
+        }
         Err(error) => {
             error!("last_entry_kind ERROR {}", error.to_string());
             Err(())
-        },
+        }
     }
 }

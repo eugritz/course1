@@ -15,11 +15,11 @@ pub async fn get_all_decks(
         Ok(result) => {
             debug!("get_all_decks SUCCESS");
             Ok(result)
-        },
+        }
         Err(error) => {
             error!("get_all_decks ERROR {}", error.to_string());
             Ok(vec![])
-        },
+        }
     }
 }
 
@@ -43,11 +43,11 @@ pub async fn create_deck(
         Ok(result) => {
             debug!("create_deck SUCCESS");
             Ok(result)
-        },
+        }
         Err(error) => {
             error!("create_deck ERROR {}", error.to_string());
             Err(())
-        },
+        }
     }
 }
 
@@ -72,11 +72,11 @@ pub async fn rename_deck(
         Ok(result) => {
             debug!("rename_deck SUCCESS");
             Ok(result)
-        },
+        }
         Err(error) => {
             error!("rename_deck ERROR {}", error.to_string());
             Err(())
-        },
+        }
     }
 }
 
@@ -92,11 +92,11 @@ pub async fn delete_deck(
         Ok(_) => {
             debug!("delete_deck SUCCESS");
             Ok(())
-        },
+        }
         Err(error) => {
             error!("delete_deck ERROR {}", error.to_string());
             Err(())
-        },
+        }
     }
 }
 
@@ -111,10 +111,10 @@ pub async fn last_deck(
         Ok(result) => {
             debug!("last_deck SUCCESS");
             Ok(result)
-        },
+        }
         Err(error) => {
             error!("last_deck ERROR {}", error.to_string());
             Err(())
-        },
+        }
     }
 }
