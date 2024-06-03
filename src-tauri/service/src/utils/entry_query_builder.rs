@@ -1,11 +1,42 @@
-use super::parser::{Node, Parser, Tokenizer};
-use ::entity::{decks, entries};
+use super::{
+    parser::{Node, Parser, Tokenizer},
+    select_ext::Apply,
+};
+use ::entity::{decks, entries, entry_field_values, entry_kind_default_field};
 use sea_orm::{
-    entity::prelude::Expr,
-    sea_query::{Alias, ConditionExpression},
+    entity::prelude::{Date, DateTimeUtc, Expr},
+    sea_query::{Alias, ConditionExpression, IntoCondition, LikeExpr},
     *,
 };
+use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
+
+#[derive(FromQueryResult, Serialize, Deserialize)]
+pub struct Entry {
+    pub id: i32,
+    pub entry_kind_id: i32,
+    pub deck_id: i32,
+    pub deck_name: String,
+    pub color_tag: i32,
+    pub progress: f64,
+    pub created_at: Date,
+    pub last_shown_at: Option<DateTimeUtc>,
+    pub next_shown_at: Option<DateTimeUtc>,
+    pub sort_field: String,
+}
+
+fn wrap_pattern(s: String) -> String {
+    let mut escaped = "%".to_string();
+    for ch in s.chars() {
+        match ch {
+            '%' => escaped.push_str("\\%"),
+            '_' => escaped.push_str("\\_"),
+            ch => escaped.push(ch),
+        }
+    }
+    escaped.push('%');
+    escaped
+}
 
 pub struct EntryQueryBuilder<'a, C: ConnectionTrait> {
     db: &'a C,
@@ -24,7 +55,7 @@ impl<'a, C: ConnectionTrait> EntryQueryBuilder<'a, C> {
         self,
         source: String,
         fallback: String,
-    ) -> Result<Vec<entries::Model>, String> {
+    ) -> Result<Vec<Entry>, String> {
         let cond = self
             .get_condition(source)
             .or_else(|_| self.get_condition(fallback))
@@ -34,6 +65,8 @@ impl<'a, C: ConnectionTrait> EntryQueryBuilder<'a, C> {
             let q = q.take()?;
             Some(
                 q.join(JoinType::Join, entries::Relation::Decks.def())
+                    .column_as(decks::Column::Name, "deck_name")
+                    .apply(Self::sort_field)
                     .filter(cond),
             )
         });
@@ -41,9 +74,34 @@ impl<'a, C: ConnectionTrait> EntryQueryBuilder<'a, C> {
         self.query
             .take()
             .ok_or("query take failed".to_string())?
+            .into_model::<Entry>()
             .all(self.db)
             .await
             .map_err(|err| err.to_string())
+    }
+
+    fn sort_field<E: EntityTrait>(q: Select<E>) -> Select<E> {
+        q.join_rev(
+            JoinType::Join,
+            entry_kind_default_field::Entity::belongs_to(entries::Entity)
+                .from(entry_kind_default_field::Column::EntryKindId)
+                .to(entries::Column::EntryKindId)
+                .into(),
+        )
+        .join(
+            JoinType::Join,
+            entries::Relation::EntryFieldValues.def().on_condition(
+                |_left, right| {
+                    Expr::col((
+                        entry_kind_default_field::Entity,
+                        entry_kind_default_field::Column::EntryKindFieldId,
+                    ))
+                    .equals((right, entry_field_values::Column::EntryFieldId))
+                    .into_condition()
+                },
+            ),
+        )
+        .column_as(entry_field_values::Column::Value, "sort_field")
     }
 
     fn parse_node(&self, node: Box<Node>) -> Option<ConditionExpression> {
@@ -53,9 +111,11 @@ impl<'a, C: ConnectionTrait> EntryQueryBuilder<'a, C> {
                 super::parser::Operator::Colon => self.parse_colon(lhs, rhs),
                 super::parser::Operator::Or => self.parse_or(lhs, rhs),
             },
-            Node::StringLit(string) => {
-                Some(Expr::col(Alias::new("sort_field")).eq(string).into())
-            }
+            Node::StringLit(string) => Some(
+                Expr::col(Alias::new("sort_field"))
+                    .like(LikeExpr::new(wrap_pattern(string)).escape('\\'))
+                    .into(),
+            ),
         }
     }
 

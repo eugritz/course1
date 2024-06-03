@@ -3,7 +3,8 @@ use sea_orm::{prelude::Date, DbConn};
 
 use entity::{entries, entry_field_values};
 use service::{
-    DeckService, EntryFieldValuesService, EntryKindFieldService, EntryService,
+    entry_query_builder::Entry, DeckService, EntryFieldValuesService,
+    EntryKindFieldService, EntryService,
 };
 
 fn escape(s: String) -> String {
@@ -25,7 +26,7 @@ fn escape(s: String) -> String {
 pub async fn filter_entries(
     state: tauri::State<'_, DbConn>,
     query: String,
-) -> Result<Vec<entries::Model>, ()> {
+) -> Result<Vec<Entry>, ()> {
     debug!("filter_entries CALL");
     let deck =
         DeckService::find_last_deck(state.inner())

@@ -2,8 +2,10 @@
 import { onMounted, ref } from 'vue';
 import { Event as UiEvent, TauriEvent } from '@tauri-apps/api/event';
 
+import { FilteredEntry } from 'entities/Entry';
 import { entryStore } from 'stores/entryStore';
 import { useTauriEvent } from 'utils/tauriEvent';
+import uiEvents from 'constants/uiEvents';
 
 import CardSwitch from 'components/CardSwitch.vue';
 import Column from 'components/Column.vue';
@@ -13,15 +15,19 @@ import Splitter, { SplitterExposed } from 'components/Splitter.vue';
 import SplitterPanel from 'components/SplitterPanel.vue';
 import Editor from 'components/Editor.vue';
 
-const filterSidebar = ref<FilterSidebarExposed | null>(null);
-const splitter = ref<SplitterExposed | null>(null);
-const dataTable = ref<DataTableExposed | null>(null);
+const filterSidebarRef = ref<FilterSidebarExposed | null>(null);
+const splitterRef = ref<SplitterExposed | null>(null);
+const dataTableRef = ref<DataTableExposed | null>(null);
 
 const cardSwitch = ref(false);
+const query = ref("");
+const entries = ref<FilteredEntry[]>([]);
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
+useTauriEvent(uiEvents.window_open, load);
 
 onMounted(() => {
+  load();
   reset();
 });
 
@@ -29,33 +35,41 @@ function reset(event?: UiEvent<unknown>) {
   if (event && event.windowLabel !== "EntryWindow")
     return;
 
-  filterSidebar.value?.reset();
-  splitter.value?.reset();
-  dataTable.value?.reset();
+  filterSidebarRef.value?.reset();
+  splitterRef.value?.reset();
+  dataTableRef.value?.reset();
 
   cardSwitch.value = false;
+  query.value = "";
 }
 
-function searchEntries(event: Event) {
-  const target = event.target as HTMLInputElement;
-  entryStore.filter(target.value);
+function load() {
+  entryStore.filter().then((entries_) => {
+    entries.value = entries_;
+  });
+}
+
+function handleSearchEntries() {
+  entryStore.filter(query.value).then((entries_) => {
+    entries.value = entries_;
+  });
 }
 
 function handleItemNext() {
-  if (dataTable.value)
-    dataTable.value.selectNext();
+  if (dataTableRef.value)
+    dataTableRef.value.selectNext();
 }
 
 function handleItemPrev() {
-  if (dataTable.value)
-    dataTable.value.selectPrev();
+  if (dataTableRef.value)
+    dataTableRef.value.selectPrev();
 }
 </script>
 
 <template>
-  <Splitter class="content" ref="splitter">
+  <Splitter class="content" ref="splitterRef">
     <SplitterPanel size="20%" min-size="200px">
-      <FilterSidebar ref="filterSidebar" />
+      <FilterSidebar ref="filterSidebarRef" />
     </SplitterPanel>
     <SplitterPanel class="data-view" min-size="400px">
       <div class="data-view__controls">
@@ -64,7 +78,8 @@ function handleItemPrev() {
           class="data-view__controls__search"
           type="text"
           placeholder="Поиск по картам/записям"
-          @keydown.enter="searchEntries"
+          v-model="query"
+          @keydown.enter="handleSearchEntries"
         />
       </div>
       <div class="data-view__data">
@@ -75,24 +90,28 @@ function handleItemPrev() {
           @keydown.up="handleItemPrev"
         >
           <DataTable
-            ref="dataTable"
+            ref="dataTableRef"
             tabindex="-1"
             class="data-view__data__table"
-            :value="[{ test: 'aaaaaaaaaaaaaaaa' }]"
+            :value="entries"
           >
             <template v-if="!cardSwitch">
-              <Column field="test" header="Основное поле" />
-              <Column field="test" header="Карта" />
-              <Column field="test" header="Появление" />
-              <Column field="test" header="Колода" />
+              <Column field="sort_field" header="Основное поле" />
+              <Column value="" header="Карта" />
+              <Column field="next_shown_at" header="Появление">
+                <template #body="slotProps">
+                  {{slotProps.next_shown_at ?? "#"}}
+                </template>
+              </Column>
+              <Column field="deck_name" header="Колода" />
             </template>
             <template v-else>
-              <Column field="test" header="Основное поле" />
-              <Column field="test" header="Запись" />
-              <Column field="test" header="Карты" />
-              <Column field="test" header="Метки" />
-              <Column field="test" header="Появление" />
-              <Column field="test" header="Создание" />
+              <Column field="sort_field" header="Основное поле" />
+              <Column value="" header="Запись" />
+              <Column value="" header="Карты" />
+              <Column value="" header="Метки" />
+              <Column value="" header="Появление" />
+              <Column field="created_at" header="Создание" />
             </template>
           </DataTable>
         </div>
@@ -148,6 +167,10 @@ function handleItemPrev() {
   position: relative;
   display: flex;
   height: 100%;
+}
+
+.data-view__data__table {
+  outline: none;
 }
 
 .data-view__data__wrapper {

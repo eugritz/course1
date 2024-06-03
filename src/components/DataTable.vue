@@ -26,6 +26,19 @@ import {
 import Column from './Column.vue';
 import Resizer from './Resizer.vue';
 
+type RawSlot = {
+  [name: string]: unknown;
+  $stable?: boolean;
+};
+
+function hasSlot(children: VNodeNormalizedChildren, name: string): children is RawSlot {
+  return children !== null
+    && !Array.isArray(children)
+    && typeof children !== "string"
+    && children[name] !== undefined
+    && typeof children[name] === "function";
+}
+
 function getColumns(children: VNodeNormalizedChildren) {
   let columns = <VNode[]>[];
   if (!Array.isArray(children))
@@ -36,9 +49,9 @@ function getColumns(children: VNodeNormalizedChildren) {
     if (!isVNode(vnode))
       continue;
 
-    if (vnode.type === Column)
+    if (vnode.type === Column) {
       columns.push(vnode);
-    else if (vnode.type === Fragment)
+    } else if (vnode.type === Fragment)
       columns = columns.concat(getColumns(vnode.children));
   }
 
@@ -271,7 +284,10 @@ defineExpose({
         @mouseenter="handleItemDragUpdate(idx)"
       >
         <td v-for="column in columns">
-          <span>
+          <div v-if="hasSlot(column.children, 'body')">
+            <component :is="() => ((column.children as RawSlot)['body'] as Function)(row)" />
+          </div>
+          <span v-else>
             {{column.props?.field ? row[column.props.field as keyof T] : ""}}
           </span>
         </td>
@@ -314,6 +330,7 @@ defineExpose({
 table {
   table-layout: fixed;
   border-radius: 4px;
+  border-spacing: 2px 0;
   background-color: #272727;
   @include user-select-none;
 }
@@ -328,6 +345,9 @@ tr {
 
 th {
   position: relative;
+  padding: 1px 0;
+  border-bottom: 2px solid #272727;
+  box-sizing: border-box;
   font-weight: 300;
   white-space: nowrap;
 }
@@ -339,7 +359,7 @@ th > div:first-child {
 
 td {
   max-width: 0px;
-  padding: 0px 4px;
+  padding: 1px 4px;
   text-align: left;
   text-overflow: ellipsis;
   overflow: hidden;
