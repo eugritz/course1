@@ -29,7 +29,8 @@ impl MigrationTrait for Migration {
                     .foreign_key(
                         ForeignKey::create()
                             .from(entries::Entity, entries::Column::EntryKindId)
-                            .to(entry_kinds::Entity, entry_kinds::Column::Id),
+                            .to(entry_kinds::Entity, entry_kinds::Column::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
                     )
                     .col(
                         ColumnDef::new(entries::Column::DeckId)
@@ -39,7 +40,8 @@ impl MigrationTrait for Migration {
                     .foreign_key(
                         ForeignKey::create()
                             .from(entries::Entity, entries::Column::DeckId)
-                            .to(decks::Entity, decks::Column::Id),
+                            .to(decks::Entity, decks::Column::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
                     )
                     .col(
                         ColumnDef::new(entries::Column::ColorTag)

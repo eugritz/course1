@@ -35,7 +35,8 @@ impl MigrationTrait for Migration {
                                 entry_field_values::Entity,
                                 entry_field_values::Column::EntryId,
                             )
-                            .to(entries::Entity, entries::Column::Id),
+                            .to(entries::Entity, entries::Column::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
                     )
                     .col(
                         ColumnDef::new(
@@ -53,7 +54,8 @@ impl MigrationTrait for Migration {
                             .to(
                                 entry_kind_fields::Entity,
                                 entry_kind_fields::Column::Id,
-                            ),
+                            )
+                            .on_delete(ForeignKeyAction::Cascade),
                     )
                     .col(
                         ColumnDef::new(entry_field_values::Column::Value)
