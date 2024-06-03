@@ -39,9 +39,9 @@ pub fn build_windows(app: &tauri::App) {
 
     tauri::WindowBuilder::new(
         app,
-        "CardsWindow",
+        "EntryWindow",
         tauri::WindowUrl::App(
-            "src/views/CardsWindow/index.html".parse().unwrap(),
+            "src/views/EntryWindow/index.html".parse().unwrap(),
         ),
     )
     .ancestor(&main_window)

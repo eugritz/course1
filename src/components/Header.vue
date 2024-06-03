@@ -4,7 +4,7 @@ import uiEvents from "constants/uiEvents";
 import HomeButton from "./HomeButton.vue";
 
 function openCardsWindow() {
-  invoke(uiEvents.CardsWindow.open);
+  invoke(uiEvents.EntryWindow.open);
 }
 
 function openAddWindow() {

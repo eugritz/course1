@@ -20,7 +20,7 @@ import {
 } from "vue-unicons/dist/icons";
 import customIcons from "utils/customIcons";
 
-import CardsWindow from "./CardsWindow.vue";
+import EntryWindow from "./EntryWindow.vue";
 import "styles/_global.scss";
 
 Unicon.add([
@@ -60,4 +60,4 @@ Unicon.add([
 ]);
 
 // @ts-ignore 2374
-createApp(CardsWindow).use(Unicon).mount("#app");
+createApp(EntryWindow).use(Unicon).mount("#app");

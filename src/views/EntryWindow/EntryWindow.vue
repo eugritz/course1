@@ -26,7 +26,7 @@ onMounted(() => {
 });
 
 function reset(event?: UiEvent<unknown>) {
-  if (event && event.windowLabel !== "CardsWindow")
+  if (event && event.windowLabel !== "EntryWindow")
     return;
 
   filterSidebar.value?.reset();

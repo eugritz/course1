@@ -30,7 +30,7 @@ fn main() {
             windows::api::open_entry_kind_add_modal,
             windows::api::open_entry_kind_filter_modal,
             // Windows
-            windows::api::open_cards_window,
+            windows::api::open_entry_window,
             windows::api::open_add_window,
             windows::api::open_entry_kind_list_window,
             windows::api::open_entry_kind_field_list_window,

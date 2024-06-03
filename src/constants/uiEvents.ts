@@ -29,11 +29,11 @@ export default {
     onResult: "EntryKindFilterModal:onResult",
   },
   // Windows
-  CardsWindow: {
-    open: "open_cards_window",
-  },
   AddWindow: {
     open: "open_add_window",
+  },
+  EntryWindow: {
+    open: "open_entry_window",
   },
   EntryKindListWindow: {
     open: "open_entry_kind_list_window",
