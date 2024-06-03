@@ -22,6 +22,7 @@ const deletedFields = ref<number[]>([]);
 const defaultField = ref<EntryKindField | null>(null);
 const fieldDescription = ref("");
 
+const disabled = ref(false);
 const loading = ref(false);
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
@@ -238,6 +239,16 @@ function handleConfirm() {
   if (entryKindId.value === null)
     return;
 
+  if (fields.value.length === 0) {
+    if (!disabled.value) {
+      disabled.value = true;
+      setTimeout(() => {
+        disabled.value = false;
+      }, 1500);
+    }
+    return;
+  }
+
   loading.value = true;
   entryKindFieldStore
     .update_fields(entryKindId.value, fields.value, deletedFields.value)
@@ -313,7 +324,14 @@ function handleCancel() {
       </div>
     </form>
     <div class="controls">
-      <button :disabled="loading" @click="handleConfirm">
+      <span class="controls__message" v-show="disabled">
+        *Добавьте хотя бы одно поле
+      </span>
+      <button
+        :class="{ shake: disabled }"
+        :disabled="loading"
+        @click="handleConfirm"
+      >
         <Loader v-show="loading" />
         <span :class="{ hidden: loading }">Сохранить</span>
       </button>
@@ -327,6 +345,34 @@ function handleCancel() {
 
 .hidden {
   opacity: 0;
+}
+
+.shake {
+  animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  transform: translate3d(0, 0, 0);
+}
+
+@keyframes shake {
+  10%,
+  90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+
+  20%,
+  80% {
+    transform: translate3d(2px, 0, 0);
+  }
+
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+
+  40%,
+  60% {
+    transform: translate3d(4px, 0, 0);
+  }
 }
 
 input[type="text"] {
@@ -389,7 +435,13 @@ button {
 
 .controls {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
-  gap: 5px;
+  gap: 8px;
+}
+
+.controls__message {
+  margin-right: 2px;
+  color: red;
 }
 </style>

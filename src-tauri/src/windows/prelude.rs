@@ -63,6 +63,7 @@ pub fn build_windows(app: &tauri::App) {
     .title("course1 - Добавить")
     .visible(false)
     .inner_size(800.0, 600.0)
+    .min_inner_size(555.0, 500.0)
     .build()
     .unwrap();
 

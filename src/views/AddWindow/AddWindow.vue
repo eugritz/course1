@@ -25,6 +25,7 @@ const selectedEntryKind = ref<EntryKind | null>(null);
 const selectedDeck = ref<Deck | null>(null);
 
 const createdEntry = ref(false);
+const disabled = ref(false);
 const loading = ref(false);
 
 useTauriEvent(dataEvents.update.entryKind, load);
@@ -96,8 +97,16 @@ function handleConfirm() {
     return;
 
   const allBlank = !values.some((el) => el !== "");
-  if (allBlank)
+  if (allBlank) {
+    if (!disabled.value) {
+      disabled.value = true;
+      setTimeout(() => {
+        disabled.value = false;
+      }, 1500);
+    }
+
     return;
+  }
 
   loading.value = true;
   entryStore.create(selectedEntryKind.value.id, selectedDeck.value.id, values)
@@ -134,7 +143,14 @@ function handleClose() {
       <Editor ref="editorRef" :entry-kind-id="selectedEntryKind?.id" />
     </div>
     <div class="controls">
-      <button type="button" :disabled="loading" @click="handleConfirm">
+      <span class="controls__message" v-show="disabled">
+        *Заполните хотя бы одно поле
+      </span>
+      <button
+        :class="{ shake: disabled }"
+        :disabled="loading"
+        @click="handleConfirm"
+      >
         <Loader v-show="loading" />
         <span :class="{ hidden: loading }">Добавить</span>
       </button>
@@ -148,6 +164,34 @@ function handleClose() {
 
 .hidden {
   opacity: 0;
+}
+
+.shake {
+  animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  transform: translate3d(0, 0, 0);
+}
+
+@keyframes shake {
+  10%,
+  90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+
+  20%,
+  80% {
+    transform: translate3d(2px, 0, 0);
+  }
+
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+
+  40%,
+  60% {
+    transform: translate3d(4px, 0, 0);
+  }
 }
 
 .content {
@@ -196,7 +240,13 @@ function handleClose() {
 
 .controls {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
-  gap: 5px;
+  gap: 8px;
+}
+
+.controls__message {
+  color: red;
+  margin-right: 2px;
 }
 </style>
