@@ -16,12 +16,15 @@ import uiEvents from 'constants/uiEvents';
 
 import Editor, { EditorExposed } from 'components/Editor.vue';
 import Loader from 'components/Loader.vue';
+import Banner from 'components/Banner.vue';
 
 const editorRef = ref<EditorExposed | null>(null);
 const entryKinds = computed(() => entryKindStore.cached_all);
 const decks = computed(() => deckStore.cached_all);
 const selectedEntryKind = ref<EntryKind | null>(null);
 const selectedDeck = ref<Deck | null>(null);
+
+const createdEntry = ref(false);
 const loading = ref(false);
 
 useTauriEvent(dataEvents.update.entryKind, load);
@@ -92,10 +95,15 @@ function handleConfirm() {
   if (values.length === 0)
     return;
 
+  const allBlank = !values.some((el) => el !== "");
+  if (allBlank)
+    return;
+
   loading.value = true;
   entryStore.create(selectedEntryKind.value.id, selectedDeck.value.id, values)
     .then(() => {
       loading.value = false;
+      createdEntry.value = true;
       reset();
     });
 }
@@ -107,6 +115,7 @@ function handleClose() {
 
 <template>
   <div class="content">
+    <Banner v-model="createdEntry">Запись успешно добавлена</Banner>
     <div class="record">
       <div class="record__kind">
         Вид
@@ -145,7 +154,8 @@ function handleClose() {
   height: calc(100vh - 16px);
   display: flex;
   flex-direction: column;
-  gap: 8px
+  gap: 8px;
+  @include user-select-none;
 }
 
 .record {

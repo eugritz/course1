@@ -57,13 +57,13 @@ const value = defineModel();
 
 .section {
   text-align: left;
+  @include user-select-none;
 }
 
 .section__header {
   padding: 2px 5px;
   display: flex;
   justify-content: space-between;
-  @include user-select-none;
   cursor: pointer;
 }
 
