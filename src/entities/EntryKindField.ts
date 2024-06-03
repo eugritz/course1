@@ -5,5 +5,6 @@ export interface EntryKindField {
   name: string;
   desc: string;
   type: string;
+  immutable: boolean;
   is_default: boolean;
 }

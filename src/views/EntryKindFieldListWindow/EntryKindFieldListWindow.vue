@@ -115,6 +115,7 @@ function handleAddFieldResult(event: UiEvent<unknown>) {
       name: newName,
       desc: "",
       type: "ANY",
+      immutable: false,
       is_default: true,
     });
     defaultField.value = fields.value[0];
@@ -133,6 +134,7 @@ function handleAddFieldResult(event: UiEvent<unknown>) {
     name: newName,
     desc: "",
     type: "ANY",
+    immutable: false,
     is_default: false,
   });
 
@@ -285,8 +287,18 @@ function handleCancel() {
       </div>
       <div class="field-list__controls">
         <button @click="handleAddField">Добавить</button>
-        <button @click="handleRenameField">Переименовать</button>
-        <button @click="handleDeleteField">Удалить</button>
+        <button
+          @click="handleRenameField"
+          :disabled="selectedField?.immutable"
+        >
+          Переименовать
+        </button>
+        <button
+          @click="handleDeleteField"
+          :disabled="selectedField?.immutable"
+        >
+          Удалить
+        </button>
         <button
           @click="handleMoveUpField"
           :disabled="(selectedField?.order ?? 0) <= 1"

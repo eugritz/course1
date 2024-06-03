@@ -43,7 +43,7 @@ pub async fn create_entry_kind(
         entity::entry_kinds::Model {
             id: 0,
             name: entry_kind_name,
-            default: false,
+            immutable: false,
         },
     )
     .await
@@ -77,7 +77,7 @@ pub async fn rename_entry_kind(
         entity::entry_kinds::Model {
             id: 0,
             name: new_entry_kind_name,
-            default: false,
+            immutable: false,
         },
     )
     .await;

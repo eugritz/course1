@@ -59,6 +59,12 @@ impl MigrationTrait for Migration {
                             .default("ANY")
                             .not_null(),
                     )
+                    .col(
+                        ColumnDef::new(entry_kind_fields::Column::Immutable)
+                            .boolean()
+                            .default(false)
+                            .not_null(),
+                    )
                     .to_owned(),
             )
             .await?;

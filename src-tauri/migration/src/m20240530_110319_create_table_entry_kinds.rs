@@ -25,7 +25,7 @@ impl MigrationTrait for Migration {
                             .not_null(),
                     )
                     .col(
-                        ColumnDef::new(entry_kinds::Column::Default)
+                        ColumnDef::new(entry_kinds::Column::Immutable)
                             .boolean()
                             .default(false)
                             .not_null(),

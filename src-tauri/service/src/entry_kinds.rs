@@ -32,7 +32,7 @@ impl EntryKindService {
     ) -> Result<entity::entry_kinds::ActiveModel, DbErr> {
         entity::entry_kinds::ActiveModel {
             name: Set(form_data.name.to_owned()),
-            default: Set(form_data.default),
+            immutable: Set(form_data.immutable),
             ..Default::default()
         }
         .save(db)
@@ -54,7 +54,7 @@ impl EntryKindService {
         entity::entry_kinds::ActiveModel {
             id: entry_kind.id,
             name: Set(form_data.name.to_owned()),
-            default: entry_kind.default,
+            immutable: entry_kind.immutable,
         }
         .update(db)
         .await

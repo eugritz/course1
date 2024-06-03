@@ -15,12 +15,12 @@ impl MigrationTrait for Migration {
         let entry_kinds = entry_kinds::Entity::insert_many([
             entry_kinds::ActiveModel {
                 name: Set("Простая (с обратной картой)".to_owned()),
-                default: Set(true),
+                immutable: Set(true),
                 ..Default::default()
             },
             entry_kinds::ActiveModel {
                 name: Set("Простая".to_owned()),
-                default: Set(true),
+                immutable: Set(true),
                 ..Default::default()
             },
         ])
@@ -32,24 +32,28 @@ impl MigrationTrait for Migration {
                 entry_kind_id: Set(entry_kinds.last_insert_id - 1),
                 order: Set(1),
                 name: Set("Зад".to_owned()),
+                immutable: Set(true),
                 ..Default::default()
             },
             entry_kind_fields::ActiveModel {
                 entry_kind_id: Set(entry_kinds.last_insert_id - 1),
                 order: Set(2),
                 name: Set("Перед".to_owned()),
+                immutable: Set(true),
                 ..Default::default()
             },
             entry_kind_fields::ActiveModel {
                 entry_kind_id: Set(entry_kinds.last_insert_id),
                 order: Set(1),
                 name: Set("Зад".to_owned()),
+                immutable: Set(true),
                 ..Default::default()
             },
             entry_kind_fields::ActiveModel {
                 entry_kind_id: Set(entry_kinds.last_insert_id),
                 order: Set(2),
                 name: Set("Перед".to_owned()),
+                immutable: Set(true),
                 ..Default::default()
             },
         ])

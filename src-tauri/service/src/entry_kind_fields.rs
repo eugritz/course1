@@ -12,6 +12,7 @@ pub struct EntryKindField {
     pub desc: String,
     pub r#type: String,
     pub is_default: bool,
+    pub immutable: bool,
 }
 
 pub struct EntryKindFieldService;
@@ -78,6 +79,7 @@ impl EntryKindFieldService {
                 name: Set(field.name),
                 desc: Set(field.desc),
                 r#type: Set(field.r#type),
+                ..Default::default()
             }
             .update(db)
             .await?;

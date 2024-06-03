@@ -56,6 +56,7 @@ pub async fn update_entry_kind_fields(
                 name: field.name,
                 desc: field.desc,
                 r#type: field.r#type,
+                immutable: false,
             });
         } else {
             new_fields.push(entry_kind_fields::Model {
@@ -65,6 +66,7 @@ pub async fn update_entry_kind_fields(
                 name: field.name,
                 desc: field.desc,
                 r#type: field.r#type,
+                immutable: false,
             });
         }
     }

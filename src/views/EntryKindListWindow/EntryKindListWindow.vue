@@ -149,13 +149,13 @@ function handleClose() {
       <button @click="handleAddEntryKind">Добавить</button>
       <button
         @click="handleRenameEntryKind"
-        :disabled="selectedEntryKind?.default"
+        :disabled="selectedEntryKind?.immutable"
       >
         Переименовать
       </button>
       <button
         @click="handleDeleteEntryKind"
-        :disabled="selectedEntryKind?.default"
+        :disabled="selectedEntryKind?.immutable"
       >
         Удалить
       </button>

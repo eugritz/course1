@@ -15,6 +15,7 @@ pub struct Model {
     pub name: String,
     pub desc: String,
     pub r#type: String,
+    pub immutable: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
