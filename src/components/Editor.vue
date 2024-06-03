@@ -1,5 +1,12 @@
+<script lang="ts">
+export interface EditorExposed {
+  clear(): void;
+  getValues(): string[];
+}
+</script>
+
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { Ref, onMounted, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api';
 import { emit } from '@tauri-apps/api/event';
 
@@ -9,13 +16,14 @@ import { useTauriEvent } from 'utils/tauriEvent';
 import dataEvents from 'constants/dataEvents';
 import uiEvents from 'constants/uiEvents';
 
-import EditorSection from './EditorSection.vue';
+import EditorSection, { EditorSectionExposed } from './EditorSection.vue';
 
 const props = defineProps<{
   entryKindId?: number,
 }>();
 
 const fields = ref<EntryKindField[]>([]);
+const values = ref<Ref<string>[]>([]);
 
 useTauriEvent(dataEvents.update.entryKindField, load);
 useTauriEvent(uiEvents.window_open, load);
@@ -27,8 +35,10 @@ function load() {
   if (props.entryKindId === undefined)
     return;
 
+  values.value = [];
   entryKindFieldStore.get_fields(props.entryKindId).then((fields_) => {
     fields.value = fields_;
+    fields_.forEach(() => values.value.push(ref<string>("")));
   });
 }
 
@@ -42,6 +52,26 @@ function handleOpenEntryKindFieldListWindow() {
     invoke(uiEvents.EntryKindFieldListWindow.open);
   });
 }
+
+function clear() {
+  for (let i = 0; i < values.value.length; i++) {
+    values.value[i].value = "";
+  }
+}
+
+function getValues() {
+  let values_ = [];
+  for (let i = 0; i < values.value.length; i++) {
+    const elem = values.value[i].value;
+    values_.push(elem);
+  }
+  return values_;
+}
+
+defineExpose({
+  clear,
+  getValues,
+});
 </script>
 
 <template>
@@ -94,7 +124,9 @@ function handleOpenEntryKindFieldListWindow() {
     <div class="separator" />
     <div class="editor__fields">
       <EditorSection
-        v-for="field in fields"
+        v-for="(field, idx) in fields"
+        v-model="values[idx].value"
+        :key="field.id"
         :title="field.name"
         :placeholder="field.desc"
         type="text"

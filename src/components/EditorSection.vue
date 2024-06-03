@@ -1,20 +1,25 @@
-<script setup lang="ts">
-import {ref} from 'vue';
+<script lang="ts">
+export interface EditorSectionExposed {
+  inputRef: HTMLInputElement | null;
+}
+</script>
 
-const props = defineProps<{
+<script setup lang="ts">
+import { ref } from 'vue';
+
+defineProps<{
   title: string,
-  value?: string,
   placeholder?: string,
   type?: "text" | "tags",
 }>();
 
-const isSectionClosed = ref(true);
-const value = ref(props.value ?? "");
+const isSectionOpen = ref(true);
+const value = defineModel();
 </script>
 
 <template>
-  <div class="section" :class="{ 'section--closed': !isSectionClosed }">
-    <div class="section__header" @click="isSectionClosed = !isSectionClosed">
+  <div class="section" :class="{ 'section--closed': !isSectionOpen }">
+    <div class="section__header" @click="isSectionOpen = !isSectionOpen">
       <div class="section__header__title">
         <span>
           <unicon
@@ -36,10 +41,13 @@ const value = ref(props.value ?? "");
         </span>
       </div>
     </div>
-    <div v-show="isSectionClosed" class="section__content">
-      <slot>
-        <input type="text" v-model="value" :placeholder="placeholder" />
-      </slot>
+    <div v-show="isSectionOpen" class="section__content">
+      <input
+        ref="inputRef"
+        type="text"
+        v-model="value"
+        :placeholder="placeholder"
+      />
     </div>
   </div>
 </template>

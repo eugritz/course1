@@ -108,6 +108,10 @@ function handleReady() {
 </template>
 
 <style scoped lang="scss">
+.hidden {
+  opacity: 0;
+}
+
 .dialog {
   width: 100%;
 
@@ -121,9 +125,5 @@ function handleReady() {
   display: flex;
   justify-content: flex-end;
   gap: 5px
-}
-
-.hidden {
-  opacity: 0;
 }
 </style>
