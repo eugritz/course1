@@ -12,7 +12,7 @@ pub struct Model {
     pub id: i32,
     pub entry_kind_id: i32,
     pub deck_id: i32,
-    pub color_tag: Option<String>,
+    pub color_tag: i32,
     #[sea_orm(column_type = "Double")]
     pub progress: f64,
     pub created_at: Date,

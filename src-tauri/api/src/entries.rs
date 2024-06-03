@@ -47,7 +47,7 @@ pub async fn filter_entries(
         Ok(result) => {
             debug!("filter_entries SUCCESS");
             Ok(result)
-        },
+        }
         Err(error) => {
             error!("filter_entries ERROR {}", error);
             Err(())
