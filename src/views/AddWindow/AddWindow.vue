@@ -41,6 +41,10 @@ onMounted(() => {
 function reset() {
   if (editorRef.value)
     editorRef.value.clear();
+
+  createdEntry.value = false;
+  disabled.value = false;
+  loading.value = false;
 }
 
 function load() {

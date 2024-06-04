@@ -55,11 +55,11 @@ impl<'a, C: ConnectionTrait> EntryQueryBuilder<'a, C> {
         self,
         source: String,
         fallback: String,
-    ) -> Result<Vec<Entry>, String> {
+    ) -> Result<Vec<Entry>, DbErr> {
         let cond = self
             .get_condition(source)
             .or_else(|_| self.get_condition(fallback))
-            .map_err(|_| "parsing error".to_string())?;
+            .map_err(|_| DbErr::Custom("parsing error".to_string()))?;
 
         self.query.replace_with(|q| {
             let q = q.take()?;
@@ -73,11 +73,10 @@ impl<'a, C: ConnectionTrait> EntryQueryBuilder<'a, C> {
 
         self.query
             .take()
-            .ok_or("query take failed".to_string())?
+            .ok_or(DbErr::Custom("query take failed".to_string()))?
             .into_model::<Entry>()
             .all(self.db)
             .await
-            .map_err(|err| err.to_string())
     }
 
     fn sort_field<E: EntityTrait>(q: Select<E>) -> Select<E> {

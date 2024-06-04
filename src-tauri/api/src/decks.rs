@@ -1,54 +1,48 @@
 use log::{debug, error};
 use sea_orm::DbConn;
 
-use entity;
+use entity::decks;
 use service::DeckService;
 
 #[tauri::command]
 pub async fn get_all_decks(
     state: tauri::State<'_, DbConn>,
-) -> Result<Vec<entity::decks::Model>, ()> {
+) -> Result<Vec<decks::Model>, ()> {
     debug!("get_all_decks CALL");
-    let result = DeckService::find_all_decks(state.inner()).await;
+    let result =
+        DeckService::find_all_decks(state.inner())
+            .await
+            .map_err(|err| {
+                error!("get_all_decks ERROR {}", err.to_string());
+                ()
+            })?;
 
-    match result {
-        Ok(result) => {
-            debug!("get_all_decks SUCCESS");
-            Ok(result)
-        }
-        Err(error) => {
-            error!("get_all_decks ERROR {}", error.to_string());
-            Ok(vec![])
-        }
-    }
+    debug!("get_all_decks SUCCESS");
+    Ok(result)
 }
 
 #[tauri::command]
 pub async fn create_deck(
     state: tauri::State<'_, DbConn>,
     deck_title: String,
-) -> Result<entity::decks::Model, ()> {
+) -> Result<decks::Model, ()> {
     debug!("create_deck CALL");
     let result = DeckService::create_deck(
         state.inner(),
-        entity::decks::Model {
+        decks::Model {
             id: 0,
             name: deck_title,
         },
     )
     .await
-    .map(|x| x.try_into().unwrap());
+    .map(|x| x.try_into().unwrap())
+    .map_err(|err| {
+        error!("get_all_decks ERROR {}", err.to_string());
+        ()
+    })?;
 
-    match result {
-        Ok(result) => {
-            debug!("create_deck SUCCESS");
-            Ok(result)
-        }
-        Err(error) => {
-            error!("create_deck ERROR {}", error.to_string());
-            Err(())
-        }
-    }
+    debug!("create_deck SUCCESS");
+    Ok(result)
 }
 
 #[tauri::command]
@@ -56,28 +50,24 @@ pub async fn rename_deck(
     state: tauri::State<'_, DbConn>,
     deck_id: i32,
     new_deck_title: String,
-) -> Result<entity::decks::Model, ()> {
+) -> Result<decks::Model, ()> {
     debug!("rename_deck CALL");
     let result = DeckService::update_deck_by_id(
         state.inner(),
         deck_id,
-        entity::decks::Model {
+        decks::Model {
             id: 0,
             name: new_deck_title,
         },
     )
-    .await;
+    .await
+    .map_err(|err| {
+        error!("get_all_decks ERROR {}", err.to_string());
+        ()
+    })?;
 
-    match result {
-        Ok(result) => {
-            debug!("rename_deck SUCCESS");
-            Ok(result)
-        }
-        Err(error) => {
-            error!("rename_deck ERROR {}", error.to_string());
-            Err(())
-        }
-    }
+    debug!("rename_deck SUCCESS");
+    Ok(result)
 }
 
 #[tauri::command]
@@ -86,35 +76,30 @@ pub async fn delete_deck(
     deck_id: i32,
 ) -> Result<(), ()> {
     debug!("delete_deck CALL");
-    let result = DeckService::delete_deck(state.inner(), deck_id).await;
+    DeckService::delete_deck(state.inner(), deck_id)
+        .await
+        .map_err(|err| {
+            error!("get_all_decks ERROR {}", err.to_string());
+            ()
+        })?;
 
-    match result {
-        Ok(_) => {
-            debug!("delete_deck SUCCESS");
-            Ok(())
-        }
-        Err(error) => {
-            error!("delete_deck ERROR {}", error.to_string());
-            Err(())
-        }
-    }
+    debug!("delete_deck SUCCESS");
+    Ok(())
 }
 
 #[tauri::command]
 pub async fn last_deck(
     state: tauri::State<'_, DbConn>,
-) -> Result<Option<entity::decks::Model>, ()> {
+) -> Result<Option<decks::Model>, ()> {
     debug!("last_deck CALL");
-    let result = DeckService::find_last_deck(state.inner()).await;
+    let result =
+        DeckService::find_last_deck(state.inner())
+            .await
+            .map_err(|err| {
+                error!("get_all_decks ERROR {}", err.to_string());
+                ()
+            })?;
 
-    match result {
-        Ok(result) => {
-            debug!("last_deck SUCCESS");
-            Ok(result)
-        }
-        Err(error) => {
-            error!("last_deck ERROR {}", error.to_string());
-            Err(())
-        }
-    }
+    debug!("last_deck SUCCESS");
+    Ok(result)
 }

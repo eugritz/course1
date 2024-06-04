@@ -19,7 +19,9 @@ fn main() {
 
     let app = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
+            //
             // Windows API
+            //
             windows::api::window_close,
             // Modals
             windows::api::open_confirmation_modal,
@@ -34,7 +36,9 @@ fn main() {
             windows::api::open_add_window,
             windows::api::open_entry_kind_list_window,
             windows::api::open_entry_kind_field_list_window,
+            //
             // API
+            //
             api::decks::get_all_decks,
             api::decks::create_deck,
             api::decks::rename_deck,
