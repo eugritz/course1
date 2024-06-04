@@ -36,12 +36,11 @@ impl DeckService {
         id: i32,
         form_data: decks::Model,
     ) -> Result<decks::Model, DbErr> {
-        let deck: decks::ActiveModel =
-            decks::Entity::find_by_id(id)
-                .one(db)
-                .await?
-                .ok_or(DbErr::Custom("Cannot find deck".to_owned()))
-                .map(Into::into)?;
+        let deck: decks::ActiveModel = decks::Entity::find_by_id(id)
+            .one(db)
+            .await?
+            .ok_or(DbErr::Custom("Cannot find deck".to_owned()))
+            .map(Into::into)?;
 
         decks::ActiveModel {
             id: deck.id,
@@ -55,12 +54,11 @@ impl DeckService {
         db: &'a C,
         id: i32,
     ) -> Result<DeleteResult, DbErr> {
-        let deck: decks::ActiveModel =
-            decks::Entity::find_by_id(id)
-                .one(db)
-                .await?
-                .ok_or(DbErr::Custom("Cannot find deck".to_owned()))
-                .map(Into::into)?;
+        let deck: decks::ActiveModel = decks::Entity::find_by_id(id)
+            .one(db)
+            .await?
+            .ok_or(DbErr::Custom("Cannot find deck".to_owned()))
+            .map(Into::into)?;
 
         deck.delete(db).await
     }

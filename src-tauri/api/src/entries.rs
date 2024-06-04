@@ -1,10 +1,10 @@
 use log::{debug, error};
 use sea_orm::{prelude::Date, DbConn, DbErr, TransactionTrait};
 
-use entity::{entries, entry_field_values};
+use entity::{entries, entry_field_values, tags};
 use service::{
     entry_query_builder::Entry, DeckService, EntryFieldValuesService,
-    EntryKindFieldService, EntryService,
+    EntryKindFieldService, EntryService, EntryTagsService, TagService,
 };
 
 fn escape(s: String) -> String {
@@ -118,7 +118,12 @@ pub async fn create_entry(
                 )
                 .await?;
 
-                // TODO: add tags
+                if tags.len() > 0 {
+                    TagService::create_tags_if_abscent(txn, tags.clone())
+                        .await?;
+                    EntryTagsService::attach_tags_to_entry(txn, entry_id, tags)
+                        .await?;
+                }
 
                 Ok(entry)
             })

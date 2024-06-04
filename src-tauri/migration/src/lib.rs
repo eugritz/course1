@@ -10,6 +10,8 @@ mod m20240603_121611_create_table_entries;
 mod m20240603_123859_create_table_entry_field_values;
 mod m20240604_001716_create_table_cards;
 mod m20240604_002431_add_cards;
+mod m20240604_132804_create_table_tags;
+mod m20240604_133159_create_table_entry_tags;
 
 pub struct Migrator;
 
@@ -27,6 +29,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20240603_123859_create_table_entry_field_values::Migration),
             Box::new(m20240604_001716_create_table_cards::Migration),
             Box::new(m20240604_002431_add_cards::Migration),
+            Box::new(m20240604_132804_create_table_tags::Migration),
+            Box::new(m20240604_133159_create_table_entry_tags::Migration),
         ]
     }
 }

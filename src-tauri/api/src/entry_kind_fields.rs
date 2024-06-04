@@ -83,7 +83,8 @@ pub async fn update_entry_kind_fields(
                     .await?;
                 }
 
-                if old_fields.len() > 0 {
+                let old_fields_len = old_fields.len();
+                if old_fields_len > 0 {
                     EntryKindFieldService::update_entry_kind_fields(
                         txn,
                         entry_kind_id,
@@ -92,7 +93,8 @@ pub async fn update_entry_kind_fields(
                     .await?;
                 }
 
-                if new_fields.len() > 0 {
+                let new_fields_len = new_fields.len();
+                if new_fields_len > 0 {
                     EntryKindFieldService::create_entry_kind_fields(
                         txn,
                         entry_kind_id,
@@ -101,12 +103,14 @@ pub async fn update_entry_kind_fields(
                     .await?;
                 }
 
-                EntryKindDefaultFieldService::set_entry_kind_default_field(
-                    txn,
-                    entry_kind_id,
-                    default_field_id,
-                )
-                .await?;
+                if old_fields_len > 0 || new_fields_len > 0 {
+                    EntryKindDefaultFieldService::set_entry_kind_default_field(
+                        txn,
+                        entry_kind_id,
+                        default_field_id,
+                    )
+                    .await?;
+                }
 
                 Ok(())
             })
