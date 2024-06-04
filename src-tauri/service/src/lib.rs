@@ -1,3 +1,4 @@
+mod cards;
 mod decks;
 mod entries;
 mod entry_field_values;
@@ -8,6 +9,7 @@ mod entry_kinds;
 mod ext;
 mod utils;
 
+pub use cards::*;
 pub use decks::*;
 pub use entries::*;
 pub use entry_field_values::*;
