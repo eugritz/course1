@@ -39,8 +39,8 @@ impl MigrationTrait for Migration {
                 ..Default::default()
             },
             cards::ActiveModel {
-                entry_kind_id: Set(2),
-                name: Set("Карточка 1".to_owned()),
+                entry_kind_id: Set(1),
+                name: Set("Карточка 2".to_owned()),
                 source_front: Set("{{Перед}}".as_bytes().to_vec()),
                 source_back: Set("\
                     {{Перед}}\n\
@@ -67,7 +67,7 @@ impl MigrationTrait for Migration {
             },
             cards::ActiveModel {
                 entry_kind_id: Set(2),
-                name: Set("Карточка 2".to_owned()),
+                name: Set("Карточка 1".to_owned()),
                 source_front: Set("{{Перед}}".as_bytes().to_vec()),
                 source_back: Set("\
                     {{Перед}}\n\
