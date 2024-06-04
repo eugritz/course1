@@ -2,6 +2,7 @@
 
 pub mod prelude;
 
+pub mod cards;
 pub mod decks;
 pub mod entries;
 pub mod entry_field_values;
