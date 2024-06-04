@@ -98,7 +98,7 @@ function handleCancel() {
       >
         <template #item="slotProps">
           {{
-            slotProps.default
+            slotProps.immutable
             ? "Добавить: " + slotProps.name
             : "Клонировать: " + slotProps.name
           }}

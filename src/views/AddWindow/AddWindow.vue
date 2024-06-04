@@ -18,9 +18,10 @@ import Editor, { EditorExposed } from 'components/Editor.vue';
 import Loader from 'components/Loader.vue';
 import Banner from 'components/Banner.vue';
 
-const editorRef = ref<EditorExposed | null>(null);
 const entryKinds = computed(() => entryKindStore.cached_all);
 const decks = computed(() => deckStore.cached_all);
+
+const editorRef = ref<EditorExposed | null>(null);
 const selectedEntryKind = ref<EntryKind | null>(null);
 const selectedDeck = ref<Deck | null>(null);
 
@@ -102,7 +103,7 @@ function handleConfirm() {
       disabled.value = true;
       setTimeout(() => {
         disabled.value = false;
-      }, 1500);
+      }, 2000);
     }
 
     return;

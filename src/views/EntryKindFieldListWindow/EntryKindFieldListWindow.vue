@@ -246,7 +246,7 @@ function handleConfirm() {
       disabled.value = true;
       setTimeout(() => {
         disabled.value = false;
-      }, 1500);
+      }, 2000);
     }
     return;
   }
@@ -400,6 +400,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  @include user-select-none;
 }
 
 .field-list {
