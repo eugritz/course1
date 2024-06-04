@@ -5,7 +5,7 @@ export interface EditorSectionExposed {
 </script>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 defineProps<{
   title: string,
@@ -14,7 +14,12 @@ defineProps<{
 }>();
 
 const isSectionOpen = ref(true);
-const value = defineModel();
+const inputRef = ref<HTMLInputElement | null>(null);
+const inputRefReadOnly = computed<HTMLInputElement | null>(() => inputRef.value);
+
+defineExpose({
+  inputRef: inputRefReadOnly,
+});
 </script>
 
 <template>
@@ -43,9 +48,8 @@ const value = defineModel();
     </div>
     <div v-show="isSectionOpen" class="section__content">
       <input
-        ref="inputRef"
         type="text"
-        v-model="value"
+        ref="inputRef"
         :placeholder="placeholder"
       />
     </div>

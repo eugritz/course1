@@ -23,7 +23,7 @@ const props = defineProps<{
 }>();
 
 const fields = ref<EntryKindField[]>([]);
-const values = ref<Ref<string>[]>([]);
+const values = ref<Ref<(EditorSectionExposed | null)[]>[]>([]);
 
 useTauriEvent(dataEvents.update.entryKindField, load);
 useTauriEvent(uiEvents.window_open, load);
@@ -37,8 +37,8 @@ function load() {
 
   values.value = [];
   entryKindFieldStore.get_fields(props.entryKindId).then((fields_) => {
+    fields_.forEach(() => values.value.push(ref([])));
     fields.value = fields_;
-    fields_.forEach(() => values.value.push(ref<string>("")));
   });
 }
 
@@ -55,15 +55,18 @@ function handleOpenEntryKindFieldListWindow() {
 
 function clear() {
   for (let i = 0; i < values.value.length; i++) {
-    values.value[i].value = "";
+    const elem = values.value[i].value[0];
+    if (elem && elem.inputRef)
+      elem.inputRef.value = "";
   }
 }
 
 function getValues() {
   let values_ = [];
   for (let i = 0; i < values.value.length; i++) {
-    const elem = values.value[i].value;
-    values_.push(elem);
+    const elem = values.value[i].value[0];
+    if (elem && elem.inputRef)
+      values_.push(elem.inputRef.value);
   }
   return values_;
 }
@@ -125,7 +128,7 @@ defineExpose({
     <div class="editor__fields">
       <EditorSection
         v-for="(field, idx) in fields"
-        v-model="values[idx].value"
+        :ref="values[idx]"
         :key="field.id"
         :title="field.name"
         :placeholder="field.desc"
