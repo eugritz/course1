@@ -126,14 +126,18 @@ defineExpose({
     </div>
     <div class="separator" />
     <div class="editor__fields">
-      <EditorSection
-        v-for="(field, idx) in fields"
-        :ref="values[idx]"
-        :key="field.id"
-        :title="field.name"
-        :placeholder="field.desc"
-        type="text"
-      />
+      <div class="editor__fields__horizontal__wrapper">
+        <div class="editor__fields__vertical__wrapper">
+          <EditorSection
+            v-for="(field, idx) in fields"
+            :ref="values[idx]"
+            :key="field.id"
+            :title="field.name"
+            :placeholder="field.desc"
+            type="text"
+          />
+        </div>
+      </div>
     </div>
     <div class="separator" />
     <div class="editor__tags">
@@ -197,6 +201,22 @@ button {
 }
 
 .editor__fields {
+  position: relative;
+  height: 100%;
+}
+
+.editor__fields__horizontal__wrapper {
+  position: absolute;
+  width: calc(100% - 10px);
+  height: 100%;
+  padding-left: 8px;
+  overflow-y: scroll;
+}
+
+.editor__fields__vertical__wrapper {
+  position: absolute;
+  width: calc(100% - 14px);
+  padding-bottom: 4px;
   flex: 1;
   display: flex;
   flex-direction: column;

@@ -118,7 +118,8 @@ function handleConfirm() {
     .then(() => {
       loading.value = false;
       createdEntry.value = true;
-      reset();
+      if (editorRef.value)
+        editorRef.value.clear();
     });
 }
 
