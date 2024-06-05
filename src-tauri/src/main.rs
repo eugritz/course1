@@ -53,6 +53,7 @@ fn main() {
             api::entry_kinds::rename_entry_kind,
             api::entry_kinds::delete_entry_kind,
             api::entry_kinds::last_entry_kind,
+            api::tags::get_all_tags,
         ])
         .on_window_event(|event| match event.event() {
             tauri::WindowEvent::CloseRequested { api, .. } => {

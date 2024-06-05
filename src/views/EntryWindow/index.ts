@@ -16,6 +16,7 @@ import {
   uniPaperclip,
   uniAngleDown,
   uniArrow,
+  uniTimes,
 // @ts-ignore 6133
 } from "vue-unicons/dist/icons";
 import customIcons from "utils/customIcons";
@@ -57,6 +58,7 @@ Unicon.add([
   uniPaperclip,
   uniAngleDown,
   uniArrow,
+  uniTimes,
 ]);
 
 // @ts-ignore 2374

@@ -67,11 +67,14 @@ function flattenFind(
 import { computed, onMounted, ref, shallowRef, watch } from 'vue';
 
 import { deckStore } from 'stores/deckStore';
+import { tagStore } from 'stores/tagStore';
 
 import FilterSidebarItem, { ItemIcons } from './FilterSidebarItem.vue';
 import NativeListbox, { NativeListboxExposed } from './NativeListbox.vue';
 
 const decks = computed(() => deckStore.cached_all);
+const tags = computed(() => tagStore.cached_all);
+
 const searchQuery = ref("");
 const selectedItem = shallowRef<any | null>(null);
 const items = ref<FilterSidebarItem[]>([
@@ -136,10 +139,12 @@ const filterSidebarListbox = ref<NativeListboxExposed | null>(null);
 
 const mapIdToItemIdx = {
   decks: 1,
+  tags: 5,
 };
 
 onMounted(() => {
   deckStore.all();
+  tagStore.all();
 });
 
 watch(searchQuery, () => {
@@ -147,11 +152,21 @@ watch(searchQuery, () => {
 });
 
 watch(decks, () => {
-  for (let i = 0; i < deckStore.cached_all.length; i++) {
-    const deck = deckStore.cached_all[i];
+  for (let i = 0; i < decks.value.length; i++) {
+    const deck = decks.value[i];
     items.value[mapIdToItemIdx.decks].subitems?.push({
       icon: "deck",
       value: deck.name,
+    });
+  }
+});
+
+watch(tags, () => {
+  for (let i = 0; i < tags.value.length; i++) {
+    const tag = tags.value[i];
+    items.value[mapIdToItemIdx.tags].subitems?.push({
+      icon: "tag",
+      value: tag.name,
     });
   }
 });

@@ -2,6 +2,7 @@
 export interface EditorExposed {
   clear(): void;
   getValues(): string[];
+  getTags(): string[];
 }
 </script>
 
@@ -24,6 +25,7 @@ const props = defineProps<{
 
 const fields = ref<EntryKindField[]>([]);
 const values = ref<Ref<(EditorSectionExposed | null)[]>[]>([]);
+const tagsRef = ref<EditorSectionExposed | null>(null);
 
 useTauriEvent(dataEvents.update.entryKindField, load);
 useTauriEvent(uiEvents.window_open, load);
@@ -56,9 +58,11 @@ function handleOpenEntryKindFieldListWindow() {
 function clear() {
   for (let i = 0; i < values.value.length; i++) {
     const elem = values.value[i].value[0];
-    if (elem && elem.inputRef)
-      elem.inputRef.value = "";
+    elem?.reset();
   }
+
+  if (tagsRef.value)
+    tagsRef.value.reset();
 }
 
 function getValues() {
@@ -71,9 +75,16 @@ function getValues() {
   return values_;
 }
 
+function getTags() {
+  if (!tagsRef.value)
+    return [];
+  return tagsRef.value.getTags() ?? [];
+}
+
 defineExpose({
   clear,
   getValues,
+  getTags,
 });
 </script>
 
@@ -141,7 +152,12 @@ defineExpose({
     </div>
     <div class="separator" />
     <div class="editor__tags">
-      <EditorSection class="editor__section__tags" title="Метки" type="tags" />
+      <EditorSection
+        ref="tagsRef"
+        class="editor__section__tags"
+        title="Метки"
+        type="tags"
+      />
     </div>
   </div>
 </template>

@@ -1,13 +1,15 @@
 <script lang="ts">
 export interface EditorSectionExposed {
   inputRef: HTMLInputElement | null;
+  getTags(): string[] | null;
+  reset(): void;
 }
 </script>
 
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue';
 
-defineProps<{
+const props = defineProps<{
   title: string,
   placeholder?: string,
   type?: "text" | "tags",
@@ -21,6 +23,22 @@ const inputFocused = ref<boolean>(false);
 
 const value = ref("");
 const tags = ref<string[]>([]);
+
+function reset() {
+  inputTabindex.value = 0;
+  inputFocused.value = false;
+  value.value = "";
+  tags.value = [];
+
+  if (!inputRef.value)
+    return;
+
+  if (props.type === "text") {
+    inputRef.value.value = "";
+  } else if (props.type === "tags") {
+    inputRef.value.innerHTML = "";
+  }
+}
 
 function removeTag(idx: number) {
   tags.value.splice(idx, 1);
@@ -63,7 +81,7 @@ function handleInput(event: Event) {
   const right = input.slice(whitespace + 1);
   target.textContent = right;
   value.value = right;
-  tags.value.push(left);
+  tags.value.push(left.toLowerCase());
 }
 
 function handleKeyBackspace(event: Event) {
@@ -100,8 +118,16 @@ function handleBlur() {
   inputFocused.value = false;
 }
 
+function getTags() {
+  if (props.type !== 'tags')
+    return null;
+  return tags.value;
+}
+
 defineExpose({
   inputRef: inputRefReadOnly,
+  getTags,
+  reset,
 });
 </script>
 
@@ -213,7 +239,6 @@ $tags-input-h-padding: 12px;
   display: flex;
   align-items: center;
   background-color: #1b1b1b;
-  cursor: text;
 }
 
 .tags-input__wrapper {
@@ -248,6 +273,7 @@ $tags-input-h-padding: 12px;
 
 .tags-input--focus {
   outline: 2px solid $selection-ring-color;
+  cursor: text;
 }
 
 .tags-input__tags {

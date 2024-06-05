@@ -12,13 +12,14 @@ export const entryStore = shallowReactive({
   async create(
     entry_kind_id: number,
     deck_id: number,
-    field_values: string[]
+    field_values: string[],
+    tags: string[],
   ): Promise<Entry> {
     return invoke("create_entry", {
       entryKindId: entry_kind_id,
       deckId: deck_id,
       values: field_values,
-      tags: [],
+      tags,
     });
   },
 });

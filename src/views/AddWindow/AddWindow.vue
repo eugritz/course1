@@ -98,6 +98,7 @@ function handleConfirm() {
     return;
 
   const values = editorRef.value.getValues();
+  const tags = editorRef.value.getTags();
   if (values.length === 0)
     return;
 
@@ -114,7 +115,12 @@ function handleConfirm() {
   }
 
   loading.value = true;
-  entryStore.create(selectedEntryKind.value.id, selectedDeck.value.id, values)
+  entryStore.create(
+    selectedEntryKind.value.id,
+    selectedDeck.value.id,
+    values,
+    tags
+  )
     .then(() => {
       loading.value = false;
       createdEntry.value = true;
