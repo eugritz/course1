@@ -12,6 +12,7 @@ const id = ref<string | null>(null);
 const message = ref("");
 const loading_ = ref(false);
 const loading = ref<number | null>(null);
+const payload = ref<unknown>(null);
 const parent = ref<string>("");
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
@@ -28,24 +29,27 @@ function reset(event?: Event<unknown>) {
 }
 
 function handleSetData(event: Event<unknown>) {
-  const payload = event.payload as {
+  const payload_ = event.payload as {
     id: string | null,
     title: string,
     message: string,
     loading: boolean | null,
+    payload: unknown,
     parent: string,
   };
 
-  id.value = payload.id;
-  message.value = payload.message;
-  loading_.value = payload.loading ?? false;
-  parent.value = payload.parent;
+  id.value = payload_.id;
+  message.value = payload_.message;
+  loading_.value = payload_.loading ?? false;
+  payload.value = payload_.payload ?? null;
+  parent.value = payload_.parent;
 }
 
 function handleConfirm() {
   invoke("confirmation_modal_on_result", {
     id: id.value,
     button: 1,
+    payload: payload.value,
     parent: parent.value,
   });
 
@@ -63,6 +67,7 @@ function handleCancel() {
   invoke("confirmation_modal_on_result", {
     id: id.value,
     button: 0,
+    payload: payload.value,
     parent: parent.value,
   });
 

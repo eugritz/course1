@@ -130,7 +130,9 @@ function handleConfirm() {
 }
 
 function handleClose() {
-  invoke(uiEvents.window_close);
+  invoke(uiEvents.window_close).then(() => {
+    reset();
+  });
 }
 </script>
 

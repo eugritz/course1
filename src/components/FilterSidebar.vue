@@ -8,6 +8,7 @@ interface FilterSidebarItem {
   value: string;
   icon?: ItemIcons;
   subitems?: FilterSidebarItem[];
+  payload?: unknown;
 }
 
 function flatten(
@@ -65,9 +66,15 @@ function flattenFind(
 
 <script setup lang="ts">
 import { computed, onMounted, ref, shallowRef, watch } from 'vue';
+import { invoke } from '@tauri-apps/api';
+import { Event as UiEvent } from '@tauri-apps/api/event';
+import { showMenu } from 'ext/tauri-plugin-context-menu';
 
 import { deckStore } from 'stores/deckStore';
 import { tagStore } from 'stores/tagStore';
+
+import { useTauriEvent } from 'utils/tauriEvent';
+import uiEvents from 'constants/uiEvents';
 
 import FilterSidebarItem, { ItemIcons } from './FilterSidebarItem.vue';
 import NativeListbox, { NativeListboxExposed } from './NativeListbox.vue';
@@ -142,6 +149,81 @@ const mapIdToItemIdx = {
   tags: 5,
 };
 
+useTauriEvent("menu:renameTag", (event: UiEvent<unknown>) => {
+  const payload = event.payload as string;
+  invoke(uiEvents.InputModal.open, {
+    id: "renameTag",
+    title: "Переименовать метку",
+    label: "Новое название метки",
+    value: payload,
+    placeholder: payload,
+    payload,
+    buttonText: "Изменить",
+  });
+});
+
+useTauriEvent("menu:deleteTag", (event: UiEvent<unknown>) => {
+  const payload = event.payload as string;
+  invoke(uiEvents.ConfirmationModal.open, {
+    id: "deleteTag",
+    title: "Удалить метку",
+    message: "Вы уверены, что хотите удалить метку?",
+    payload,
+  });
+});
+
+useTauriEvent(uiEvents.ConfirmationModal.onResult, (event: UiEvent<unknown>) => {
+  const payload = event.payload as {
+    id: string,
+    button: number,
+    payload: string,
+  };
+
+  if (payload.button !== 1)
+    return;
+
+  switch (payload.id) {
+    case "deleteTag":
+      tagStore.delete(payload.payload);
+      items.value[mapIdToItemIdx.tags].subitems =
+        items.value[mapIdToItemIdx.tags].subitems?.filter(
+          (item) => item.payload !== payload.payload,
+        );
+      break;
+    default:
+      break;
+  }
+});
+
+useTauriEvent(uiEvents.InputModal.onResult, (event: UiEvent<unknown>) => {
+  const payload = event.payload as {
+    id: string,
+    input: string,
+    payload: string,
+  };
+
+  switch (payload.id) {
+    case "renameTag":
+      const new_name = payload.input
+        .replace(/\s/, "_")
+        .replace(/^_+/, "")
+        .replace(/_+$/, "")
+        .replace(/_{2,}/, "_")
+        .toLowerCase();
+      tagStore.rename(payload.payload, new_name);
+      const item = items.value[mapIdToItemIdx.tags].subitems?.find(
+        (item) => item.payload === payload.payload
+      );
+      if (item) {
+        item.value = new_name;
+        item.payload = new_name;
+      }
+      break;
+    default:
+      break;
+  }
+});
+
 onMounted(() => {
   deckStore.all();
   tagStore.all();
@@ -167,6 +249,7 @@ watch(tags, () => {
     items.value[mapIdToItemIdx.tags].subitems?.push({
       icon: "tag",
       value: tag.name,
+      payload: tag.name,
     });
   }
 });
@@ -174,6 +257,31 @@ watch(tags, () => {
 function reset() {
   searchQuery.value = "";
   filterSidebarListbox.value?.deselect();
+}
+
+function handleOpenContextMenu(event: Event, item: FilterSidebarItem) {
+  event.preventDefault();
+
+  switch (item.icon) {
+    case 'tag':
+      showMenu({
+        items: [
+          {
+            label: "Переименовать",
+            event: "menu:renameTag",
+            payload: item.payload,
+          },
+          {
+            label: "Удалить",
+            event: "menu:deleteTag",
+            payload: item.payload,
+          },
+        ],
+      });
+      break;
+    default:
+      break;
+  }
 }
 
 defineExpose({
@@ -197,7 +305,10 @@ defineExpose({
         :items="flattenItems"
       >
         <template #item="slotProps">
-          <FilterSidebarItem v-bind="slotProps" />
+          <FilterSidebarItem
+            v-bind="slotProps"
+            @contextmenu="handleOpenContextMenu($event, slotProps)"
+          />
         </template>
       </NativeListbox>
     </div>

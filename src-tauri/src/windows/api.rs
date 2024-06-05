@@ -24,6 +24,7 @@ pub async fn open_confirmation_modal(
     id: Option<String>,
     title: String,
     message: String,
+    payload: Option<String>,
     loading: Option<bool>,
 ) {
     debug!("open_confirmation_modal");
@@ -40,6 +41,7 @@ pub async fn open_confirmation_modal(
                     title,
                     message,
                     loading,
+                    payload,
                     parent: window.label().to_owned(),
                 },
             )
@@ -54,6 +56,7 @@ pub async fn confirmation_modal_on_result(
     window: tauri::Window,
     id: Option<String>,
     button: i32,
+    payload: Option<String>,
     parent: String,
 ) {
     debug!("confirmation_modal_on_result START");
@@ -66,7 +69,11 @@ pub async fn confirmation_modal_on_result(
         .emit_to(
             &parent,
             "ConfirmationModal:onResult",
-            ConfirmationModalOutputPayload { id, button },
+            ConfirmationModalOutputPayload {
+                id,
+                button,
+                payload,
+            },
         )
         .unwrap();
     debug!("confirmation_modal_on_result FINISH");
@@ -81,6 +88,7 @@ pub async fn open_input_modal(
     value: Option<String>,
     placeholder: Option<String>,
     button_text: Option<String>,
+    payload: Option<String>,
     loading: Option<bool>,
 ) {
     debug!("open_input_modal");
@@ -97,6 +105,7 @@ pub async fn open_input_modal(
                     placeholder,
                     buttonText: button_text,
                     loading,
+                    payload,
                     parent: window.label().to_owned(),
                 },
             )
@@ -111,6 +120,7 @@ pub async fn input_modal_on_result(
     window: tauri::Window,
     id: Option<String>,
     input: String,
+    payload: Option<String>,
     parent: String,
 ) {
     if window.label() != "InputModal" {
@@ -122,7 +132,7 @@ pub async fn input_modal_on_result(
         .emit_to(
             &parent,
             "InputModal:onResult",
-            InputModalOutputPayload { id, input },
+            InputModalOutputPayload { id, input, payload },
         )
         .unwrap();
 }

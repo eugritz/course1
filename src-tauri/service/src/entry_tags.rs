@@ -1,8 +1,6 @@
 use ::entity::{entry_tags, tags};
 use sea_orm::*;
 
-pub struct EntryTagsService;
-
 fn escape(s: String) -> String {
     let mut escaped = "".to_string();
     for ch in s.chars() {
@@ -18,6 +16,8 @@ fn escape(s: String) -> String {
 enum QueryAs {
     Name,
 }
+
+pub struct EntryTagsService;
 
 impl EntryTagsService {
     pub async fn get_entry_tags<'a, C: ConnectionTrait>(

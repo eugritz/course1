@@ -14,6 +14,7 @@ tauri-build = { version = "1", features = [] }
 [dependencies]
 api = { path = "api" }
 migration = { path = "migration" }
+tauri-plugin-context-menu = { path = "ext/tauri-plugin-context-menu" }
 sea-orm = { version = "0.12", features = [ "sqlx-sqlite", "runtime-tokio-rustls", "macros" ] }
 tauri = { version = "1", features = [ "shell-open", "window-hide" ] }
 serde = { version = "1", features = ["derive"] }

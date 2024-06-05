@@ -18,6 +18,7 @@ fn main() {
         .init();
 
     let app = tauri::Builder::default()
+        .plugin(tauri_plugin_context_menu::init())
         .invoke_handler(tauri::generate_handler![
             //
             // Windows API
@@ -54,6 +55,8 @@ fn main() {
             api::entry_kinds::delete_entry_kind,
             api::entry_kinds::last_entry_kind,
             api::tags::get_all_tags,
+            api::tags::rename_tag,
+            api::tags::delete_tag,
         ])
         .on_window_event(|event| match event.event() {
             tauri::WindowEvent::CloseRequested { api, .. } => {

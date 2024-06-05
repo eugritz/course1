@@ -6,6 +6,7 @@ pub struct ConfirmationModalInputPayload {
     pub title: String,
     pub message: String,
     pub loading: Option<bool>,
+    pub payload: Option<String>,
     pub parent: String,
 }
 
@@ -13,6 +14,7 @@ pub struct ConfirmationModalInputPayload {
 pub struct ConfirmationModalOutputPayload {
     pub id: Option<String>,
     pub button: i32,
+    pub payload: Option<String>,
 }
 
 #[derive(Clone, serde::Serialize)]
@@ -24,6 +26,7 @@ pub struct InputModalInputPayload {
     pub placeholder: Option<String>,
     pub buttonText: Option<String>,
     pub loading: Option<bool>,
+    pub payload: Option<String>,
     pub parent: String,
 }
 
@@ -31,4 +34,5 @@ pub struct InputModalInputPayload {
 pub struct InputModalOutputPayload {
     pub id: Option<String>,
     pub input: String,
+    pub payload: Option<String>,
 }

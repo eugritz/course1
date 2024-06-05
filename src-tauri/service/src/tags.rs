@@ -1,6 +1,17 @@
 use ::entity::tags;
 use sea_orm::*;
 
+fn escape(s: String) -> String {
+    let mut escaped = "".to_string();
+    for ch in s.chars() {
+        match ch {
+            '\'' => escaped.push_str("''"),
+            ch => escaped.push(ch),
+        }
+    }
+    escaped
+}
+
 pub struct TagService;
 
 impl TagService {
@@ -29,6 +40,39 @@ impl TagService {
         }
 
         Ok(())
+    }
+
+    pub async fn rename_tag<'a, C: ConnectionTrait>(
+        db: &'a C,
+        tag: String,
+        tag_new_name: String,
+    ) -> Result<(), DbErr> {
+        let query = format!(
+            "UPDATE \"tags\" \
+            SET \"name\" = '{}' \
+            WHERE \"tags\".\"name\" = '{}';",
+            escape(tag_new_name),
+            escape(tag),
+        );
+
+        db.execute(Statement::from_string(DatabaseBackend::Sqlite, query))
+            .await
+            .map(|_| ())
+    }
+
+    pub async fn delete_tag<'a, C: ConnectionTrait>(
+        db: &'a C,
+        tag: String,
+    ) -> Result<(), DbErr> {
+        let query = format!(
+            "DELETE FROM \"tags\" \
+            WHERE \"tags\".\"name\" = '{}';",
+            escape(tag),
+        );
+
+        db.execute(Statement::from_string(DatabaseBackend::Sqlite, query))
+            .await
+            .map(|_| ())
     }
 
     pub async fn delete_orphan_tags<'a, C: ConnectionTrait>(

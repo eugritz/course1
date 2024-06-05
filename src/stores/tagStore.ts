@@ -12,4 +12,17 @@ export const tagStore = shallowReactive({
       return tags as Tag[];
     });
   },
+
+  async rename(old_name: string, new_name: string): Promise<void> {
+    return invoke("rename_tag", {
+      tag: old_name,
+      tagNewName: new_name,
+    });
+  },
+
+  async delete(name: string): Promise<void> {
+    return invoke("delete_tag", {
+      tag: name,
+    });
+  },
 });

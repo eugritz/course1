@@ -1,0 +1,30 @@
+[package]
+name = "tauri-plugin-context-menu"
+version = "0.7.1"
+authors = [ "c2r0b" ]
+description = "Handle native Context Menu in Tauri"
+license = "MIT OR Apache-2.0"
+edition = "2021"
+rust-version = "1.59"
+exclude = ["/examples", "/assets", ".DS_Store", "/.github", "/.changes", "/webview-dist", "/webview-src", "package.json", "package-lock.json"]
+
+[dependencies]
+tauri = { version = "1.5" }
+serde = { version = "1.0", features = ["derive"] }
+lazy_static = "1.4"
+time = "0.3.28"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+winapi = { version = "0.3", features = ["winuser"] }
+image = "0.24.7"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+cocoa = "0.24.1"
+objc = "0.2.7"
+libc = "0.2.147"
+dispatch = "0.2.0"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+gtk = "0.15.1"
+gdk = "0.15.1"
+glib = "0.15.1"
