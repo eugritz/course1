@@ -7,3 +7,4 @@ edition = "2021"
 entity = { path = "../entity" }
 sea-orm = { version = "0.12" }
 serde = { version = "1", features = ["derive"] }
+futures = "0.3.30"

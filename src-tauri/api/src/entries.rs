@@ -3,8 +3,9 @@ use sea_orm::{prelude::Date, DbConn, DbErr, TransactionTrait};
 
 use entity::{entries, entry_field_values, tags};
 use service::{
-    entry_query_builder::Entry, DeckService, EntryFieldValuesService,
-    EntryKindFieldService, EntryService, EntryTagsService, TagService,
+    entry_query_builder::{Card, Entry},
+    DeckService, EntryFieldValuesService, EntryKindFieldService, EntryService,
+    EntryTagsService, TagService,
 };
 
 fn escape(s: String) -> String {
@@ -45,7 +46,7 @@ pub async fn filter_entries(
         };
 
         EntryService::find(state.inner())
-            .parse_with_fallback(query, fallback)
+            .try_parse_entries(query, fallback)
             .await
     }
     .map_err(|err| {
@@ -54,6 +55,41 @@ pub async fn filter_entries(
     })?;
 
     debug!("filter_entries SUCCESS");
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn filter_cards(
+    state: tauri::State<'_, DbConn>,
+    query: String,
+) -> Result<Vec<Card>, ()> {
+    debug!("filter_cards CALL");
+    let result = 'l1: {
+        let deck = DeckService::find_last_deck(state.inner()).await;
+        let deck = {
+            if let Err(err) = deck {
+                break 'l1 Err(err);
+            } else {
+                deck.unwrap()
+            }
+        };
+
+        let fallback = if let Some(deck) = deck {
+            format!("колода:\"{}\"", escape(deck.name))
+        } else {
+            "".to_string()
+        };
+
+        EntryService::find(state.inner())
+            .try_parse_cards(query, fallback)
+            .await
+    }
+    .map_err(|err| {
+        error!("filter_cards ERROR {}", err.to_string());
+        ()
+    })?;
+
+    debug!("filter_cards SUCCESS");
     Ok(result)
 }
 

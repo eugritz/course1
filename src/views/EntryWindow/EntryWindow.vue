@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { Event as UiEvent, TauriEvent } from '@tauri-apps/api/event';
 
-import { FilteredEntry } from 'entities/Entry';
+import { FilteredCard, FilteredEntry } from 'entities/Entry';
 import { entryStore } from 'stores/entryStore';
 import { useTauriEvent } from 'utils/tauriEvent';
 import uiEvents from 'constants/uiEvents';
@@ -21,7 +21,8 @@ const dataTableRef = ref<DataTableExposed | null>(null);
 
 const query = ref("");
 const cardSwitch = ref(false);
-const entries = ref<FilteredEntry[]>([]);
+const switch_ = computed(() => cardSwitch.value ? "entries" : "cards");
+const entries = ref<(FilteredEntry | FilteredCard)[]>([]);
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
 useTauriEvent(uiEvents.window_open, load);
@@ -29,6 +30,17 @@ useTauriEvent(uiEvents.window_open, load);
 onMounted(() => {
   load();
   reset();
+
+  document.addEventListener("drag", (e) => {
+    e.preventDefault();
+  });
+});
+
+watch(cardSwitch, () => {
+  query.value = "";
+  entryStore.filter(switch_.value).then((entries_) => {
+    entries.value = entries_;
+  });
 });
 
 function reset(event?: UiEvent<unknown>) {
@@ -44,20 +56,20 @@ function reset(event?: UiEvent<unknown>) {
 }
 
 function load() {
-  entryStore.filter().then((entries_) => {
+  entryStore.filter("cards").then((entries_) => {
     entries.value = entries_;
   });
 }
 
 function handleFilter(query_: string) {
   query.value = query_;
-  entryStore.filter(query.value).then((entries_) => {
+  entryStore.filter(switch_.value, query.value).then((entries_) => {
     entries.value = entries_;
   });
 }
 
 function handleSearchEntries() {
-  entryStore.filter(query.value).then((entries_) => {
+  entryStore.filter(switch_.value, query.value).then((entries_) => {
     entries.value = entries_;
   });
 }
@@ -104,7 +116,7 @@ function handleItemPrev() {
           >
             <template v-if="!cardSwitch">
               <Column field="sort_field" header="Основное поле" />
-              <Column value="" header="Карта" />
+              <Column field="card_name" header="Карта" />
               <Column field="next_shown_at" header="Появление">
                 <template #body="slotProps">
                   {{slotProps.next_shown_at ?? "#"}}
@@ -114,10 +126,14 @@ function handleItemPrev() {
             </template>
             <template v-else>
               <Column field="sort_field" header="Основное поле" />
-              <Column value="" header="Запись" />
-              <Column value="" header="Карты" />
-              <Column value="" header="Метки" />
-              <Column value="" header="Появление" />
+              <Column field="entry_kind_name" header="Вид" />
+              <Column field="card_count" header="Карты" />
+              <Column field="tags" header="Метки">
+                <template #body="slotProps">
+                  {{slotProps.tags && slotProps.tags.join(", ")}}
+                </template>
+              </Column>
+              <Column field="next_shown_at" header="Появление" />
               <Column field="created_at" header="Создание" />
             </template>
           </DataTable>
@@ -192,6 +208,12 @@ function handleItemPrev() {
 </style>
 
 <style lang="scss">
+@import "../../styles/mixins";
+
+body {
+  @include user-select-none;
+}
+
 .editor__wrapper {
   height: calc(100vh - 16px);
 

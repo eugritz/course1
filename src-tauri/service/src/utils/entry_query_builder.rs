@@ -1,11 +1,12 @@
 use super::{
     parser::{Node, Parser, Tokenizer},
-    select_ext::Apply,
+    select_ext::{Apply, ApplyIf},
 };
 use ::entity::{
-    decks, entries, entry_field_values, entry_kind_default_field, entry_kinds,
-    entry_tags, tags,
+    cards, decks, entries, entry_field_values, entry_kind_default_field,
+    entry_kinds, entry_tags, tags,
 };
+use futures::TryStreamExt;
 use sea_orm::{
     entity::prelude::{Date, DateTimeUtc, Expr},
     sea_query::{Alias, ConditionExpression, IntoCondition, LikeExpr},
@@ -14,18 +15,37 @@ use sea_orm::{
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 
-#[derive(FromQueryResult, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Entry {
     pub id: i32,
+    pub sort_field: String,
     pub entry_kind_id: i32,
+    pub entry_kind_name: String,
     pub deck_id: i32,
     pub deck_name: String,
+    pub card_count: i32,
+    pub tags: Vec<String>,
     pub color_tag: i32,
     pub progress: f64,
     pub created_at: Date,
     pub last_shown_at: Option<DateTimeUtc>,
     pub next_shown_at: Option<DateTimeUtc>,
+}
+
+#[derive(FromQueryResult, Serialize, Deserialize)]
+pub struct Card {
+    pub id: i32,
     pub sort_field: String,
+    pub entry_kind_id: i32,
+    pub deck_id: i32,
+    pub deck_name: String,
+    pub card_id: i32,
+    pub card_name: String,
+    pub color_tag: i32,
+    pub progress: f64,
+    pub created_at: Date,
+    pub last_shown_at: Option<DateTimeUtc>,
+    pub next_shown_at: Option<DateTimeUtc>,
 }
 
 fn wrap_pattern(s: String) -> String {
@@ -41,28 +61,127 @@ fn wrap_pattern(s: String) -> String {
     escaped
 }
 
-pub struct EntryQueryBuilder<'a, C: ConnectionTrait> {
+pub struct EntryQueryBuilder<'a, C: ConnectionTrait + StreamTrait> {
     db: &'a C,
     query: RefCell<Option<Select<entries::Entity>>>,
-    filter_entry_tags: RefCell<bool>,
+    is_entries: RefCell<bool>,
+    filter_entry_kind: RefCell<bool>,
     filter_tags: RefCell<bool>,
 }
 
-impl<'a, C: ConnectionTrait> EntryQueryBuilder<'a, C> {
+impl<'a, C: ConnectionTrait + StreamTrait> EntryQueryBuilder<'a, C> {
     pub fn new(db: &'a C, query: Select<entries::Entity>) -> Self {
         EntryQueryBuilder {
             db,
             query: RefCell::new(Some(query)),
-            filter_entry_tags: RefCell::new(false),
+            is_entries: RefCell::new(false),
+            filter_entry_kind: RefCell::new(false),
             filter_tags: RefCell::new(false),
         }
     }
 
-    pub async fn parse_with_fallback(
+    pub async fn try_parse_entries(
         self,
         source: String,
         fallback: String,
     ) -> Result<Vec<Entry>, DbErr> {
+        #[derive(FromQueryResult, Serialize, Deserialize)]
+        pub struct FlatEntry {
+            pub id: i32,
+            pub sort_field: String,
+            pub entry_kind_id: i32,
+            pub entry_kind_name: String,
+            pub deck_id: i32,
+            pub deck_name: String,
+            pub card_count: i32,
+            pub tag_name: Option<String>,
+            pub color_tag: i32,
+            pub progress: f64,
+            pub created_at: Date,
+            pub last_shown_at: Option<DateTimeUtc>,
+            pub next_shown_at: Option<DateTimeUtc>,
+        }
+
+        self.is_entries.replace(true);
+
+        let cond = self
+            .get_condition(source)
+            .or_else(|_| self.get_condition(fallback))
+            .map_err(|_| DbErr::Custom("parsing error".to_string()))?;
+
+        self.query.replace_with(|q| {
+            let q = q.take()?;
+            Some(
+                self.entry_kind(q)
+                    .apply(Self::sort_field)
+                    .apply(Self::cards)
+                    .apply_if_(!*self.filter_tags.borrow(), |q| {
+                        q.group_by(entries::Column::Id)
+                    })
+                    .apply_if_(!*self.filter_tags.borrow(), |q| {
+                        q.join(
+                            JoinType::FullOuterJoin,
+                            entries::Relation::EntryTags.def(),
+                        )
+                        .join(
+                            JoinType::FullOuterJoin,
+                            entry_tags::Relation::Tags.def(),
+                        )
+                    })
+                    .join(JoinType::Join, entries::Relation::Decks.def())
+                    .column_as(decks::Column::Name, "deck_name")
+                    .column_as(cards::Column::Id.count(), "card_count")
+                    .column_as(tags::Column::Name, "tag_name")
+                    .filter(cond),
+            )
+        });
+
+        self.filter_entry_kind.replace(true);
+
+        let mut stream = self
+            .query
+            .take()
+            .ok_or(DbErr::Custom("query take failed".to_string()))?
+            .into_model::<FlatEntry>()
+            .stream(self.db)
+            .await?;
+
+        let mut entries = Vec::<Entry>::new();
+        while let Some(entry) = stream.try_next().await? {
+            if entry.tag_name.is_some() {
+                if let Some(last) = entries.last_mut() {
+                    if last.id == entry.id {
+                        last.tags.push(entry.tag_name.unwrap());
+                        continue;
+                    }
+                }
+            }
+
+            entries.push(Entry {
+                id: entry.id,
+                sort_field: entry.sort_field,
+                entry_kind_id: entry.entry_kind_id,
+                entry_kind_name: entry.entry_kind_name,
+                deck_id: entry.deck_id,
+                deck_name: entry.deck_name,
+                card_count: entry.card_count,
+                tags: entry.tag_name.map(|x| vec![x]).unwrap_or(vec![]),
+                color_tag: entry.color_tag,
+                progress: entry.progress,
+                created_at: entry.created_at,
+                last_shown_at: entry.last_shown_at,
+                next_shown_at: entry.next_shown_at,
+            });
+        }
+
+        Ok(entries)
+    }
+
+    pub async fn try_parse_cards(
+        self,
+        source: String,
+        fallback: String,
+    ) -> Result<Vec<Card>, DbErr> {
         let cond = self
             .get_condition(source)
             .or_else(|_| self.get_condition(fallback))
@@ -74,6 +193,7 @@ impl<'a, C: ConnectionTrait> EntryQueryBuilder<'a, C> {
                 q.join(JoinType::Join, entries::Relation::Decks.def())
                     .column_as(decks::Column::Name, "deck_name")
                     .apply(Self::sort_field)
+                    .apply(Self::cards)
                     .filter(cond),
             )
         });
@@ -81,7 +201,7 @@ impl<'a, C: ConnectionTrait> EntryQueryBuilder<'a, C> {
         self.query
             .take()
             .ok_or(DbErr::Custom("query take failed".to_string()))?
-            .into_model::<Entry>()
+            .into_model::<Card>()
             .all(self.db)
             .await
     }
@@ -110,14 +230,41 @@ impl<'a, C: ConnectionTrait> EntryQueryBuilder<'a, C> {
         .column_as(entry_field_values::Column::Value, "sort_field")
     }
 
-    fn entry_kind<E: EntityTrait>(q: Select<E>) -> Select<E> {
-        q.join(JoinType::Join, entries::Relation::EntryKinds.def())
+    fn cards<E: EntityTrait>(q: Select<E>) -> Select<E> {
+        q.join_rev(
+            JoinType::Join,
+            cards::Entity::belongs_to(entries::Entity)
+                .from(cards::Column::EntryKindId)
+                .to(entries::Column::EntryKindId)
+                .into(),
+        )
+        .column_as(cards::Column::Id, "card_id")
+        .column_as(cards::Column::Name, "card_name")
     }
 
-    fn tags<E: EntityTrait>(q: Select<E>) -> Select<E> {
+    fn entry_kind<E: EntityTrait>(&self, q: Select<E>) -> Select<E> {
+        if *self.filter_entry_kind.borrow() {
+            return q;
+        }
+        self.filter_entry_kind.replace(true);
+
+        q.join(JoinType::Join, entries::Relation::EntryKinds.def())
+            .column_as(entry_kinds::Column::Name, "entry_kind_name")
+    }
+
+    fn tags<E: EntityTrait>(&self, q: Select<E>) -> Select<E> {
+        if *self.filter_tags.borrow() {
+            return q;
+        }
+        self.filter_tags.replace(true);
+
+        let is_entries = *self.is_entries.borrow();
         q.join(JoinType::FullOuterJoin, entries::Relation::EntryTags.def())
             .join(JoinType::FullOuterJoin, entry_tags::Relation::Tags.def())
-            .group_by(entries::Column::Id)
+            .apply_if_(is_entries, |q| q.group_by(entries::Column::Id))
+            .apply_if_(!is_entries, |q| {
+                q.group_by(entries::Column::Id).group_by(cards::Column::Id)
+            })
     }
 
     fn parse_node(&self, node: Box<Node>) -> Option<ConditionExpression> {
@@ -166,24 +313,18 @@ impl<'a, C: ConnectionTrait> EntryQueryBuilder<'a, C> {
             Node::StringLit(string) => match string.to_lowercase().as_str() {
                 "колода" => Some(decks::Column::Name.eq(value).into()),
                 "вид" => {
-                    if !*self.filter_entry_tags.borrow() {
-                        self.query.replace_with(|q| {
-                            let q = q.take()?;
-                            Some(q.apply(Self::entry_kind))
-                        });
-                        self.filter_entry_tags.replace(true);
-                    }
+                    self.query.replace_with(|q| {
+                        let q = q.take()?;
+                        Some(self.entry_kind(q))
+                    });
 
                     Some(entry_kinds::Column::Name.eq(value).into())
                 }
                 "метка" => {
-                    if !*self.filter_tags.borrow() {
-                        self.query.replace_with(|q| {
-                            let q = q.take()?;
-                            Some(q.apply(Self::tags))
-                        });
-                        self.filter_tags.replace(true);
-                    }
+                    self.query.replace_with(|q| {
+                        let q = q.take()?;
+                        Some(self.tags(q))
+                    });
 
                     if value == "" {
                         Some(entry_tags::Column::TagId.is_null().into())

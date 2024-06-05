@@ -288,7 +288,9 @@ defineExpose({
             <component :is="() => ((column.children as RawSlot)['body'] as Function)(row)" />
           </div>
           <span v-else>
-            {{column.props?.field ? row[column.props.field as keyof T] : ""}}
+            {{column.props?.field
+              ? row[column.props.field as keyof T]
+              : column.props?.value ?? ""}}
           </span>
         </td>
       </tr>

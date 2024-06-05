@@ -1,12 +1,20 @@
 import { invoke } from "@tauri-apps/api";
 import { shallowReactive } from "vue";
-import { Entry, FilteredEntry } from "entities/Entry";
+import { Entry, FilteredCard, FilteredEntry } from "entities/Entry";
 
 export const entryStore = shallowReactive({
-  async filter(query?: string): Promise<FilteredEntry[]> {
-    return invoke("filter_entries", {
-      query: query === undefined ? "" : query,
-    });
+  async filter(switch_: "entries" | "cards", query?: string):
+    Promise<(FilteredEntry | FilteredCard)[]>
+  {
+    if (switch_ === "cards") {
+      return invoke("filter_cards", {
+        query: query === undefined ? "" : query,
+      });
+    } else {
+      return invoke("filter_entries", {
+        query: query === undefined ? "" : query,
+      });
+    }
   },
 
   async create(

@@ -45,6 +45,7 @@ fn main() {
             api::decks::rename_deck,
             api::decks::delete_deck,
             api::decks::last_deck,
+            api::entries::filter_cards,
             api::entries::filter_entries,
             api::entries::create_entry,
             api::entry_kind_fields::get_entry_kind_fields,
