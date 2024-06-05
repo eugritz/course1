@@ -6,10 +6,10 @@ use ::entity::{
     cards, decks, entries, entry_field_values, entry_kind_default_field,
     entry_kinds, entry_tags, tags,
 };
-use futures::TryStreamExt;
+use futures::{TryStreamExt, FutureExt, StreamExt};
 use sea_orm::{
     entity::prelude::{Date, DateTimeUtc, Expr},
-    sea_query::{Alias, ConditionExpression, IntoCondition, LikeExpr},
+    sea_query::{Alias, ConditionExpression, IntoCondition, LikeExpr, Query, Asterisk},
     *,
 };
 use serde::{Deserialize, Serialize};
@@ -85,7 +85,7 @@ impl<'a, C: ConnectionTrait + StreamTrait> EntryQueryBuilder<'a, C> {
         source: String,
         fallback: String,
     ) -> Result<Vec<Entry>, DbErr> {
-        #[derive(FromQueryResult, Serialize, Deserialize)]
+        #[derive(Debug, FromQueryResult, Serialize, Deserialize)]
         pub struct FlatEntry {
             pub id: i32,
             pub sort_field: String,
@@ -109,12 +109,15 @@ impl<'a, C: ConnectionTrait + StreamTrait> EntryQueryBuilder<'a, C> {
             .or_else(|_| self.get_condition(fallback))
             .map_err(|_| DbErr::Custom("parsing error".to_string()))?;
 
-        self.query.replace_with(|q| {
-            let q = q.take()?;
-            Some(
+        let q = self.query.take().unwrap();
+        let mut q1 = Query::select();
+        let q = q1
+            .column((Alias::new("filtered"), Asterisk))
+            .column((tags::Entity, tags::Column::Name))
+            .from_subquery(
                 self.entry_kind(q)
                     .apply(Self::sort_field)
-                    .apply(Self::cards)
+                    .apply(Self::card_count)
                     .apply_if_(!*self.filter_tags.borrow(), |q| {
                         q.group_by(entries::Column::Id)
                     })
@@ -129,25 +132,53 @@ impl<'a, C: ConnectionTrait + StreamTrait> EntryQueryBuilder<'a, C> {
                         )
                     })
                     .join(JoinType::Join, entries::Relation::Decks.def())
+                    .column_as(entries::Column::Id, "entry_id")
                     .column_as(decks::Column::Name, "deck_name")
-                    .column_as(cards::Column::Id.count(), "card_count")
-                    .column_as(tags::Column::Name, "tag_name")
-                    .filter(cond),
+                    .filter(cond)
+                    .into_query(),
+                Alias::new("filtered"),
             )
-        });
+            .join(
+                JoinType::LeftJoin,
+                entry_tags::Entity,
+                Expr::col((Alias::new("filtered"), Alias::new("entry_id")))
+                    .equals((entry_tags::Entity, entry_tags::Column::EntryId))
+            )
+            .join(
+                JoinType::LeftJoin,
+                tags::Entity,
+                Expr::col((entry_tags::Entity, entry_tags::Column::TagId))
+                    .equals((tags::Entity, tags::Column::Id))
+            );
 
-        self.filter_entry_kind.replace(true);
+        let builder = self.db.get_database_backend();
+        let q = builder.build(q);
 
-        let mut stream = self
-            .query
-            .take()
-            .ok_or(DbErr::Custom("query take failed".to_string()))?
-            .into_model::<FlatEntry>()
-            .stream(self.db)
+        println!("{}", q.to_string());
+
+        let mut stream = self.db
+            .stream(q)
             .await?;
+        futures::pin_mut!(stream);
 
         let mut entries = Vec::<Entry>::new();
         while let Some(entry) = stream.try_next().await? {
+            let entry = FlatEntry {
+                id: entry.try_get_by_index::<i32>(0).unwrap(),
+                sort_field: entry.try_get_by_index::<String>(9).unwrap(),
+                entry_kind_id: entry.try_get_by_index::<i32>(1).unwrap(),
+                entry_kind_name: entry.try_get_by_index::<String>(8).unwrap(),
+                deck_id: entry.try_get_by_index::<i32>(2).unwrap(),
+                deck_name: entry.try_get_by_index::<String>(12).unwrap(),
+                card_count: entry.try_get_by_index::<i32>(10).unwrap(),
+                tag_name: entry.try_get_by_index::<Option<String>>(13).unwrap(),
+                color_tag: entry.try_get_by_index::<i32>(3).unwrap(),
+                progress: entry.try_get_by_index::<f64>(4).unwrap(),
+                created_at: entry.try_get_by_index::<Date>(5).unwrap(),
+                last_shown_at: entry.try_get_by_index::<Option<DateTimeUtc>>(6).unwrap(),
+                next_shown_at: entry.try_get_by_index::<Option<DateTimeUtc>>(7).unwrap(),
+            };
+
             if entry.tag_name.is_some() {
                 if let Some(last) = entries.last_mut() {
                     if last.id == entry.id {
@@ -240,6 +271,17 @@ impl<'a, C: ConnectionTrait + StreamTrait> EntryQueryBuilder<'a, C> {
         )
         .column_as(cards::Column::Id, "card_id")
         .column_as(cards::Column::Name, "card_name")
+    }
+
+    fn card_count<E: EntityTrait>(q: Select<E>) -> Select<E> {
+        q.join_rev(
+            JoinType::LeftJoin,
+            cards::Entity::belongs_to(entries::Entity)
+                .from(cards::Column::EntryKindId)
+                .to(entries::Column::EntryKindId)
+                .into(),
+        )
+        .column_as(cards::Column::Id.count(), "card_count")
     }
 
     fn entry_kind<E: EntityTrait>(&self, q: Select<E>) -> Select<E> {
