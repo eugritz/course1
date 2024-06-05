@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { Event as UiEvent, TauriEvent } from '@tauri-apps/api/event';
 
 import { FilteredEntry } from 'entities/Entry';
@@ -21,6 +21,7 @@ const dataTableRef = ref<DataTableExposed | null>(null);
 
 const cardSwitch = ref(false);
 const query = ref("");
+const filterQuery = ref("");
 const entries = ref<FilteredEntry[]>([]);
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
@@ -29,6 +30,13 @@ useTauriEvent(uiEvents.window_open, load);
 onMounted(() => {
   load();
   reset();
+});
+
+watch(filterQuery, () => {
+  query.value = filterQuery.value;
+  entryStore.filter(query.value).then((entries_) => {
+    entries.value = entries_;
+  });
 });
 
 function reset(event?: UiEvent<unknown>) {
@@ -69,7 +77,7 @@ function handleItemPrev() {
 <template>
   <Splitter class="content" ref="splitterRef">
     <SplitterPanel size="20%" min-size="200px">
-      <FilterSidebar ref="filterSidebarRef" />
+      <FilterSidebar ref="filterSidebarRef" v-model="filterQuery" />
     </SplitterPanel>
     <SplitterPanel class="data-view" min-size="400px">
       <div class="data-view__controls">
@@ -77,7 +85,7 @@ function handleItemPrev() {
         <input
           class="data-view__controls__search"
           type="text"
-          placeholder="Поиск по картам/записям"
+          placeholder="Нажмите Enter для поиска по картам/записям"
           v-model="query"
           @keydown.enter="handleSearchEntries"
         />

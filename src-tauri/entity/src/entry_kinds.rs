@@ -16,12 +16,20 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(has_many = "super::cards::Entity")]
+    Cards,
     #[sea_orm(has_many = "super::entries::Entity")]
     Entries,
     #[sea_orm(has_many = "super::entry_kind_default_field::Entity")]
     EntryKindDefaultField,
     #[sea_orm(has_many = "super::entry_kind_fields::Entity")]
     EntryKindFields,
+}
+
+impl Related<super::cards::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Cards.def()
+    }
 }
 
 impl Related<super::entries::Entity> for Entity {

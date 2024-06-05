@@ -40,6 +40,8 @@ pub enum Relation {
         on_delete = "Cascade"
     )]
     EntryKinds,
+    #[sea_orm(has_many = "super::entry_tags::Entity")]
+    EntryTags,
 }
 
 impl Related<super::decks::Entity> for Entity {
@@ -57,6 +59,21 @@ impl Related<super::entry_field_values::Entity> for Entity {
 impl Related<super::entry_kinds::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::EntryKinds.def()
+    }
+}
+
+impl Related<super::entry_tags::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::EntryTags.def()
+    }
+}
+
+impl Related<super::tags::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::entry_tags::Relation::Tags.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::entry_tags::Relation::Entries.def().rev())
     }
 }
 

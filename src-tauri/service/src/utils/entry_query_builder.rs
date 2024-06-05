@@ -2,7 +2,10 @@ use super::{
     parser::{Node, Parser, Tokenizer},
     select_ext::Apply,
 };
-use ::entity::{decks, entries, entry_field_values, entry_kind_default_field};
+use ::entity::{
+    decks, entries, entry_field_values, entry_kind_default_field, entry_tags,
+    tags,
+};
 use sea_orm::{
     entity::prelude::{Date, DateTimeUtc, Expr},
     sea_query::{Alias, ConditionExpression, IntoCondition, LikeExpr},
@@ -41,6 +44,7 @@ fn wrap_pattern(s: String) -> String {
 pub struct EntryQueryBuilder<'a, C: ConnectionTrait> {
     db: &'a C,
     query: RefCell<Option<Select<entries::Entity>>>,
+    filter_tags: RefCell<bool>,
 }
 
 impl<'a, C: ConnectionTrait> EntryQueryBuilder<'a, C> {
@@ -48,6 +52,7 @@ impl<'a, C: ConnectionTrait> EntryQueryBuilder<'a, C> {
         EntryQueryBuilder {
             db,
             query: RefCell::new(Some(query)),
+            filter_tags: RefCell::new(false),
         }
     }
 
@@ -141,18 +146,41 @@ impl<'a, C: ConnectionTrait> EntryQueryBuilder<'a, C> {
         lhs: Box<Node>,
         rhs: Box<Node>,
     ) -> Option<ConditionExpression> {
-        let field = match *lhs {
-            Node::StringLit(string) => match string.to_lowercase().as_str() {
-                "колода" => Some(decks::Column::Name),
-                _ => None,
-            },
-            _ => None,
-        }?;
         let value = match *rhs {
             Node::StringLit(string) => Some(string),
             _ => None,
         }?;
-        Some(field.eq(value).into())
+        match *lhs {
+            Node::StringLit(string) => match string.to_lowercase().as_str() {
+                "колода" => Some(decks::Column::Name.eq(value).into()),
+                "метка" => {
+                    if !*self.filter_tags.borrow() {
+                        self.query.replace_with(|q| {
+                            let q = q.take()?;
+                            Some(
+                                q.join(
+                                    JoinType::FullOuterJoin,
+                                    entries::Relation::EntryTags.def(),
+                                )
+                                .join(
+                                    JoinType::FullOuterJoin,
+                                    entry_tags::Relation::Tags.def(),
+                                )
+                                .group_by(entries::Column::Id),
+                            )
+                        });
+                        self.filter_tags.replace(true);
+                    }
+                    if value == "" {
+                        Some(entry_tags::Column::TagId.is_null().into())
+                    } else {
+                        Some(tags::Column::Name.eq(value).into())
+                    }
+                }
+                _ => None,
+            },
+            _ => None,
+        }
     }
 
     fn parse_or(

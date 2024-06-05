@@ -82,8 +82,9 @@ import NativeListbox, { NativeListboxExposed } from './NativeListbox.vue';
 const decks = computed(() => deckStore.cached_all);
 const tags = computed(() => tagStore.cached_all);
 
+const query = defineModel<string>();
 const searchQuery = ref("");
-const selectedItem = shallowRef<any | null>(null);
+const selectedItem = shallowRef<FilterSidebarItem | null>(null);
 const items = ref<FilterSidebarItem[]>([
   {
     icon: "today",
@@ -233,6 +234,21 @@ watch(searchQuery, () => {
   filterSidebarListbox.value?.deselect();
 });
 
+watch(selectedItem, () => {
+  switch (selectedItem.value?.icon) {
+    case "tagUnspecified":
+      query.value = "метка:\"\"";
+      break;
+    case "tag":
+      if (selectedItem.value.subitems === undefined) {
+        query.value = "метка:" + selectedItem.value.payload;
+      }
+      break;
+    default:
+      break;
+  }
+});
+
 watch(decks, () => {
   for (let i = 0; i < decks.value.length; i++) {
     const deck = decks.value[i];
@@ -263,7 +279,7 @@ function handleOpenContextMenu(event: Event, item: FilterSidebarItem) {
   event.preventDefault();
 
   switch (item.icon) {
-    case 'tag':
+    case "tag":
       showMenu({
         items: [
           {
