@@ -196,6 +196,7 @@ defineExpose({
   margin: 0;
   padding: 0px 5px;
   text-align: left;
+  white-space: nowrap;
   @include user-select-none;
 }
 

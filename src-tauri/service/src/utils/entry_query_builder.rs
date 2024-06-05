@@ -3,8 +3,8 @@ use super::{
     select_ext::Apply,
 };
 use ::entity::{
-    decks, entries, entry_field_values, entry_kind_default_field, entry_tags,
-    tags,
+    decks, entries, entry_field_values, entry_kind_default_field, entry_kinds,
+    entry_tags, tags,
 };
 use sea_orm::{
     entity::prelude::{Date, DateTimeUtc, Expr},
@@ -44,6 +44,7 @@ fn wrap_pattern(s: String) -> String {
 pub struct EntryQueryBuilder<'a, C: ConnectionTrait> {
     db: &'a C,
     query: RefCell<Option<Select<entries::Entity>>>,
+    filter_entry_tags: RefCell<bool>,
     filter_tags: RefCell<bool>,
 }
 
@@ -52,6 +53,7 @@ impl<'a, C: ConnectionTrait> EntryQueryBuilder<'a, C> {
         EntryQueryBuilder {
             db,
             query: RefCell::new(Some(query)),
+            filter_entry_tags: RefCell::new(false),
             filter_tags: RefCell::new(false),
         }
     }
@@ -108,6 +110,16 @@ impl<'a, C: ConnectionTrait> EntryQueryBuilder<'a, C> {
         .column_as(entry_field_values::Column::Value, "sort_field")
     }
 
+    fn entry_kind<E: EntityTrait>(q: Select<E>) -> Select<E> {
+        q.join(JoinType::Join, entries::Relation::EntryKinds.def())
+    }
+
+    fn tags<E: EntityTrait>(q: Select<E>) -> Select<E> {
+        q.join(JoinType::FullOuterJoin, entries::Relation::EntryTags.def())
+            .join(JoinType::FullOuterJoin, entry_tags::Relation::Tags.def())
+            .group_by(entries::Column::Id)
+    }
+
     fn parse_node(&self, node: Box<Node>) -> Option<ConditionExpression> {
         match *node {
             Node::BinaryExpr { op, lhs, rhs } => match op {
@@ -153,24 +165,26 @@ impl<'a, C: ConnectionTrait> EntryQueryBuilder<'a, C> {
         match *lhs {
             Node::StringLit(string) => match string.to_lowercase().as_str() {
                 "колода" => Some(decks::Column::Name.eq(value).into()),
+                "вид" => {
+                    if !*self.filter_entry_tags.borrow() {
+                        self.query.replace_with(|q| {
+                            let q = q.take()?;
+                            Some(q.apply(Self::entry_kind))
+                        });
+                        self.filter_entry_tags.replace(true);
+                    }
+
+                    Some(entry_kinds::Column::Name.eq(value).into())
+                }
                 "метка" => {
                     if !*self.filter_tags.borrow() {
                         self.query.replace_with(|q| {
                             let q = q.take()?;
-                            Some(
-                                q.join(
-                                    JoinType::FullOuterJoin,
-                                    entries::Relation::EntryTags.def(),
-                                )
-                                .join(
-                                    JoinType::FullOuterJoin,
-                                    entry_tags::Relation::Tags.def(),
-                                )
-                                .group_by(entries::Column::Id),
-                            )
+                            Some(q.apply(Self::tags))
                         });
                         self.filter_tags.replace(true);
                     }
+
                     if value == "" {
                         Some(entry_tags::Column::TagId.is_null().into())
                     } else {

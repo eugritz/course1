@@ -70,7 +70,11 @@ import { invoke } from '@tauri-apps/api';
 import { Event as UiEvent } from '@tauri-apps/api/event';
 import { showMenu } from 'ext/tauri-plugin-context-menu';
 
+import { Deck } from 'entities/Deck';
+import { EntryKind } from 'entities/EntryKind';
+
 import { deckStore } from 'stores/deckStore';
+import { entryKindStore } from 'stores/entryKindStore';
 import { tagStore } from 'stores/tagStore';
 
 import { useTauriEvent } from 'utils/tauriEvent';
@@ -79,13 +83,17 @@ import uiEvents from 'constants/uiEvents';
 import FilterSidebarItem, { ItemIcons } from './FilterSidebarItem.vue';
 import NativeListbox, { NativeListboxExposed } from './NativeListbox.vue';
 
+const emit = defineEmits<{
+  (e: "filter", query: string): void,
+}>();
+
 const decks = computed(() => deckStore.cached_all);
+const entryKinds = computed(() => entryKindStore.cached_all);
 const tags = computed(() => tagStore.cached_all);
 
-const query = defineModel<string>();
 const searchQuery = ref("");
 const selectedItem = shallowRef<FilterSidebarItem | null>(null);
-const items = ref<FilterSidebarItem[]>([
+const defaultItems = (): FilterSidebarItem[] => ([
   {
     icon: "today",
     value: "Сегодня",
@@ -125,8 +133,8 @@ const items = ref<FilterSidebarItem[]>([
     ],
   },
   {
-    icon: "cardKind",
-    value: "Виды карт",
+    icon: "entryKind",
+    value: "Виды записей",
     subitems: [],
   },
   {
@@ -138,17 +146,19 @@ const items = ref<FilterSidebarItem[]>([
   },
 ]);
 
+const mapIdToItemIdx = {
+  decks: 1,
+  entryKinds: 4,
+  tags: 5,
+};
+
+const items = ref<FilterSidebarItem[]>(defaultItems());
 const flattenItems = computed<FilterSidebarItem[]>(() =>
   searchQuery.value === ""
   ? flatten(items.value)
   : flattenFind(searchQuery.value.trim().toLowerCase(), items.value));
 
-const filterSidebarListbox = ref<NativeListboxExposed | null>(null);
-
-const mapIdToItemIdx = {
-  decks: 1,
-  tags: 5,
-};
+const filterSidebarListboxRef = ref<NativeListboxExposed | null>(null);
 
 useTauriEvent("menu:renameTag", (event: UiEvent<unknown>) => {
   const payload = event.payload as string;
@@ -225,23 +235,32 @@ useTauriEvent(uiEvents.InputModal.onResult, (event: UiEvent<unknown>) => {
   }
 });
 
-onMounted(() => {
-  deckStore.all();
-  tagStore.all();
-});
+useTauriEvent(uiEvents.window_open, load);
+
+onMounted(load);
 
 watch(searchQuery, () => {
-  filterSidebarListbox.value?.deselect();
+  filterSidebarListboxRef.value?.deselect();
 });
 
 watch(selectedItem, () => {
   switch (selectedItem.value?.icon) {
+    case "deck":
+      const deck = selectedItem.value.payload as Deck;
+      emit("filter", "колода:\"" + deck.name + "\"");
+      break;
+    case "entryKind":
+      if (selectedItem.value.subitems === undefined) {
+        const entryKind = selectedItem.value.payload as EntryKind;
+        emit("filter", "вид:\"" + entryKind.name + "\"");
+      }
+      break;
     case "tagUnspecified":
-      query.value = "метка:\"\"";
+      emit("filter", "метка:\"\"");
       break;
     case "tag":
       if (selectedItem.value.subitems === undefined) {
-        query.value = "метка:" + selectedItem.value.payload;
+        emit("filter", "метка:" + selectedItem.value.payload);
       }
       break;
     default:
@@ -255,6 +274,18 @@ watch(decks, () => {
     items.value[mapIdToItemIdx.decks].subitems?.push({
       icon: "deck",
       value: deck.name,
+      payload: deck,
+    });
+  }
+});
+
+watch(entryKinds, () => {
+  for (let i = 0; i < entryKinds.value.length; i++) {
+    const entryKind = entryKinds.value[i];
+    items.value[mapIdToItemIdx.entryKinds].subitems?.push({
+      icon: "entryKind",
+      value: entryKind.name,
+      payload: entryKind,
     });
   }
 });
@@ -272,7 +303,14 @@ watch(tags, () => {
 
 function reset() {
   searchQuery.value = "";
-  filterSidebarListbox.value?.deselect();
+  filterSidebarListboxRef.value?.deselect();
+}
+
+function load() {
+  items.value = defaultItems();
+  deckStore.all();
+  entryKindStore.all();
+  tagStore.all();
 }
 
 function handleOpenContextMenu(event: Event, item: FilterSidebarItem) {
@@ -314,19 +352,21 @@ defineExpose({
         type="text"
         placeholder="Фильтрация категорий"
       />
-      <NativeListbox
-        v-model="selectedItem"
-        ref="filterSidebarListbox"
-        class="filter-sidebar__list"
-        :items="flattenItems"
-      >
-        <template #item="slotProps">
-          <FilterSidebarItem
-            v-bind="slotProps"
-            @contextmenu="handleOpenContextMenu($event, slotProps)"
-          />
-        </template>
-      </NativeListbox>
+      <div class="filter-sidebar__list__wrapper">
+        <NativeListbox
+          v-model="selectedItem"
+          ref="filterSidebarListboxRef"
+          class="filter-sidebar__list"
+          :items="flattenItems"
+        >
+          <template #item="slotProps">
+            <FilterSidebarItem
+              v-bind="slotProps"
+              @contextmenu="handleOpenContextMenu($event, slotProps)"
+            />
+          </template>
+        </NativeListbox>
+      </div>
     </div>
   </div>
 </template>
@@ -358,8 +398,14 @@ defineExpose({
   gap: 10px;
 }
 
-.filter-sidebar__list {
+.filter-sidebar__list__wrapper {
+  position: relative;
   height: 100%;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.filter-sidebar__list {
+  position: absolute;
 }
 </style>

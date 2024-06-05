@@ -19,9 +19,8 @@ const filterSidebarRef = ref<FilterSidebarExposed | null>(null);
 const splitterRef = ref<SplitterExposed | null>(null);
 const dataTableRef = ref<DataTableExposed | null>(null);
 
-const cardSwitch = ref(false);
 const query = ref("");
-const filterQuery = ref("");
+const cardSwitch = ref(false);
 const entries = ref<FilteredEntry[]>([]);
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
@@ -30,13 +29,6 @@ useTauriEvent(uiEvents.window_open, load);
 onMounted(() => {
   load();
   reset();
-});
-
-watch(filterQuery, () => {
-  query.value = filterQuery.value;
-  entryStore.filter(query.value).then((entries_) => {
-    entries.value = entries_;
-  });
 });
 
 function reset(event?: UiEvent<unknown>) {
@@ -53,6 +45,13 @@ function reset(event?: UiEvent<unknown>) {
 
 function load() {
   entryStore.filter().then((entries_) => {
+    entries.value = entries_;
+  });
+}
+
+function handleFilter(query_: string) {
+  query.value = query_;
+  entryStore.filter(query.value).then((entries_) => {
     entries.value = entries_;
   });
 }
@@ -77,7 +76,7 @@ function handleItemPrev() {
 <template>
   <Splitter class="content" ref="splitterRef">
     <SplitterPanel size="20%" min-size="200px">
-      <FilterSidebar ref="filterSidebarRef" v-model="filterQuery" />
+      <FilterSidebar ref="filterSidebarRef" @filter="handleFilter" />
     </SplitterPanel>
     <SplitterPanel class="data-view" min-size="400px">
       <div class="data-view__controls">
@@ -200,10 +199,8 @@ function handleItemPrev() {
     box-shadow: none;
   }
 
-  .editor__section__tags {
-    input {
-      box-shadow: none;
-    }
+  .tags-input {
+    box-shadow: none;
   }
 }
 </style>

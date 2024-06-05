@@ -17,7 +17,7 @@ export type ItemIcons = "decks"
   | "cardStateNew"
   | "cardStateLearning"
   | "cardStateSuspended"
-  | "cardKind"
+  | "entryKind"
   | "tag"
   | "tagUnspecified";
 </script>
@@ -49,7 +49,7 @@ const mapIconIdToName: Record<ItemIcons, string> = {
   "cardStateNew": "custom-card-state-new",
   "cardStateLearning": "custom-card-state-learning",
   "cardStateSuspended": "custom-card-state-suspended",
-  "cardKind": "table",
+  "entryKind": "table",
   "tag": "tag-alt",
   "tagUnspecified": "custom-tag-unspecified",
 };

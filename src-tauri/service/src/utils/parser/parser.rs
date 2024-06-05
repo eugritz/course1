@@ -350,8 +350,8 @@ impl Parser {
     }
 
     pub fn unwrap_quotes(s: &str) -> &str {
-        let s = s.strip_prefix('"').unwrap_or(s);
-        let s = s.strip_suffix('"').unwrap_or(s);
+        let s = s.strip_prefix(|ch| ch == '"' || ch == '\'').unwrap_or(s);
+        let s = s.strip_suffix(|ch| ch == '"' || ch == '\'').unwrap_or(s);
         s
     }
 }
