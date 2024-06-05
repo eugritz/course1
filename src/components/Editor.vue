@@ -3,16 +3,22 @@ export interface EditorExposed {
   clear(): void;
   getValues(): string[];
   getTags(): string[];
+  reset(): void;
 }
 </script>
 
 <script setup lang="ts">
-import { Ref, onMounted, ref, watch } from 'vue';
+import { Ref, nextTick, onMounted, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api';
 import { emit } from '@tauri-apps/api/event';
 
+import { EntryFieldValueExtra } from 'entities/EntryFieldValue';
 import { EntryKindField } from 'entities/EntryKindField';
+
+import { entryFieldValueStore } from 'stores/entryFieldValueStore';
 import { entryKindFieldStore } from 'stores/entryKindFieldStore';
+import { entryTagStore } from 'stores/entryTagStore';
+
 import { useTauriEvent } from 'utils/tauriEvent';
 import dataEvents from 'constants/dataEvents';
 import uiEvents from 'constants/uiEvents';
@@ -20,10 +26,11 @@ import uiEvents from 'constants/uiEvents';
 import EditorSection, { EditorSectionExposed } from './EditorSection.vue';
 
 const props = defineProps<{
+  entryId?: number,
   entryKindId?: number,
 }>();
 
-const fields = ref<EntryKindField[]>([]);
+const fields = ref<EntryKindField[] | EntryFieldValueExtra[]>([]);
 const values = ref<Ref<(EditorSectionExposed | null)[]>[]>([]);
 const tagsRef = ref<EditorSectionExposed | null>(null);
 
@@ -31,17 +38,51 @@ useTauriEvent(dataEvents.update.entryKindField, load);
 useTauriEvent(uiEvents.window_open, load);
 
 onMounted(load);
-watch(() => props.entryKindId, load);
+watch([() => props.entryId, () => props.entryKindId], load);
+
+function isEntry(_field: EntryKindField | EntryFieldValueExtra):
+  _field is EntryFieldValueExtra
+{
+  return props.entryId !== undefined && props.entryKindId === undefined;
+}
+
+function reset() {
+  fields.value = [];
+  values.value = [];
+
+  if (tagsRef.value)
+    tagsRef.value.reset();
+}
 
 function load() {
-  if (props.entryKindId === undefined)
-    return;
+  if (props.entryId !== undefined) {
+    entryFieldValueStore.get_fields(props.entryId).then((fields_) => {
+      fields_.forEach(() => values.value.push(ref([])));
+      fields.value = fields_;
 
-  values.value = [];
-  entryKindFieldStore.get_fields(props.entryKindId).then((fields_) => {
-    fields_.forEach(() => values.value.push(ref([])));
-    fields.value = fields_;
-  });
+      entryTagStore.get_tags(props.entryId!).then((tags_) => {
+        tagsRef.value?.setTags(tags_);
+      });
+
+      nextTick(() => {
+        for (let i = 0; i < values.value.length; i++) {
+          const elem = values.value[i].value[0];
+          if (elem && elem.inputRef) {
+            const field = fields.value[i];
+            if (isEntry(field)) {
+              elem.inputRef.value = field.value;
+            }
+          }
+        }
+      });
+    });
+  } else if (props.entryKindId !== undefined) {
+    values.value = [];
+    entryKindFieldStore.get_fields(props.entryKindId).then((fields_) => {
+      fields_.forEach(() => values.value.push(ref([])));
+      fields.value = fields_;
+    });
+  }
 }
 
 function handleOpenEntryKindFieldListWindow() {
@@ -85,6 +126,7 @@ defineExpose({
   clear,
   getValues,
   getTags,
+  reset,
 });
 </script>
 

@@ -2,12 +2,13 @@
 export interface EditorSectionExposed {
   inputRef: HTMLInputElement | null;
   getTags(): string[] | null;
+  setTags(tags: string[]): void;
   reset(): void;
 }
 </script>
 
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 
 const props = defineProps<{
   title: string,
@@ -18,11 +19,18 @@ const props = defineProps<{
 const isSectionOpen = ref(true);
 const inputRef = ref<HTMLInputElement | null>(null);
 const inputRefReadOnly = computed<HTMLInputElement | null>(() => inputRef.value);
+const tagsRef = ref<HTMLElement | null>(null);
 const inputTabindex = ref<number>(0);
 const inputFocused = ref<boolean>(false);
 
 const value = ref("");
 const tags = ref<string[]>([]);
+
+watch(tags, () => {
+  if (!inputRef.value || !tagsRef.value)
+    return;
+  inputRef.value.style.left = tagsRef.value.offsetWidth + "px";
+});
 
 function reset() {
   inputTabindex.value = 0;
@@ -124,9 +132,18 @@ function getTags() {
   return tags.value;
 }
 
+function setTags(tags_: string[]) {
+  if (props.type !== 'tags' || !inputRef.value)
+    return;
+  inputRef.value.innerHTML = "";
+  value.value = "";
+  tags.value = tags_;
+}
+
 defineExpose({
   inputRef: inputRefReadOnly,
   getTags,
+  setTags,
   reset,
 });
 </script>
@@ -173,30 +190,32 @@ defineExpose({
           <unicon class="icon" name="tag-alt" width="21" height="21" />
         </div>
         <div class="tags-input__wrapper" @click="handleClick">
-          <div v-show="tags.length > 0" class="tags-input__tags">
+          <div class="tags-input__wrapper2" @click="handleClick">
+            <div v-show="tags.length > 0" ref="tagsRef" class="tags-input__tags">
+              <span
+                v-for="(tag, idx) in tags"
+                class="tags-input__tags__tag"
+                @click="removeTag(idx)"
+              >
+                {{tag}}
+                <unicon class="icon" name="times" width="16" height="16" />
+              </span>
+            </div>
             <span
-              v-for="(tag, idx) in tags"
-              class="tags-input__tags__tag"
-              @click="removeTag(idx)"
+              contenteditable
+              class="tags-input__input"
+              type="text"
+              ref="inputRef"
+              :value="value"
+              @click.stop
+              @input="handleInput"
+              @focus="handleFocus"
+              @blur="handleBlur"
+              @keydown.backspace="handleKeyBackspace"
+              :placeholder="placeholder"
             >
-              {{tag}}
-              <unicon class="icon" name="times" width="16" height="16" />
             </span>
           </div>
-          <span
-            contenteditable
-            class="tags-input__input"
-            type="text"
-            ref="inputRef"
-            :value="value"
-            @click.stop
-            @input="handleInput"
-            @focus="handleFocus"
-            @blur="handleBlur"
-            @keydown.backspace="handleKeyBackspace"
-            :placeholder="placeholder"
-          >
-          </span>
         </div>
       </div>
     </div>
@@ -242,9 +261,16 @@ $tags-input-h-padding: 12px;
 }
 
 .tags-input__wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.tags-input__wrapper2 {
+  position: absolute;
   width: 100%;
   display: flex;
   overflow: hidden;
+  transform: translateY(-50%);
 }
 
 .tags-input__input {

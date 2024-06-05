@@ -122,6 +122,7 @@ function handleConfirm() {
     tags
   )
     .then(() => {
+      emit(dataEvents.update.entry);
       loading.value = false;
       createdEntry.value = true;
       if (editorRef.value)

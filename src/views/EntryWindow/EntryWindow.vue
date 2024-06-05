@@ -5,6 +5,7 @@ import { Event as UiEvent, TauriEvent } from '@tauri-apps/api/event';
 import { FilteredCard, FilteredEntry } from 'entities/Entry';
 import { entryStore } from 'stores/entryStore';
 import { useTauriEvent } from 'utils/tauriEvent';
+import dataEvents from 'constants/dataEvents';
 import uiEvents from 'constants/uiEvents';
 
 import CardSwitch from 'components/CardSwitch.vue';
@@ -13,31 +14,34 @@ import DataTable, { DataTableExposed } from 'components/DataTable.vue';
 import FilterSidebar, { FilterSidebarExposed } from 'components/FilterSidebar.vue';
 import Splitter, { SplitterExposed } from 'components/Splitter.vue';
 import SplitterPanel from 'components/SplitterPanel.vue';
-import Editor from 'components/Editor.vue';
+import Editor, { EditorExposed } from 'components/Editor.vue';
 
 const filterSidebarRef = ref<FilterSidebarExposed | null>(null);
 const splitterRef = ref<SplitterExposed | null>(null);
 const dataTableRef = ref<DataTableExposed | null>(null);
+const editorRef = ref<EditorExposed | null>(null);
 
 const query = ref("");
 const cardSwitch = ref(false);
 const switch_ = computed(() => cardSwitch.value ? "entries" : "cards");
 const entries = ref<(FilteredEntry | FilteredCard)[]>([]);
 
+const selectedEntry = ref<FilteredEntry | FilteredCard | null>(null);
+
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
+useTauriEvent(dataEvents.update.entry, load);
 useTauriEvent(uiEvents.window_open, load);
 
 onMounted(() => {
-  load();
   reset();
-
-  document.addEventListener("drag", (e) => {
-    e.preventDefault();
-  });
+  load();
 });
 
 watch(cardSwitch, () => {
+  filterSidebarRef.value?.reset();
+  dataTableRef.value?.reset();
   query.value = "";
+
   entryStore.filter(switch_.value).then((entries_) => {
     entries.value = entries_;
   });
@@ -50,13 +54,15 @@ function reset(event?: UiEvent<unknown>) {
   filterSidebarRef.value?.reset();
   splitterRef.value?.reset();
   dataTableRef.value?.reset();
+  editorRef.value?.reset();
 
-  cardSwitch.value = false;
   query.value = "";
+  cardSwitch.value = false;
+  selectedEntry.value = null;
 }
 
 function load() {
-  entryStore.filter("cards").then((entries_) => {
+  entryStore.filter(switch_.value, query.value).then((entries_) => {
     entries.value = entries_;
   });
 }
@@ -112,6 +118,7 @@ function handleItemPrev() {
             ref="dataTableRef"
             tabindex="-1"
             class="data-view__data__table"
+            v-model="selectedEntry"
             :value="entries"
           >
             <template v-if="!cardSwitch">
@@ -142,7 +149,7 @@ function handleItemPrev() {
     </SplitterPanel>
     <SplitterPanel min-size="540px">
       <div class="editor__wrapper">
-        <Editor />
+        <Editor ref="editorRef" :entry-id="selectedEntry?.id" />
       </div>
     </SplitterPanel>
   </Splitter>
