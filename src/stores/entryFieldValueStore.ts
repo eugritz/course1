@@ -9,4 +9,13 @@ export const entryFieldValueStore = shallowReactive({
       entryId: id,
     });
   },
+
+  async update(id: number, value: string):
+    Promise<EntryFieldValueExtra[]> 
+  {
+    return invoke("update_entry_field_value", {
+      entryFieldValueId: id,
+      newValue: value,
+    });
+  },
 });

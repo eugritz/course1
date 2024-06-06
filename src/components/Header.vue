@@ -15,7 +15,7 @@ function openAddWindow() {
 <template>
   <header class="header">
     <ul class="header__button-list">
-      <home-button>Главная</home-button>
+      <home-button>Колоды</home-button>
       <home-button @click="openAddWindow">Добавить</home-button>
       <home-button @click="openCardsWindow">Просмотр</home-button>
       <home-button>Статистика</home-button>

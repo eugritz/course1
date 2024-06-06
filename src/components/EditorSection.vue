@@ -16,6 +16,10 @@ const props = defineProps<{
   type?: "text" | "tags",
 }>();
 
+const emit = defineEmits<{
+  (e: "change", event: Event): void;
+}>();
+
 const isSectionOpen = ref(true);
 const inputRef = ref<HTMLInputElement | null>(null);
 const inputRefReadOnly = computed<HTMLInputElement | null>(() => inputRef.value);
@@ -24,6 +28,7 @@ const inputTabindex = ref<number>(0);
 const inputFocused = ref<boolean>(false);
 
 const value = ref("");
+const oldTags = ref<string[]>([]);
 const tags = ref<string[]>([]);
 
 watch(tags, () => {
@@ -36,6 +41,7 @@ function reset() {
   inputTabindex.value = 0;
   inputFocused.value = false;
   value.value = "";
+  oldTags.value = [];
   tags.value = [];
 
   if (!inputRef.value)
@@ -119,11 +125,25 @@ function handleFocus() {
   range.selectNodeContents(inputRef.value as Node);
   selection?.removeAllRanges();
   selection?.addRange(range);
+
+  oldTags.value = tags.value.slice();
 }
 
-function handleBlur() {
+function handleBlur(event: Event) {
   inputTabindex.value = 0;
   inputFocused.value = false;
+
+  if (oldTags.value.length !== tags.value.length) {
+    emit("change", event);
+    return;
+  }
+
+  for (let i = 0; i < oldTags.value.length; i++) {
+    if (oldTags.value[i] !== tags.value[i]) {
+      emit("change", event);
+      return;
+    }
+  }
 }
 
 function getTags() {
@@ -177,6 +197,7 @@ defineExpose({
         v-if="type === 'text'"
         type="text"
         ref="inputRef"
+        @change="$emit('change', $event)"
         :placeholder="placeholder"
       />
       <div

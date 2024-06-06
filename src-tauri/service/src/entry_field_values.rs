@@ -47,6 +47,7 @@ impl EntryFieldValuesService {
                 entry_field_values::Relation::EntryKindFields.def(),
             )
             .columns(entry_kind_fields::Column::iter())
+            .column_as(entry_field_values::Column::Id, "id")
             .join(
                 JoinType::LeftJoin,
                 entry_kind_fields::Relation::EntryKindDefaultField.def(),
@@ -86,6 +87,21 @@ impl EntryFieldValuesService {
             .insert(db)
             .await?;
         }
+
+        Ok(())
+    }
+
+    pub async fn update_entry_field_value<'a, C: ConnectionTrait>(
+        db: &'a C,
+        form_data: entry_field_values::Model,
+    ) -> Result<(), DbErr> {
+        entry_field_values::ActiveModel {
+            id: Set(form_data.id),
+            value: Set(form_data.value),
+            ..Default::default()
+        }
+        .update(db)
+        .await?;
 
         Ok(())
     }

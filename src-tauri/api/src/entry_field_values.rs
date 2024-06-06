@@ -1,3 +1,4 @@
+use entity::entry_field_values;
 use log::{debug, error};
 use sea_orm::DbConn;
 
@@ -20,4 +21,30 @@ pub async fn get_entry_field_values(
 
     debug!("get_entry_field_values SUCCESS");
     Ok(result)
+}
+
+#[tauri::command]
+pub async fn update_entry_field_value(
+    state: tauri::State<'_, DbConn>,
+    entry_field_value_id: i32,
+    new_value: String,
+) -> Result<(), ()> {
+    debug!("update_entry_field_value CALL");
+    EntryFieldValuesService::update_entry_field_value(
+        state.inner(),
+        entry_field_values::Model {
+            id: entry_field_value_id,
+            entry_id: 0,
+            entry_field_id: 0,
+            value: new_value,
+        },
+    )
+    .await
+    .map_err(|err| {
+        error!("update_entry_field_value ERROR {}", err.to_string());
+        ()
+    })?;
+
+    debug!("update_entry_field_value SUCCESS");
+    Ok(())
 }

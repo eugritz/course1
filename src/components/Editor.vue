@@ -96,6 +96,24 @@ function handleOpenEntryKindFieldListWindow() {
   });
 }
 
+function handleFieldChange(
+  event: Event,
+  field: EntryKindField | EntryFieldValueExtra
+) {
+  if (!isEntry(field))
+    return;
+
+  const target = event.target as HTMLInputElement;
+  entryFieldValueStore.update(field.id, target.value).then(() => {
+    emit(dataEvents.update.entryFieldValue);
+  });
+}
+
+function handleTagsChange(event: Event) {
+  console.log(props.entryId);
+  console.log(tagsRef.value?.getTags());
+}
+
 function clear() {
   for (let i = 0; i < values.value.length; i++) {
     const elem = values.value[i].value[0];
@@ -183,11 +201,12 @@ defineExpose({
         <div class="editor__fields__vertical__wrapper">
           <EditorSection
             v-for="(field, idx) in fields"
+            type="text"
             :ref="values[idx]"
             :key="field.id"
             :title="field.name"
             :placeholder="field.desc"
-            type="text"
+            @change="handleFieldChange($event, field)"
           />
         </div>
       </div>
@@ -199,6 +218,7 @@ defineExpose({
         class="editor__section__tags"
         title="Метки"
         type="tags"
+        @change="handleTagsChange"
       />
     </div>
   </div>

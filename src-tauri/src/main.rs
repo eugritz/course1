@@ -49,6 +49,7 @@ fn main() {
             api::entries::filter_entries,
             api::entries::create_entry,
             api::entry_field_values::get_entry_field_values,
+            api::entry_field_values::update_entry_field_value,
             api::entry_kind_fields::get_entry_kind_fields,
             api::entry_kind_fields::update_entry_kind_fields,
             api::entry_kinds::get_all_entry_kinds,

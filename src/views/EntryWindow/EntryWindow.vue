@@ -30,6 +30,7 @@ const selectedEntry = ref<FilteredEntry | FilteredCard | null>(null);
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
 useTauriEvent(dataEvents.update.entry, load);
+useTauriEvent(dataEvents.update.entryFieldValue, load);
 useTauriEvent(uiEvents.window_open, load);
 
 onMounted(() => {
@@ -62,6 +63,7 @@ function reset(event?: UiEvent<unknown>) {
 }
 
 function load() {
+  console.log("update");
   entryStore.filter(switch_.value, query.value).then((entries_) => {
     entries.value = entries_;
   });
