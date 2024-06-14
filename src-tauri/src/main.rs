@@ -58,6 +58,7 @@ fn main() {
             api::entry_kinds::delete_entry_kind,
             api::entry_kinds::last_entry_kind,
             api::entry_tags::get_entry_tags,
+            api::entry_tags::set_entry_tags,
             api::tags::get_all_tags,
             api::tags::rename_tag,
             api::tags::delete_tag,

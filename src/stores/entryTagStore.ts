@@ -7,4 +7,11 @@ export const entryTagStore = shallowReactive({
       entryId: id,
     });
   },
+
+  async set_tags(id: number, tags: string[]): Promise<string[]> {
+    return invoke("set_entry_tags", {
+      entryId: id,
+      tags,
+    });
+  },
 });

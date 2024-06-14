@@ -78,6 +78,7 @@ import { entryKindStore } from 'stores/entryKindStore';
 import { tagStore } from 'stores/tagStore';
 
 import { useTauriEvent } from 'utils/tauriEvent';
+import dataEvents from 'constants/dataEvents';
 import uiEvents from 'constants/uiEvents';
 
 import FilterSidebarItem, { ItemIcons } from './FilterSidebarItem.vue';
@@ -141,7 +142,7 @@ const defaultItems = (): FilterSidebarItem[] => ([
     icon: "tag",
     value: "Метки",
     subitems: [
-      { icon: "tagUnspecified", value: "Без меток" },
+      // { icon: "tagUnspecified", value: "Без меток" },
     ],
   },
 ]);
@@ -235,6 +236,10 @@ useTauriEvent(uiEvents.InputModal.onResult, (event: UiEvent<unknown>) => {
   }
 });
 
+useTauriEvent(dataEvents.update.tags, () => {
+  tagStore.all();
+});
+
 useTauriEvent(uiEvents.window_open, load);
 
 onMounted(load);
@@ -269,6 +274,7 @@ watch(selectedItem, () => {
 });
 
 watch(decks, () => {
+  items.value[mapIdToItemIdx.decks].subitems = [];
   for (let i = 0; i < decks.value.length; i++) {
     const deck = decks.value[i];
     items.value[mapIdToItemIdx.decks].subitems?.push({
@@ -280,6 +286,7 @@ watch(decks, () => {
 });
 
 watch(entryKinds, () => {
+  items.value[mapIdToItemIdx.entryKinds].subitems = [];
   for (let i = 0; i < entryKinds.value.length; i++) {
     const entryKind = entryKinds.value[i];
     items.value[mapIdToItemIdx.entryKinds].subitems?.push({
@@ -291,6 +298,11 @@ watch(entryKinds, () => {
 });
 
 watch(tags, () => {
+  items.value[mapIdToItemIdx.tags].subitems = [];
+  items.value[mapIdToItemIdx.tags].subitems?.push(
+    { icon: "tagUnspecified", value: "Без меток" },
+  );
+
   for (let i = 0; i < tags.value.length; i++) {
     const tag = tags.value[i];
     items.value[mapIdToItemIdx.tags].subitems?.push({

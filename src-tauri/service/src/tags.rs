@@ -34,7 +34,7 @@ impl TagService {
             .await;
 
             match result {
-                Ok(_) | Err(DbErr::RecordNotInserted) => {}
+                Ok(_) | Err(DbErr::Exec(_)) => {}
                 Err(err) => return Err(err),
             }
         }

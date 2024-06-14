@@ -109,9 +109,13 @@ function handleFieldChange(
   });
 }
 
-function handleTagsChange(event: Event) {
-  console.log(props.entryId);
-  console.log(tagsRef.value?.getTags());
+function handleTagsChange() {
+  if (props.entryId === undefined || !tagsRef.value)
+    return
+
+  entryTagStore.set_tags(props.entryId, tagsRef.value.getTags() ?? []).then(() => {
+    emit(dataEvents.update.tags);
+  });
 }
 
 function clear() {
