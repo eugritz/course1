@@ -1,11 +1,11 @@
 use log::{debug, error};
 use sea_orm::{prelude::Date, DbConn, DbErr, TransactionTrait};
 
-use entity::{entries, entry_field_values, tags};
+use entity::{entries, entry_field_values};
 use service::{
     entry_query_builder::{Card, Entry},
     DeckService, EntryFieldValuesService, EntryKindFieldService, EntryService,
-    EntryTagsService, TagService,
+    EntryTagService, TagService,
 };
 
 fn escape(s: String) -> String {
@@ -157,7 +157,7 @@ pub async fn create_entry(
                 if tags.len() > 0 {
                     TagService::create_tags_if_abscent(txn, tags.clone())
                         .await?;
-                    EntryTagsService::attach_tags_to_entry(txn, entry_id, tags)
+                    EntryTagService::attach_tags_to_entry(txn, entry_id, tags)
                         .await?;
                 }
 

@@ -17,9 +17,9 @@ enum QueryAs {
     Name,
 }
 
-pub struct EntryTagsService;
+pub struct EntryTagService;
 
-impl EntryTagsService {
+impl EntryTagService {
     pub async fn get_entry_tags<'a, C: ConnectionTrait>(
         db: &'a C,
         entry_id: i32,

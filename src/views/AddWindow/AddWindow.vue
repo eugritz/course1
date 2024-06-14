@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { invoke } from '@tauri-apps/api';
-import { Event, emit } from '@tauri-apps/api/event';
+import { Event, TauriEvent, emit } from '@tauri-apps/api/event';
 
 import { Deck } from 'entities/Deck';
 import { EntryKind } from 'entities/EntryKind';
@@ -29,6 +29,7 @@ const createdEntry = ref(false);
 const disabled = ref(false);
 const loading = ref(false);
 
+useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
 useTauriEvent(dataEvents.update.entryKind, load);
 useTauriEvent(uiEvents.EntryKindFilterModal.onResult, handleEntryKindSelected);
 useTauriEvent(uiEvents.DeckFilterModal.onResult, handleDeckSelected);
@@ -39,8 +40,7 @@ onMounted(() => {
 });
 
 function reset() {
-  if (editorRef.value)
-    editorRef.value.clear();
+  editorRef.value?.clear();
 
   createdEntry.value = false;
   disabled.value = false;

@@ -1,5 +1,5 @@
 use log::{debug, error};
-use sea_orm::{DbConn, DbErr};
+use sea_orm::DbConn;
 
 use entity::tags;
 use service::TagService;

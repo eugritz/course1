@@ -11,8 +11,8 @@ pub async fn get_entry_field_values(
 ) -> Result<Vec<EntryFieldValue>, ()> {
     debug!("get_entry_field_values CALL");
     let result = EntryFieldValuesService::find_entry_field_values_extra(
-        state.inner(), 
-        entry_id
+        state.inner(),
+        entry_id,
     )
     .await
     .map_err(|err| {
