@@ -15,8 +15,8 @@
 #[cfg(feature = "serde")]
 pub mod serde;
 
-use super::linked_hash_map as map;
-use super::linked_hash_map::{Keys, LinkedHashMap};
+use linked_hash_map as map;
+use linked_hash_map::{Keys, LinkedHashMap};
 use std::borrow::Borrow;
 use std::collections::hash_map::RandomState;
 use std::fmt;

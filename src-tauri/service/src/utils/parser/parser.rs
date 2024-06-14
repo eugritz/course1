@@ -1,5 +1,5 @@
 use super::{Token, TokenArr, TokenType};
-use crate::ext::linked_hash_set::LinkedHashSet;
+use linked_hash_set::LinkedHashSet;
 use std::{cell::RefCell, collections::BinaryHeap, rc::Rc};
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]

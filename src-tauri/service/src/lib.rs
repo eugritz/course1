@@ -8,7 +8,6 @@ mod entry_kinds;
 mod entry_tags;
 mod tags;
 
-mod ext;
 mod utils;
 
 pub use cards::*;

@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 entity = { path = "../entity" }
+linked_hash_set = { path = "../ext/linked_hash_set" }
 sea-orm = { version = "0.12" }
 serde = { version = "1", features = ["derive"] }
 futures = "0.3.30"

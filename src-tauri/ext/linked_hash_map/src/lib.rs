@@ -28,7 +28,6 @@
 //! assert_eq!(items, [(2, 20), (1, 10), (3, 30)]);
 //! ```
 
-#![forbid(missing_docs)]
 #![cfg_attr(all(feature = "nightly", test), feature(test))]
 
 // Optional Serde support
