@@ -28,16 +28,20 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api';
 import { Event as UiEvent, TauriEvent, emit } from '@tauri-apps/api/event';
 import { showMenu } from 'ext/tauri-plugin-context-menu';
+import "vue-custom-scrollbar/dist/vueScrollbar.css";
+// import VueCustomScrollbar from "vue-custom-scrollbar/src/vue-scrollbar.vue";
 
 import { FilteredCard, FilteredEntry } from 'entities/Entry';
 import { entryStore } from 'stores/entryStore';
 import { useTauriEvent } from 'utils/tauriEvent';
+import { useWindowSize } from 'utils/windowSize';
 import dataEvents from 'constants/dataEvents';
 import uiEvents from 'constants/uiEvents';
 
 import CardSwitch from 'components/CardSwitch.vue';
 import Column from 'components/Column.vue';
 import DataTable, { DataTableExposed } from 'components/DataTable.vue';
+import DataTableHeader, { DataTableHeaderExposed } from 'components/DataTableHeader.vue';
 import FilterSidebar, { FilterSidebarExposed } from 'components/FilterSidebar.vue';
 import Splitter, { SplitterExposed } from 'components/Splitter.vue';
 import SplitterPanel from 'components/SplitterPanel.vue';
@@ -47,7 +51,11 @@ import LoadingBanner from 'components/LoadingBanner.vue';
 const filterSidebarRef = ref<FilterSidebarExposed | null>(null);
 const splitterRef = ref<SplitterExposed | null>(null);
 const dataTableRef = ref<DataTableExposed | null>(null);
+const dataTableHeaderRef = ref<DataTableHeaderExposed | null>(null);
+const headerWrapperRef = ref<HTMLElement | null>(null);
 const editorRef = ref<EditorExposed | null>(null);
+
+const { height } = useWindowSize({ debounce: 100 });
 
 const query = ref("");
 const cardSwitch = ref(false);
@@ -57,6 +65,8 @@ const entries = ref<(FilteredEntry | FilteredCard)[]>([]);
 const orderBy = ref<number | null>(null);
 const order = ref<boolean>(false);
 const selectedEntry = ref<FilteredEntry | FilteredCard | null>(null);
+
+const resizerHeight = ref(0);
 
 function isFilteredCards(_entries: (FilteredEntry | FilteredCard)[]):
   _entries is FilteredCard[]
@@ -174,9 +184,13 @@ onMounted(() => {
   load();
 });
 
+watch(height, () => {
+  if (headerWrapperRef.value)
+    resizerHeight.value = headerWrapperRef.value.offsetHeight;
+});
+
 watch(cardSwitch, () => {
   entries.value = [];
-  
   nextTick(() => {
     filterSidebarRef.value?.reset();
     dataTableRef.value?.reset();
@@ -192,6 +206,10 @@ function reset(event?: UiEvent<unknown>) {
   splitterRef.value?.reset();
   dataTableRef.value?.reset();
   editorRef.value?.reset();
+  if (headerWrapperRef.value) {
+    headerWrapperRef.value.scrollLeft = 4;
+    resizerHeight.value = headerWrapperRef.value.offsetHeight;
+  }
 
   query.value = "";
   cardSwitch.value = false;
@@ -225,6 +243,14 @@ function handleFilter(query_: string) {
 
 function handleSearchEntries() {
   load();
+}
+
+function handleScroll(event: Event) {
+  if (!headerWrapperRef.value)
+    return;
+
+  const target = event.target as HTMLElement;
+  headerWrapperRef.value.scrollLeft = target.scrollLeft + 4;
 }
 
 function handleItemNext() {
@@ -271,37 +297,49 @@ function handleItemContextMenu(
         />
       </div>
       <div class="data-view__data">
+        <div ref="headerWrapperRef" class="data-view__data__header__wrapper">
+          <div>
+            <DataTableHeader
+              :data-table-ref="dataTableRef"
+              :resizer-height="resizerHeight"
+              ref="dataTableHeaderRef"
+              class="data-view__data__header"
+              v-model:order="order"
+              v-model:orderby="orderBy"
+            >
+              <template v-if="!cardSwitch">
+                <Column field="sort_field" header="Основное поле" />
+                <Column field="card_name" header="Карта" />
+                <Column field="next_shown_at" header="Появление" />
+                <Column field="deck_name" header="Колода" />
+              </template>
+              <template v-else>
+                <Column field="sort_field" header="Основное поле" />
+                <Column field="entry_kind_name" header="Вид" />
+                <Column field="card_count" header="Карты" />
+                <Column field="joined_tags" header="Метки" />
+                <Column field="next_shown_at" header="Появление" />
+                <Column field="created_at" header="Создание" />
+              </template>
+            </DataTableHeader>
+          </div>
+        </div>
         <div
-          class="data-view__data__wrapper"
+          class="data-view__data__table__wrapper"
           tabindex="0"
+          @scroll="handleScroll"
           @keydown.down="handleItemNext"
           @keydown.up="handleItemPrev"
         >
           <DataTable
+            :value="sorted"
+            :data-table-header-ref="dataTableHeaderRef"
             ref="dataTableRef"
             tabindex="-1"
             class="data-view__data__table"
             v-model="selectedEntry"
-            v-model:order="order"
-            v-model:orderby="orderBy"
-            :value="sorted"
             @item:contextmenu="handleItemContextMenu"
-          >
-            <template v-if="!cardSwitch">
-              <Column field="sort_field" header="Основное поле" />
-              <Column field="card_name" header="Карта" />
-              <Column field="next_shown_at" header="Появление" />
-              <Column field="deck_name" header="Колода" />
-            </template>
-            <template v-else>
-              <Column field="sort_field" header="Основное поле" />
-              <Column field="entry_kind_name" header="Вид" />
-              <Column field="card_count" header="Карты" />
-              <Column field="joined_tags" header="Метки" />
-              <Column field="next_shown_at" header="Появление" />
-              <Column field="created_at" header="Создание" />
-            </template>
-          </DataTable>
+          />
         </div>
       </div>
     </SplitterPanel>
@@ -358,11 +396,30 @@ function handleItemContextMenu(
   height: 100%;
 }
 
+.data-view__data__header {
+  z-index: 1;
+  position: absolute;
+  padding-top: 1px;
+}
+
 .data-view__data__table {
   outline: none;
 }
 
-.data-view__data__wrapper {
+.data-view__data__header__wrapper {
+  position: absolute;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+
+  > div {
+    width: 100%;
+    height: 100%;
+    margin-left: 4px;
+  }
+}
+
+.data-view__data__table__wrapper {
   position: absolute;
   overflow: auto;
   width: 100%;

@@ -1,27 +1,7 @@
 <script lang="ts">
-export interface DataTableExposed {
-  tableRef: HTMLElement | null,
-  headerRef: HTMLElement | null,
-  resizerRefs: HTMLElement[],
-  selectNext: () => void;
-  selectPrev: () => void;
-  deselect: () => void;
-  reset: () => void;
-}
-
-type RawSlot = {
-  [name: string]: unknown;
-  $stable?: boolean;
-};
-
-function hasSlot(children: VNodeNormalizedChildren, name: string):
-  children is RawSlot
-{
-  return children !== null
-    && !Array.isArray(children)
-    && typeof children !== "string"
-    && children[name] !== undefined
-    && typeof children[name] === "function";
+export interface DataTableHeaderExposed {
+  tableRef: HTMLElement | null;
+  columns: VNode[];
 }
 
 function getColumns(children: VNodeNormalizedChildren) {
@@ -61,81 +41,63 @@ function getColumnMinWidth(el: HTMLElement) {
 }
 </script>
 
-<script setup lang="ts" generic="T">
+<script setup lang="ts">
 import {
   ComponentPublicInstance,
   Fragment,
   VNode,
   VNodeNormalizedChildren,
   computed,
+  getCurrentInstance,
   isVNode,
   nextTick,
-  onMounted,
-  onUnmounted,
   ref,
   useSlots,
   watch,
 } from 'vue';
 
 import Column from './Column.vue';
+import { DataTableExposed } from './DataTable.vue';
 import Resizer from './Resizer.vue';
-import {DataTableHeaderExposed} from './DataTableHeader.vue';
 
 const props = defineProps<{
-  value: T[],
-  dataTableHeaderRef?: DataTableHeaderExposed | null,
-}>();
-
-const emit = defineEmits<{
-  (e: "item:contextmenu", event: MouseEvent, item: T): void,
+  resizerHeight?: number,
+  dataTableRef: DataTableExposed | null,
 }>();
 
 const slots = useSlots();
 
+const hTableRef = ref<HTMLElement | null>(null);
+const hTableRefReadOnly = computed(() => hTableRef.value);
+const tableRef = computed(() => props.dataTableRef?.tableRef);
+const headerRef = ref<HTMLElement | null>(null);
+
 const columns = computed(() => {
-  if (!props.dataTableHeaderRef) {
-    if (!slots || !slots.default)
-      return [];
-    return getColumns(slots.default());
-  } else {
-    return props.dataTableHeaderRef.columns;
-  }
+  if (!slots || !slots.default)
+    return [];
+  return getColumns(slots.default());
 });
 
-const tableRef = ref<HTMLElement | null>(null);
-const tableRefReadOnly = computed(() => tableRef.value);
-const headerRef = ref<HTMLElement | null>();
-const headerRefReadOnly = computed(() => headerRef.value);
 const resizerRefs = ref<HTMLElement[]>([]);
-const resizerRefsReadOnly = computed(() => resizerRefs.value);
 const oldResizersCount = ref(0);
 
+const hResizeCurrentColumn = ref<HTMLElement | null>(null);
 const resizeCurrentColumn = ref<HTMLElement | null>(null);
+const hResizeCurrentColumnWidth = ref<number | null>(null);
 const resizeCurrentColumnWidth = ref<number | null>(null);
-
-const isItemDragging = ref(false);
-const selectedItemIdx = ref<number | null>(null);
-const pickedItem = defineModel<T | null>();
 
 const sortColumnIdx = defineModel<number | null>("orderby");
 const sortDirection = defineModel<boolean>("order"); // true is ASC, false is DESC
 
-onMounted(() => {
-  window.addEventListener("mouseup", handleItemDragStop);
-  reset();
+const instance = getCurrentInstance();
+
+watch([tableRef, columns], () => {
+  instance?.proxy?.$forceUpdate();
+}, {
+  once: true,
 });
 
-onUnmounted(() => {
-  window.removeEventListener("mouseup", handleItemDragStop);
-});
-
-watch(columns, () => {
-  nextTick(() => {
-    reset();
-  });
-});
-
-watch([tableRef, columns, () => props.value], () => {
+watch([tableRef, columns], () => {
   if (!tableRef.value)
     return;
 
@@ -144,6 +106,10 @@ watch([tableRef, columns, () => props.value], () => {
     x.style.height = (tableRef.value?.offsetHeight ?? 0) + "px";
   });
   oldResizersCount.value = resizerRefs.value.length;
+
+  nextTick(() => {
+    reset();
+  });
 });
 
 function reset() {
@@ -152,7 +118,6 @@ function reset() {
 
   sortColumnIdx.value = null;
   sortDirection.value = false;
-  deselect();
 
   for (let i = 0; i < headerRef.value.children.length; i++) {
     const el = headerRef.value.children[i] as HTMLElement;
@@ -172,27 +137,31 @@ function addResizer(ref: Element | ComponentPublicInstance | null) {
 
   if (el.children.length > 1) {
     const resizer = el.getElementsByClassName("resizer--small")[0] as HTMLElement;
-    if (props.dataTableHeaderRef)
-      resizer.style.height = "0px";
+    if (props.resizerHeight)
+      resizer.style.height = props.resizerHeight + "px";
     else
       resizer.style.height = (tableRef.value?.offsetHeight ?? 0) + "px";
     resizerRefs.value.push(resizer);
   }
 }
 
-function handleResizeStart(event: MouseEvent) {
+function handleResizeStart(event: MouseEvent, columnIdx: number) {
   const resizer = event.target as HTMLElement;
 
-  const current = resizer.parentElement;
-  if (!current)
+  const hCurrent = resizer.parentElement;
+  const current = props.dataTableRef?.resizerRefs[columnIdx].parentElement;
+  if (!current || !hCurrent)
     return;
 
+  hResizeCurrentColumn.value = hCurrent;
   resizeCurrentColumn.value = current;
+  hResizeCurrentColumnWidth.value = hCurrent.offsetWidth;
   resizeCurrentColumnWidth.value = current.offsetWidth;
 }
 
 function handleResize(event: MouseEvent, start: MouseEvent) {
-  if (!resizeCurrentColumn.value || !resizeCurrentColumnWidth.value)
+  if (!resizeCurrentColumn.value || !resizeCurrentColumnWidth.value
+    || !hResizeCurrentColumn.value || !hResizeCurrentColumnWidth.value)
     return;
 
   const dx = event.clientX - start.clientX;
@@ -201,28 +170,8 @@ function handleResize(event: MouseEvent, start: MouseEvent) {
   if (currentNewWidth < parseInt(resizeCurrentColumn.value.style.width))
     return;
 
+  hResizeCurrentColumn.value.style.minWidth = currentNewWidth + "px";
   resizeCurrentColumn.value.style.minWidth = currentNewWidth + "px";
-}
-
-function handleItemDragStart(item: number, event: MouseEvent) {
-  if (event.button === 0)
-    isItemDragging.value = true;
-  selectedItemIdx.value = item;
-}
-
-function handleItemDragUpdate(item: number) {
-  if (!isItemDragging.value)
-    return;
-
-  selectedItemIdx.value = item;
-}
-
-function handleItemDragStop() {
-  if (selectedItemIdx.value === null)
-    return;
-
-  isItemDragging.value = false;
-  pickedItem.value = props.value[selectedItemIdx.value];
 }
 
 function handleColumnHeaderClick(idx: number) {
@@ -241,42 +190,14 @@ function handleColumnHeaderClick(idx: number) {
   sortColumnIdx.value = idx;
 }
 
-function selectNext() {
-  if (selectedItemIdx.value === null) {
-    selectedItemIdx.value = 0;
-  } else if (selectedItemIdx.value + 1 < props.value.length) {
-    selectedItemIdx.value++;
-  }
-  pickedItem.value = props.value[selectedItemIdx.value];
-}
-
-function selectPrev() {
-  if (!selectedItemIdx.value) {
-    selectedItemIdx.value = 0;
-  } else {
-    selectedItemIdx.value--;
-  }
-  pickedItem.value = props.value[selectedItemIdx.value];
-}
-
-function deselect() {
-  selectedItemIdx.value = null;
-  pickedItem.value = null;
-}
-
 defineExpose({
-  tableRef: tableRefReadOnly,
-  headerRef: headerRefReadOnly,
-  resizerRefs: resizerRefsReadOnly,
-  selectNext,
-  selectPrev,
-  deselect,
-  reset,
+  tableRef: hTableRefReadOnly,
+  columns,
 });
 </script>
 
 <template>
-  <table ref="tableRef">
+  <table tabindex="-1" ref="hTableRef">
     <thead>
       <tr ref="headerRef">
         <th
@@ -304,29 +225,15 @@ defineExpose({
           <Resizer
             v-if="idx !== columns.length - 1"
             :icon="false"
-            @resizestart="handleResizeStart"
+            @resizestart="handleResizeStart($event, idx)"
             @resize="handleResize"
           />
         </th>
       </tr>
     </thead>
     <tbody>
-      <tr
-        v-for="(row, idx) in value"
-        :class="{ 'selected': selectedItemIdx === idx }"
-        @mousedown="handleItemDragStart(idx, $event)"
-        @mouseenter="handleItemDragUpdate(idx)"
-        @contextmenu="$emit('item:contextmenu', $event, row)"
-      >
-        <td v-for="column in columns">
-          <div v-if="hasSlot(column.children, 'body')">
-            <component :is="() => ((column.children as RawSlot)['body'] as Function)(row)" />
-          </div>
-          <span v-else>
-            {{column.props?.field
-              ? row[column.props.field as keyof T]
-              : column.props?.value ?? ""}}
-          </span>
+      <tr>
+        <td v-for="_column in columns">
         </td>
       </tr>
     </tbody>
@@ -394,16 +301,8 @@ thead > tr > th > div {
   }
 }
 
-tbody > tr:nth-of-type(odd) {
-  background-color: #272727;
-}
-
-tbody > tr:nth-of-type(even) {
-  background-color: #2f2f2f;
-}
-
-tr {
-  @include user-select-none;
+tbody {
+  opacity: 0;
 }
 
 th {
@@ -422,7 +321,7 @@ th > div:first-child {
 
 td {
   max-width: 0px;
-  padding: 1px 4px;
+  padding: 0px 4px;
   text-align: left;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -431,9 +330,5 @@ td {
 
 td:last-child {
   width: 100%;
-}
-
-.selected {
-  background-color: $selection-background-color !important;
 }
 </style>
