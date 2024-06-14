@@ -6,10 +6,12 @@ use ::entity::{
     cards, decks, entries, entry_field_values, entry_kind_default_field,
     entry_kinds, entry_tags, tags,
 };
-use futures::{TryStreamExt, FutureExt, StreamExt};
+use futures::{FutureExt, StreamExt, TryStreamExt};
 use sea_orm::{
     entity::prelude::{Date, DateTimeUtc, Expr},
-    sea_query::{Alias, ConditionExpression, IntoCondition, LikeExpr, Query, Asterisk},
+    sea_query::{
+        Alias, Asterisk, ConditionExpression, IntoCondition, LikeExpr, Query,
+    },
     *,
 };
 use serde::{Deserialize, Serialize};
@@ -25,6 +27,7 @@ pub struct Entry {
     pub deck_name: String,
     pub card_count: i32,
     pub tags: Vec<String>,
+    pub joined_tags: String,
     pub color_tag: i32,
     pub progress: f64,
     pub created_at: Date,
@@ -109,7 +112,10 @@ impl<'a, C: ConnectionTrait + StreamTrait> EntryQueryBuilder<'a, C> {
             .or_else(|_| self.get_condition(fallback))
             .map_err(|_| DbErr::Custom("parsing error".to_string()))?;
 
-        let q = self.query.take().unwrap();
+        let q = self
+            .query
+            .take()
+            .ok_or(DbErr::Custom("query take failed".to_string()))?;
         let mut q1 = Query::select();
         let q = q1
             .column((Alias::new("filtered"), Asterisk))
@@ -142,23 +148,19 @@ impl<'a, C: ConnectionTrait + StreamTrait> EntryQueryBuilder<'a, C> {
                 JoinType::LeftJoin,
                 entry_tags::Entity,
                 Expr::col((Alias::new("filtered"), Alias::new("entry_id")))
-                    .equals((entry_tags::Entity, entry_tags::Column::EntryId))
+                    .equals((entry_tags::Entity, entry_tags::Column::EntryId)),
             )
             .join(
                 JoinType::LeftJoin,
                 tags::Entity,
                 Expr::col((entry_tags::Entity, entry_tags::Column::TagId))
-                    .equals((tags::Entity, tags::Column::Id))
+                    .equals((tags::Entity, tags::Column::Id)),
             );
 
         let builder = self.db.get_database_backend();
         let q = builder.build(q);
-
         println!("{}", q.to_string());
-
-        let mut stream = self.db
-            .stream(q)
-            .await?;
+        let stream = self.db.stream(q).await?;
         futures::pin_mut!(stream);
 
         let mut entries = Vec::<Entry>::new();
@@ -175,14 +177,20 @@ impl<'a, C: ConnectionTrait + StreamTrait> EntryQueryBuilder<'a, C> {
                 color_tag: entry.try_get_by_index::<i32>(3).unwrap(),
                 progress: entry.try_get_by_index::<f64>(4).unwrap(),
                 created_at: entry.try_get_by_index::<Date>(5).unwrap(),
-                last_shown_at: entry.try_get_by_index::<Option<DateTimeUtc>>(6).unwrap(),
-                next_shown_at: entry.try_get_by_index::<Option<DateTimeUtc>>(7).unwrap(),
+                last_shown_at: entry
+                    .try_get_by_index::<Option<DateTimeUtc>>(6)
+                    .unwrap(),
+                next_shown_at: entry
+                    .try_get_by_index::<Option<DateTimeUtc>>(7)
+                    .unwrap(),
             };
 
             if entry.tag_name.is_some() {
                 if let Some(last) = entries.last_mut() {
                     if last.id == entry.id {
-                        last.tags.push(entry.tag_name.unwrap());
+                        last.tags.push(entry.tag_name.clone().unwrap());
+                        last.joined_tags += ", ";
+                        last.joined_tags += entry.tag_name.unwrap().as_str();
                         continue;
                     }
                 }
@@ -196,7 +204,8 @@ impl<'a, C: ConnectionTrait + StreamTrait> EntryQueryBuilder<'a, C> {
                 deck_id: entry.deck_id,
                 deck_name: entry.deck_name,
                 card_count: entry.card_count,
-                tags: entry.tag_name.map(|x| vec![x]).unwrap_or(vec![]),
+                tags: entry.tag_name.clone().map(|x| vec![x]).unwrap_or(vec![]),
+                joined_tags: entry.tag_name.unwrap_or("".to_string()),
                 color_tag: entry.color_tag,
                 progress: entry.progress,
                 created_at: entry.created_at,
@@ -229,12 +238,15 @@ impl<'a, C: ConnectionTrait + StreamTrait> EntryQueryBuilder<'a, C> {
             )
         });
 
-        self.query
+        let q = self
+            .query
             .take()
-            .ok_or(DbErr::Custom("query take failed".to_string()))?
-            .into_model::<Card>()
-            .all(self.db)
-            .await
+            .ok_or(DbErr::Custom("query take failed".to_string()))?;
+        println!(
+            "{}",
+            q.clone().build(self.db.get_database_backend()).to_string()
+        );
+        q.into_model::<Card>().all(self.db).await
     }
 
     fn sort_field<E: EntityTrait>(q: Select<E>) -> Select<E> {

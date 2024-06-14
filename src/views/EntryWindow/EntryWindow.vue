@@ -63,7 +63,6 @@ function reset(event?: UiEvent<unknown>) {
 }
 
 function load() {
-  console.log("update");
   entryStore.filter(switch_.value, query.value).then((entries_) => {
     entries.value = entries_;
   });
@@ -126,22 +125,14 @@ function handleItemPrev() {
             <template v-if="!cardSwitch">
               <Column field="sort_field" header="Основное поле" />
               <Column field="card_name" header="Карта" />
-              <Column field="next_shown_at" header="Появление">
-                <template #body="slotProps">
-                  {{slotProps.next_shown_at ?? "#"}}
-                </template>
-              </Column>
+              <Column field="next_shown_at" header="Появление" />
               <Column field="deck_name" header="Колода" />
             </template>
             <template v-else>
               <Column field="sort_field" header="Основное поле" />
               <Column field="entry_kind_name" header="Вид" />
               <Column field="card_count" header="Карты" />
-              <Column field="tags" header="Метки">
-                <template #body="slotProps">
-                  {{slotProps.tags && slotProps.tags.join(", ")}}
-                </template>
-              </Column>
+              <Column field="joined_tags" header="Метки" />
               <Column field="next_shown_at" header="Появление" />
               <Column field="created_at" header="Создание" />
             </template>

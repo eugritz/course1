@@ -18,6 +18,7 @@ export interface FilteredEntry {
   deck_name: number;
   card_count: number;
   tags: string[];
+  joined_tags: string;
   color_tag: number;
   progress: number;
   created_at: Date;

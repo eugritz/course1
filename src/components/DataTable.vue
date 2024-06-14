@@ -5,33 +5,15 @@ export interface DataTableExposed {
   deselect: () => void;
   reset: () => void;
 }
-</script>
-
-<script setup lang="ts" generic="T">
-import {
-  ComponentPublicInstance,
-  Fragment,
-  VNode,
-  VNodeNormalizedChildren,
-  computed,
-  isVNode,
-  nextTick,
-  onMounted,
-  onUnmounted,
-  ref,
-  useSlots,
-  watch,
-} from 'vue';
-
-import Column from './Column.vue';
-import Resizer from './Resizer.vue';
 
 type RawSlot = {
   [name: string]: unknown;
   $stable?: boolean;
 };
 
-function hasSlot(children: VNodeNormalizedChildren, name: string): children is RawSlot {
+function hasSlot(children: VNodeNormalizedChildren, name: string):
+  children is RawSlot
+{
   return children !== null
     && !Array.isArray(children)
     && typeof children !== "string"
@@ -58,11 +40,49 @@ function getColumns(children: VNodeNormalizedChildren) {
   return columns;
 }
 
+function getColumnMinWidth(el: HTMLElement) {
+  let textWidth = 0;
+  let sortWidth = 0;
+
+  const textEl = el.getElementsByTagName("span");
+  if (textEl.length > 0) {
+    textWidth = textEl[0].getBoundingClientRect().width;
+  }
+
+  const sortEl = el.getElementsByClassName("sort");
+  if (sortEl.length > 0) {
+    sortWidth = sortEl[0].getBoundingClientRect().width;
+  }
+
+  return textWidth + sortWidth + 16;
+}
+</script>
+
+<script setup lang="ts" generic="T">
+import {
+  ComponentPublicInstance,
+  Fragment,
+  VNode,
+  VNodeNormalizedChildren,
+  computed,
+  isVNode,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  useSlots,
+  watch,
+} from 'vue';
+
+import Column from './Column.vue';
+import Resizer from './Resizer.vue';
+
 const props = defineProps<{
   value: T[],
 }>();
 
 const slots = useSlots();
+
 const columns = computed(() => {
   if (!slots || !slots.default)
     return [];
@@ -110,23 +130,6 @@ watch([table, columns, () => props.value], () => {
   oldResizersCount.value = resizers.value.length;
 });
 
-function getColumnMinWidth(el: HTMLElement) {
-  let textWidth = 0;
-  let sortWidth = 0;
-
-  const textEl = el.getElementsByTagName("span");
-  if (textEl.length > 0) {
-    textWidth = textEl[0].getBoundingClientRect().width;
-  }
-
-  const sortEl = el.getElementsByClassName("sort");
-  if (sortEl.length > 0) {
-    sortWidth = sortEl[0].getBoundingClientRect().width;
-  }
-
-  return textWidth + sortWidth + 16;
-}
-
 function reset() {
   if (!header.value)
     return;
@@ -134,6 +137,7 @@ function reset() {
   sortColumnIdx.value = null;
   sortDirection.value = false;
   deselect();
+
   for (let i = 0; i < header.value.children.length; i++) {
     const el = header.value.children[i] as HTMLElement;
     const minWidth = getColumnMinWidth(el);
