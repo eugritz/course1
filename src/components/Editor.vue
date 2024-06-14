@@ -15,6 +15,7 @@ import { emit } from '@tauri-apps/api/event';
 import { EntryFieldValueExtra } from 'entities/EntryFieldValue';
 import { EntryKindField } from 'entities/EntryKindField';
 
+import { entryStore } from 'stores/entryStore';
 import { entryFieldValueStore } from 'stores/entryFieldValueStore';
 import { entryKindFieldStore } from 'stores/entryKindFieldStore';
 import { entryTagStore } from 'stores/entryTagStore';
@@ -104,8 +105,14 @@ function handleFieldChange(
     return;
 
   const target = event.target as HTMLInputElement;
+  const cancel = setTimeout(() => {
+    entryStore.loading = true;
+  }, 50);
   entryFieldValueStore.update(field.id, target.value).then(() => {
-    emit(dataEvents.update.entryFieldValue);
+    emit(dataEvents.update.entryFieldValue).then(() => {
+      clearTimeout(cancel);
+      entryStore.loading = false;
+    });
   });
 }
 
@@ -113,8 +120,14 @@ function handleTagsChange() {
   if (props.entryId === undefined || !tagsRef.value)
     return
 
+  const cancel = setTimeout(() => {
+    entryStore.loading = true;
+  }, 50);
   entryTagStore.set_tags(props.entryId, tagsRef.value.getTags() ?? []).then(() => {
-    emit(dataEvents.update.tags);
+    emit(dataEvents.update.tags).then(() => {
+      clearTimeout(cancel);
+      entryStore.loading = false;
+    });
   });
 }
 

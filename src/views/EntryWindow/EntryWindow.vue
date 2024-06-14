@@ -24,7 +24,7 @@ function compareDates(a: Date | null, b: Date | null, order: boolean): number {
 </script>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api';
 import { Event as UiEvent, TauriEvent, emit } from '@tauri-apps/api/event';
 import { showMenu } from 'ext/tauri-plugin-context-menu';
@@ -42,6 +42,7 @@ import FilterSidebar, { FilterSidebarExposed } from 'components/FilterSidebar.vu
 import Splitter, { SplitterExposed } from 'components/Splitter.vue';
 import SplitterPanel from 'components/SplitterPanel.vue';
 import Editor, { EditorExposed } from 'components/Editor.vue';
+import LoadingBanner from 'components/LoadingBanner.vue';
 
 const filterSidebarRef = ref<FilterSidebarExposed | null>(null);
 const splitterRef = ref<SplitterExposed | null>(null);
@@ -147,8 +148,13 @@ useTauriEvent(uiEvents.ConfirmationModal.onResult, (event: UiEvent<unknown>) => 
 
   switch (payload.id) {
     case "deleteEntry":
+      const cancel = setTimeout(() => {
+        entryStore.loading = true;
+      }, 50);
       entryStore.delete(parseInt(payload.payload)).then(() => {
         emit(dataEvents.update.entry);
+        clearTimeout(cancel);
+        entryStore.loading = false;
       });
       break;
     default:
@@ -169,11 +175,12 @@ onMounted(() => {
 });
 
 watch(cardSwitch, () => {
-  filterSidebarRef.value?.reset();
-  dataTableRef.value?.reset();
-
-  entryStore.filter(switch_.value, query.value).then((entries_) => {
-    entries.value = entries_;
+  entries.value = [];
+  
+  nextTick(() => {
+    filterSidebarRef.value?.reset();
+    dataTableRef.value?.reset();
+    load();
   });
 });
 
@@ -192,22 +199,32 @@ function reset(event?: UiEvent<unknown>) {
 }
 
 function load() {
+  const isLoading = entryStore.loading;
+  let cancel: Timer | null = null;
+  if (!isLoading) {
+    cancel = setTimeout(() => {
+      entryStore.loading = true;
+    }, 50);
+  }
+
   entryStore.filter(switch_.value, query.value).then((entries_) => {
     entries.value = entries_;
+    if (!isLoading) {
+      clearTimeout(cancel!);
+      entryStore.loading = false;
+    }
   });
 }
 
 function handleFilter(query_: string) {
-  query.value = query_;
-  entryStore.filter(switch_.value, query.value).then((entries_) => {
-    entries.value = entries_;
-  });
+  if (query.value !== query_) {
+    query.value = query_;
+    load();
+  }
 }
 
 function handleSearchEntries() {
-  entryStore.filter(switch_.value, query.value).then((entries_) => {
-    entries.value = entries_;
-  });
+  load();
 }
 
 function handleItemNext() {
@@ -294,6 +311,7 @@ function handleItemContextMenu(
       </div>
     </SplitterPanel>
   </Splitter>
+  <LoadingBanner v-model="entryStore.loading" />
 </template>
 
 <style scoped lang="scss">

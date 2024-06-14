@@ -3,6 +3,8 @@ import { shallowReactive } from "vue";
 import { Entry, FilteredCard, FilteredEntry } from "entities/Entry";
 
 export const entryStore = shallowReactive({
+  loading: false,
+
   async filter(switch_: "entries" | "cards", query?: string):
     Promise<(FilteredEntry | FilteredCard)[]>
   {
