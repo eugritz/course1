@@ -18,7 +18,7 @@ pub struct Tokenizer {
     cur: RefCell<usize>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TokenArr(pub(super) Vec<Token>);
 
 impl Tokenizer {
@@ -47,7 +47,8 @@ impl Tokenizer {
     }
 
     pub fn is_punctuation(ch: char) -> bool {
-        !ch.is_alphanumeric()
+        ch != '_'
+            && !ch.is_alphanumeric()
             && !ch.is_ascii_digit()
             && !Tokenizer::is_quote(ch)
     }

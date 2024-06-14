@@ -97,7 +97,7 @@ impl Ord for TokenNode {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NodeArr(pub(super) Vec<Node>);
 
 impl NodeArr {

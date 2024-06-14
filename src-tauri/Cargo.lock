@@ -3890,6 +3890,7 @@ version = "0.1.0"
 dependencies = [
  "entity",
  "futures",
+ "log",
  "sea-orm",
  "serde",
 ]

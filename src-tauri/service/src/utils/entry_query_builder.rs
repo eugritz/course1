@@ -6,7 +6,8 @@ use ::entity::{
     cards, decks, entries, entry_field_values, entry_kind_default_field,
     entry_kinds, entry_tags, tags,
 };
-use futures::{FutureExt, StreamExt, TryStreamExt};
+use futures::TryStreamExt;
+use log::{debug, error};
 use sea_orm::{
     entity::prelude::{Date, DateTimeUtc, Expr},
     sea_query::{
@@ -159,7 +160,7 @@ impl<'a, C: ConnectionTrait + StreamTrait> EntryQueryBuilder<'a, C> {
 
         let builder = self.db.get_database_backend();
         let q = builder.build(q);
-        println!("{}", q.to_string());
+        debug!("{}", q.to_string());
         let stream = self.db.stream(q).await?;
         futures::pin_mut!(stream);
 
@@ -242,7 +243,7 @@ impl<'a, C: ConnectionTrait + StreamTrait> EntryQueryBuilder<'a, C> {
             .query
             .take()
             .ok_or(DbErr::Custom("query take failed".to_string()))?;
-        println!(
+        debug!(
             "{}",
             q.clone().build(self.db.get_database_backend()).to_string()
         );
@@ -412,9 +413,33 @@ impl<'a, C: ConnectionTrait + StreamTrait> EntryQueryBuilder<'a, C> {
 
     fn get_condition(&self, source: String) -> Result<Condition, ()> {
         let tokens = Tokenizer::from(source);
-        let nodes = Parser::from(tokens).map_err(|_| ())?;
-        let expr = nodes.try_into_expr().ok_or(())?;
-        let cond = self.parse_node(Box::new(expr)).ok_or(())?;
+        let nodes = Parser::from(tokens.clone()).map_err(|_| ());
+        if nodes.is_err() {
+            debug!("get_condition tokens = {:?}", tokens);
+            error!("get_condition nodes = {:?}", nodes.unwrap_err());
+            return Err(());
+        }
+
+        let nodes = nodes.unwrap();
+        let expr = nodes.clone().try_into_expr().ok_or(());
+        if expr.is_err() {
+            debug!("get_condition tokens = {:?}", tokens);
+            debug!("get_condition nodes = {:?}", nodes);
+            error!("get_condition expr = {:?}", expr.unwrap_err());
+            return Err(());
+        }
+
+        let expr = expr.unwrap();
+        let cond = self.parse_node(Box::new(expr.clone())).ok_or(());
+        if cond.is_err() {
+            debug!("get_condition tokens = {:?}", tokens);
+            debug!("get_condition nodes = {:?}", nodes);
+            debug!("get_condition expr = {:?}", expr);
+            error!("get_condition cond = {:?}", cond.unwrap_err());
+            return Err(());
+        }
+
+        let cond = cond.unwrap();
         Ok(Condition::all().add(cond))
     }
 }
