@@ -26,7 +26,7 @@ pub struct Entry {
     pub entry_kind_name: String,
     pub deck_id: i32,
     pub deck_name: String,
-    pub card_count: i32,
+    pub card_count: usize,
     pub tags: Vec<String>,
     pub joined_tags: String,
     pub color_tag: i32,
@@ -186,13 +186,20 @@ impl<'a, C: ConnectionTrait + StreamTrait> EntryQueryBuilder<'a, C> {
                     .unwrap(),
             };
 
-            if entry.tag_name.is_some() {
-                if let Some(last) = entries.last_mut() {
+            if let Some(last) = entries.last_mut() {
+                if entry.tag_name.is_some() {
                     if last.id == entry.id {
                         last.tags.push(entry.tag_name.clone().unwrap());
                         last.joined_tags += ", ";
                         last.joined_tags += entry.tag_name.unwrap().as_str();
                         continue;
+                    }
+                }
+
+                if last.id != entry.id {
+                    let tag_count = last.tags.len();
+                    if tag_count > 0 {
+                        last.card_count /= tag_count;
                     }
                 }
             }
@@ -204,7 +211,7 @@ impl<'a, C: ConnectionTrait + StreamTrait> EntryQueryBuilder<'a, C> {
                 entry_kind_name: entry.entry_kind_name,
                 deck_id: entry.deck_id,
                 deck_name: entry.deck_name,
-                card_count: entry.card_count,
+                card_count: entry.card_count as usize,
                 tags: entry.tag_name.clone().map(|x| vec![x]).unwrap_or(vec![]),
                 joined_tags: entry.tag_name.unwrap_or("".to_string()),
                 color_tag: entry.color_tag,
