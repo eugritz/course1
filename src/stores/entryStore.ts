@@ -30,4 +30,12 @@ export const entryStore = shallowReactive({
       tags,
     });
   },
+
+  async delete(
+    id: number,
+  ): Promise<void> {
+    return invoke("delete_entry", {
+      entryId: id,
+    });
+  },
 });

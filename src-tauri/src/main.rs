@@ -48,6 +48,7 @@ fn main() {
             api::entries::filter_cards,
             api::entries::filter_entries,
             api::entries::create_entry,
+            api::entries::delete_entry,
             api::entry_field_values::get_entry_field_values,
             api::entry_field_values::update_entry_field_value,
             api::entry_kind_fields::get_entry_kind_fields,

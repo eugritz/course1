@@ -81,6 +81,10 @@ const props = defineProps<{
   value: T[],
 }>();
 
+const emit = defineEmits<{
+  (e: "item:contextmenu", event: MouseEvent, item: T): void,
+}>();
+
 const slots = useSlots();
 
 const columns = computed(() => {
@@ -294,6 +298,7 @@ defineExpose({
         :class="{ 'selected': selectedItemIdx === idx }"
         @mousedown="handleItemDragStart(idx, $event)"
         @mouseenter="handleItemDragUpdate(idx)"
+        @contextmenu="$emit('item:contextmenu', $event, row)"
       >
         <td v-for="column in columns">
           <div v-if="hasSlot(column.children, 'body')">

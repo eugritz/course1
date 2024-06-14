@@ -25,7 +25,9 @@ function compareDates(a: Date | null, b: Date | null, order: boolean): number {
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
-import { Event as UiEvent, TauriEvent } from '@tauri-apps/api/event';
+import { invoke } from '@tauri-apps/api';
+import { Event as UiEvent, TauriEvent, emit } from '@tauri-apps/api/event';
+import { showMenu } from 'ext/tauri-plugin-context-menu';
 
 import { FilteredCard, FilteredEntry } from 'entities/Entry';
 import { entryStore } from 'stores/entryStore';
@@ -118,8 +120,42 @@ const sorted = computed(() => {
       default:
         return entries.value;
     }
+  } else {
+    return entries.value;
   }
 });
+
+useTauriEvent("menu:deleteEntry", (event: UiEvent<unknown>) => {
+  const payload = event.payload as string;
+  invoke(uiEvents.ConfirmationModal.open, {
+    id: "deleteEntry",
+    title: "Удалить запись",
+    message: "Вы уверены, что хотите удалить запись?",
+    payload,
+  });
+});
+
+useTauriEvent(uiEvents.ConfirmationModal.onResult, (event: UiEvent<unknown>) => {
+  const payload = event.payload as {
+    id: string,
+    button: number,
+    payload: string,
+  };
+
+  if (payload.button !== 1)
+    return;
+
+  switch (payload.id) {
+    case "deleteEntry":
+      entryStore.delete(parseInt(payload.payload)).then(() => {
+        emit(dataEvents.update.entry);
+      });
+      break;
+    default:
+      break;
+  }
+});
+
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
 useTauriEvent(dataEvents.update.entry, load);
@@ -183,6 +219,22 @@ function handleItemPrev() {
   if (dataTableRef.value)
     dataTableRef.value.selectPrev();
 }
+
+function handleItemContextMenu(
+  event: MouseEvent,
+  item: FilteredEntry | FilteredCard
+) {
+  event.preventDefault();
+  showMenu({
+    items: [
+      {
+        label: "Удалить",
+        event: "menu:deleteEntry",
+        payload: item.id.toString(),
+      },
+    ],
+  });
+}
 </script>
 
 <template>
@@ -216,6 +268,7 @@ function handleItemPrev() {
             v-model:order="order"
             v-model:orderby="orderBy"
             :value="sorted"
+            @item:contextmenu="handleItemContextMenu"
           >
             <template v-if="!cardSwitch">
               <Column field="sort_field" header="Основное поле" />

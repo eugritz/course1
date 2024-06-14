@@ -25,4 +25,16 @@ impl EntryService {
         .save(db)
         .await
     }
+
+    pub async fn delete_entry<'a, C: ConnectionTrait>(
+        db: &'a C,
+        form_data: entries::Model,
+    ) -> Result<DeleteResult, DbErr> {
+        entries::ActiveModel {
+            id: Set(form_data.id),
+            ..Default::default()
+        }
+        .delete(db)
+        .await
+    }
 }
