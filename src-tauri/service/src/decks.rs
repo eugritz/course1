@@ -1,4 +1,4 @@
-use ::entity::decks;
+use ::entity::{entries, decks};
 use sea_orm::*;
 
 pub struct DeckService;
@@ -13,10 +13,19 @@ impl DeckService {
     pub async fn find_last_deck<'a, C: ConnectionTrait>(
         db: &'a C,
     ) -> Result<Option<decks::Model>, DbErr> {
-        decks::Entity::find()
-            .order_by_desc(decks::Column::Id)
-            .one(db)
-            .await
+        let deck_id: Vec<(i32, i32)> = entries::Entity::find()
+            .select_only()
+            .column_as(entries::Column::Id.max(), "entry_id")
+            .column_as(entries::Column::DeckId, "deck_id")
+            .into_tuple()
+            .all(db)
+            .await?;
+
+        if deck_id.is_empty() {
+            decks::Entity::find().one(db).await
+        } else {
+            decks::Entity::find_by_id(deck_id[0].1).one(db).await
+        }
     }
 
     pub async fn create_deck<'a, C: ConnectionTrait>(
