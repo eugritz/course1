@@ -6,6 +6,7 @@ use std::{cell::RefCell, collections::BinaryHeap, rc::Rc};
 pub enum Operator {
     And,
     Colon,
+    ColonNot,
     Or,
 }
 
@@ -21,6 +22,7 @@ impl Operator {
             TokenType::Punctuation => match token.source.as_str() {
                 "&&" => Some(Operator::And),
                 ":" => Some(Operator::Colon),
+                ":-" => Some(Operator::ColonNot),
                 "||" => Some(Operator::Or),
                 _ => None,
             },
@@ -31,6 +33,7 @@ impl Operator {
     pub fn precedence(&self) -> usize {
         match *self {
             Self::Colon => 1,
+            Self::ColonNot => 1,
             Self::And => 2,
             Self::Or => 3,
         }
@@ -275,7 +278,10 @@ impl Parser {
     pub fn parse_expr(&self, token_node: Rc<TokenNode>) -> TokenParseState {
         match &*token_node.either.borrow() {
             TokenParseState::Operator(operator) => match operator {
-                Operator::And | Operator::Colon | Operator::Or => {
+                Operator::And
+                | Operator::Colon
+                | Operator::ColonNot
+                | Operator::Or => {
                     let lhs = self.tokens.borrow_mut().take_prev(&token_node);
                     if lhs.is_none() {
                         return TokenParseState::Error(

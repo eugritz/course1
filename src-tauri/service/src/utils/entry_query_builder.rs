@@ -334,6 +334,9 @@ impl<'a, C: ConnectionTrait + StreamTrait> EntryQueryBuilder<'a, C> {
             Node::BinaryExpr { op, lhs, rhs } => match op {
                 super::parser::Operator::And => self.parse_and(lhs, rhs),
                 super::parser::Operator::Colon => self.parse_colon(lhs, rhs),
+                super::parser::Operator::ColonNot => {
+                    self.parse_colon_not(lhs, rhs)
+                }
                 super::parser::Operator::Or => self.parse_or(lhs, rhs),
             },
             Node::StringLit(string) => Some(
@@ -394,6 +397,58 @@ impl<'a, C: ConnectionTrait + StreamTrait> EntryQueryBuilder<'a, C> {
                         Some(tags::Column::Name.eq(value).into())
                     }
                 }
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    fn parse_colon_not(
+        &self,
+        lhs: Box<Node>,
+        rhs: Box<Node>,
+    ) -> Option<ConditionExpression> {
+        let value = match *rhs {
+            Node::StringLit(string) => Some(string),
+            _ => None,
+        }?;
+        match *lhs {
+            Node::StringLit(string) => match string.to_lowercase().as_str() {
+                "колода" => Some(
+                    Expr::col(Alias::new("deck_name")).eq(value).not().into(),
+                ),
+                "вид" => {
+                    self.query.replace_with(|q| {
+                        let q = q.take()?;
+                        Some(self.entry_kind(q))
+                    });
+
+                    Some(
+                        Expr::col(Alias::new("entry_kind_name"))
+                            .eq(value)
+                            .not()
+                            .into(),
+                    )
+                }
+                "метка" => Some(
+                    entries::Column::Id
+                        .not_in_subquery(
+                            entries::Entity::find()
+                                .select_only()
+                                .column(entries::Column::Id)
+                                .join(
+                                    JoinType::FullOuterJoin,
+                                    entries::Relation::EntryTags.def(),
+                                )
+                                .join(
+                                    JoinType::FullOuterJoin,
+                                    entry_tags::Relation::Tags.def(),
+                                )
+                                .filter(tags::Column::Name.eq(value))
+                                .into_query(),
+                        )
+                        .into(),
+                ),
                 _ => None,
             },
             _ => None,

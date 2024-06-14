@@ -180,16 +180,19 @@ pub async fn delete_entry(
     entry_id: i32,
 ) -> Result<(), ()> {
     debug!("delete_entry CALL");
-    EntryService::delete_entry(state.inner(), entries::Model {
-        id: entry_id,
-        entry_kind_id: 0,
-        deck_id: 0,
-        color_tag: 0,
-        progress: 0.0,
-        created_at: Default::default(),
-        last_shown_at: None,
-        next_shown_at: None,
-    })
+    EntryService::delete_entry(
+        state.inner(),
+        entries::Model {
+            id: entry_id,
+            entry_kind_id: 0,
+            deck_id: 0,
+            color_tag: 0,
+            progress: 0.0,
+            created_at: Default::default(),
+            last_shown_at: None,
+            next_shown_at: None,
+        },
+    )
     .await
     .map_err(|err| {
         error!("delete_entry ERROR {}", err.to_string());
