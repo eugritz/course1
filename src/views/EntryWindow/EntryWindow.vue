@@ -1,3 +1,28 @@
+<script lang="ts">
+function compareNumbers(a: number, b: number, order: boolean): number {
+  const order_ = order ? 1 : -1;
+  return order_ * (a - b);
+}
+
+function compareStrings(a: string, b: string, order: boolean): number {
+  const order_ = order ? 1 : -1;
+  return order_ * ((a > b) ? 1 : ((a < b) ? -1 : 0));
+}
+
+function compareDates(a: Date | null, b: Date | null, order: boolean): number {
+  if (a === null && b === null)
+    return 0;
+  else if (a === null && b !== null)
+    return 1;
+  else if (a !== null && b === null)
+    return -1;
+
+  const order_ = order ? 1 : -1;
+  // @ts-ignore 18047
+  return order_ * ((a > b) ? 1 : ((a < b) ? -1 : 0));
+}
+</script>
+
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { Event as UiEvent, TauriEvent } from '@tauri-apps/api/event';
@@ -26,7 +51,75 @@ const cardSwitch = ref(false);
 const switch_ = computed(() => cardSwitch.value ? "entries" : "cards");
 const entries = ref<(FilteredEntry | FilteredCard)[]>([]);
 
+const orderBy = ref<number | null>(null);
+const order = ref<boolean>(false);
 const selectedEntry = ref<FilteredEntry | FilteredCard | null>(null);
+
+function isFilteredCards(_entries: (FilteredEntry | FilteredCard)[]):
+  _entries is FilteredCard[]
+{
+  return !cardSwitch.value;
+}
+
+function isFilteredEntries(_entries: (FilteredEntry | FilteredCard)[]):
+  _entries is FilteredEntry[]
+{
+  return cardSwitch.value;
+}
+
+const sorted = computed(() => {
+  if (isFilteredCards(entries.value)) {
+    switch (orderBy.value) {
+      case 0:
+        return entries.value.toSorted(
+          (a, b) => compareStrings(a.sort_field, b.sort_field, order.value)
+        );
+      case 1:
+        return entries.value.toSorted(
+          (a, b) => compareStrings(a.card_name, b.card_name, order.value)
+        );
+      case 2:
+        return entries.value.toSorted(
+          (a, b) => compareDates(a.next_shown_at, b.next_shown_at, order.value)
+        );
+      case 3:
+        return entries.value.toSorted(
+          (a, b) => compareStrings(a.deck_name, b.deck_name, order.value)
+        );
+      default:
+        return entries.value;
+    }
+  } else if (isFilteredEntries(entries.value)) {
+    switch (orderBy.value) {
+      case 0:
+        return entries.value.toSorted(
+          (a, b) => compareStrings(a.sort_field, b.sort_field, order.value)
+        );
+      case 1:
+        return entries.value.toSorted(
+          (a, b) => compareStrings(a.entry_kind_name, b.entry_kind_name, order.value)
+        );
+      case 2:
+        return entries.value.toSorted(
+          (a, b) => compareNumbers(a.card_count, b.card_count, order.value)
+        );
+      case 3:
+        return entries.value.toSorted(
+          (a, b) => compareStrings(a.joined_tags, b.joined_tags, order.value)
+        );
+      case 4:
+        return entries.value.toSorted(
+          (a, b) => compareDates(a.next_shown_at, b.next_shown_at, order.value)
+        );
+      case 5:
+        return entries.value.toSorted(
+          (a, b) => compareDates(a.created_at, b.created_at, order.value)
+        );
+      default:
+        return entries.value;
+    }
+  }
+});
 
 useTauriEvent(TauriEvent.WINDOW_CLOSE_REQUESTED, reset);
 useTauriEvent(dataEvents.update.entry, load);
@@ -120,7 +213,9 @@ function handleItemPrev() {
             tabindex="-1"
             class="data-view__data__table"
             v-model="selectedEntry"
-            :value="entries"
+            v-model:order="order"
+            v-model:orderby="orderBy"
+            :value="sorted"
           >
             <template v-if="!cardSwitch">
               <Column field="sort_field" header="Основное поле" />

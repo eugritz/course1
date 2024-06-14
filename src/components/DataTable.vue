@@ -101,8 +101,8 @@ const isItemDragging = ref(false);
 const selectedItemIdx = ref<number | null>(null);
 const pickedItem = defineModel<T | null>();
 
-const sortColumnIdx = ref<number | null>(null);
-const sortDirection = ref(false);
+const sortColumnIdx = defineModel<number | null>("orderby");
+const sortDirection = defineModel<boolean>("order"); // true is ASC, false is DESC
 
 onMounted(() => {
   window.addEventListener("mouseup", handleItemDragStop);
@@ -207,10 +207,18 @@ function handleItemDragStop() {
 }
 
 function handleColumnHeaderClick(idx: number) {
-  if (idx !== sortColumnIdx.value)
+  if (idx !== sortColumnIdx.value) {
     sortDirection.value = false;
-  else
+  } else {
+    if (sortDirection.value) {
+      sortDirection.value = false;
+      sortColumnIdx.value = null;
+      return;
+    }
+
     sortDirection.value = !sortDirection.value;
+  }
+
   sortColumnIdx.value = idx;
 }
 

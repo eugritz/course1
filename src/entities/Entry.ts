@@ -15,7 +15,7 @@ export interface FilteredEntry {
   entry_kind_id: number;
   entry_kind_name: string;
   deck_id: number;
-  deck_name: number;
+  deck_name: string;
   card_count: number;
   tags: string[];
   joined_tags: string;
@@ -31,7 +31,7 @@ export interface FilteredCard {
   sort_field: string;
   entry_kind_id: number;
   deck_id: number;
-  deck_name: number;
+  deck_name: string;
   card_id: number;
   card_name: string;
   color_tag: number;
