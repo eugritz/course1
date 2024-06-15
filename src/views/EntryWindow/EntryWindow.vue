@@ -28,7 +28,7 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api';
 import { Event as UiEvent, TauriEvent, emit } from '@tauri-apps/api/event';
 import { showMenu } from 'ext/tauri-plugin-context-menu';
-import "vue-custom-scrollbar/dist/vueScrollbar.css";
+// import "vue-custom-scrollbar/dist/vueScrollbar.css";
 // import VueCustomScrollbar from "vue-custom-scrollbar/src/vue-scrollbar.vue";
 
 import { FilteredCard, FilteredEntry } from 'entities/Entry';
@@ -397,8 +397,6 @@ function handleItemContextMenu(
 }
 
 .data-view__data__header {
-  z-index: 1;
-  position: absolute;
   padding-top: 1px;
 }
 
@@ -407,6 +405,7 @@ function handleItemContextMenu(
 }
 
 .data-view__data__header__wrapper {
+  z-index: 1;
   position: absolute;
   overflow: hidden;
   width: 100%;

@@ -13,7 +13,7 @@ impl DeckService {
     pub async fn find_last_deck<'a, C: ConnectionTrait>(
         db: &'a C,
     ) -> Result<Option<decks::Model>, DbErr> {
-        let deck_id: Vec<(i32, i32)> = entries::Entity::find()
+        let deck_id: Vec<(Option<i32>, Option<i32>)> = entries::Entity::find()
             .select_only()
             .column_as(entries::Column::Id.max(), "entry_id")
             .column_as(entries::Column::DeckId, "deck_id")
@@ -21,10 +21,14 @@ impl DeckService {
             .all(db)
             .await?;
 
-        if deck_id.is_empty() {
-            decks::Entity::find().one(db).await
+        if deck_id.is_empty() || deck_id[0].1.is_none() {
+            decks::Entity::find().one(db)
+                .await
+                .map_err(|_| DbErr::Custom("Cannot find deck".to_string()))
+        } else if let Some(deck_id) = deck_id[0].1 {
+            decks::Entity::find_by_id(deck_id).one(db).await
         } else {
-            decks::Entity::find_by_id(deck_id[0].1).one(db).await
+            Err(DbErr::Custom("Cannot find deck".to_string()))
         }
     }
 
