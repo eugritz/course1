@@ -398,6 +398,7 @@ function handleItemContextMenu(
 
 .data-view__data__header {
   padding-top: 1px;
+  pointer-events: all;
 }
 
 .data-view__data__table {
@@ -410,6 +411,7 @@ function handleItemContextMenu(
   overflow: hidden;
   width: 100%;
   height: 100%;
+  pointer-events: none;
 
   > div {
     width: 100%;
